@@ -1,0 +1,11 @@
+# Node.js (client)
+client/node_modules/
+client/build/
+client/.env
+
+# Python (server)
+grid_game_server/venv/
+grid_game_server/__pycache__/
+__pycache__/
+grid_game_server/*.pyc
+grid_game_server/.env
