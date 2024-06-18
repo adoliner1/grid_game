@@ -9,3 +9,22 @@ grid_game_server/__pycache__/
 __pycache__/
 grid_game_server/*.pyc
 grid_game_server/.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Alembic migrations
+alembic/versions/*.pyc
+alembic/versions/*.pyo
+alembic/versions/*.pyd
+
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# IDE specific files
+.vscode/
+.idea/
