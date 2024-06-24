@@ -1,12 +1,12 @@
 import React from 'react';
-import Lobby from './lobby';  // Adjust the path if necessary
+import Lobby from './components/lobby'
+import Game from './components/game';
 
 const App = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Grid Game</h1>
-        <Lobby />
+        <Game gameId="example_game_id" />
       </header>
     </div>
   );

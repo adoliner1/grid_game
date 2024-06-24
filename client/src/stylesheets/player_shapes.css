@@ -1,0 +1,16 @@
+.player-shapes {
+    border: 1px solid black;
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+}
+
+.shape-and-amount-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.shape-and-amount-container svg {
+    margin-right: 10px; /* Add some space between the shape and the number */
+}

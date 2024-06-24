@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './lobby.css';
+import '../stylesheets/lobby.css';
 
 function Lobby() {
   const [playerName, setPlayerName] = useState('');
@@ -43,7 +43,7 @@ function Lobby() {
   };
 
   return (
-    <div>
+    <div className='lobby-div'>
       <span>Current Player: {playerName}</span>
       <input
         type="text"
