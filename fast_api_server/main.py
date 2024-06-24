@@ -1,12 +1,13 @@
-# main.py
 from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List, Dict
 from fast_api_server import models
 from fast_api_server.database import get_db
+import random
 
 app = FastAPI()
 connected_clients: List[Dict] = []
+local_game_state = None
 
 @app.websocket("/ws/lobby/")
 async def websocket_endpoint(websocket: WebSocket):
@@ -96,3 +97,60 @@ async def disconnect_handler(connection: Dict):
             db.delete(lobby_table)
             db.commit()
         await notify_clients()
+
+@app.websocket("/ws/game/")
+async def websocket_game_endpoint(websocket: WebSocket):
+    global local_game_state
+    await websocket.accept()
+    if not local_game_state:
+        local_game_state = create_initial_game_state()
+    
+    if len(local_game_state["players"]) >= 2:
+        await websocket.send_json({"error": "Game is full"})
+        await websocket.close()
+        return
+    
+    if len(local_game_state["players"]) == 1:
+        existing_player_color = local_game_state["players"][0]["color"]
+        player_color = "blue" if existing_player_color == "red" else "red"
+    else:
+        player_color = "red"
+    
+    local_game_state["players"].append({"websocket": websocket, "color": player_color})
+    await websocket.send_json({
+        "game_state": local_game_state["game_state"],
+        "player_color": player_color
+    })  # Send the game state and player color
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_json(f"Received: {data}")
+    except WebSocketDisconnect:
+        local_game_state["players"] = [p for p in local_game_state["players"] if p["websocket"] != websocket]
+        if len(local_game_state["players"]) == 0:
+            local_game_state = None
+        print(f"{player_color} player disconnected")
+
+
+def create_initial_game_state():
+    game_state = {
+        "players": [],
+        "game_state": {
+            "shapes": {
+                "player1": { "number_of_circles": 1, "number_of_squares": 0, "number_of_triangles": 0 },
+                "player2": { "number_of_circles": 1, "number_of_squares": 0, "number_of_triangles": 0 }
+            },
+            "tiles": [
+                {
+                    "name": f"Tile {index + 1}",
+                    "description": f"This is tile {index + 1}",
+                    "ruling_criteria": f"Criterion {index + 1}",
+                    "ruling_benefits": f"Benefit {index + 1}",
+                    "slots_for_shapes": [None] * random.randint(1, 5)
+                } for index in range(9)
+            ],
+            "whose_turn_is_it": "red"
+        }
+    }
+    return game_state
