@@ -68,6 +68,7 @@ svg.selectable {
     height: 150px; /* Adjust height as needed */
     overflow-y: scroll;
     font-size: 0.9em; /* Adjust font size if necessary */
+    max-width: 300px;
 }
 
 .game-log p {

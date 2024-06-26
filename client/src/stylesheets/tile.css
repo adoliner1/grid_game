@@ -7,6 +7,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    transition: border-color 0.3s;
 }
 
 .tile h3 {
@@ -18,4 +19,24 @@
 .tile p {
     flex: 0 0 auto;
     display: flex;
+}
+
+.selectable-tile {
+    border: 2px solid gold;
+}
+
+.selectable-tile:hover {
+    border-color: black;
+    cursor: pointer;
+}
+
+.selectable-tile:active {
+    border-color: gold;
+    animation: flash 0.2s; /* Add a flash animation when clicked */
+}
+
+@keyframes flash {
+    0% { border-color: gold; }
+    50% { border-color: black; }
+    100% { border-color: gold; }
 }

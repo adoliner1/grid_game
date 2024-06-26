@@ -1,7 +1,4 @@
 import React from 'react';
-import Circle from './shapes/circle';
-import Square from './shapes/square';
-import Triangle from './shapes/triangle';
 import '../stylesheets/tile.css';
 import ShapesOnTile from './shapes_on_tile';
 
@@ -11,9 +8,11 @@ const Tile = ({
     ruling_criteria,
     ruling_benefits,
     slots_for_shapes,
+    onClick,
+    className,
 }) => {
     return (
-        <div className="tile">
+        <div className={className} onClick={onClick}>
             <h3>{name}</h3>
             <p>{description}</p>
             <p><strong>Ruling Criteria:</strong> {ruling_criteria}</p>

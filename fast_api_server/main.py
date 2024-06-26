@@ -3,11 +3,16 @@ from sqlalchemy.orm import Session
 from typing import List, Dict
 from fast_api_server import models
 from fast_api_server.database import get_db
+from fast_api_server.tiles.tiles import Tile, AlgebraTile
+from fast_api_server.game_manager import GameManager
 import random
+import json
 
 app = FastAPI()
 connected_clients: List[Dict] = []
 local_game_state = None
+currentPlayers = []
+game_manager = GameManager()
 
 @app.websocket("/ws/lobby/")
 async def websocket_endpoint(websocket: WebSocket):
@@ -101,56 +106,103 @@ async def disconnect_handler(connection: Dict):
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
     global local_game_state
+    global currentPlayers
     await websocket.accept()
     if not local_game_state:
         local_game_state = create_initial_game_state()
     
-    if len(local_game_state["players"]) >= 2:
-        await websocket.send_json({"error": "Game is full"})
+    if len(currentPlayers) >= 2:
+        await websocket.send_json({
+            "action": "error",
+            "message": "Game is full"
+        })
         await websocket.close()
         return
     
-    if len(local_game_state["players"]) == 1:
-        existing_player_color = local_game_state["players"][0]["color"]
+    if len(currentPlayers) == 1:
+        existing_player_color = currentPlayers[0]["color"]
         player_color = "blue" if existing_player_color == "red" else "red"
     else:
         player_color = "red"
     
-    local_game_state["players"].append({"websocket": websocket, "color": player_color})
+    currentPlayers.append({"websocket": websocket, "color": player_color})
     await websocket.send_json({
-        "game_state": local_game_state["game_state"],
+        "action": "initialize",
+        "game_state": json.loads(serialize_game_state(local_game_state)),
         "player_color": player_color
-    })  # Send the game state and player color
+    })
 
     try:
         while True:
             data = await websocket.receive_text()
-            await websocket.send_json(f"Received: {data}")
+            data = json.loads(data)
+            action = data.get("action")
+
+            if action == "place_shape_on_tile":
+                tile_index = data.get("tile_index")
+                shape_type = data.get("shape_type")
+                player_color = None
+                for player in currentPlayers:
+                    if player["websocket"] == websocket:
+                        player_color = player["color"]
+                        break
+
+                if player_color is None:
+                    await websocket.send_json({"action": "error", "message": "Player not found in game"})
+                    continue
+
+                if local_game_state["whose_turn_is_it"] != player_color:
+                    await websocket.send_json({"action": "error", "message": "Not your turn"})
+                    continue
+
+                tile = local_game_state["tiles"][tile_index]
+                if None not in tile.slots_for_shapes:
+                    await websocket.send_json({"action": "error", "message": "No empty slots on this tile"})
+                    continue
+
+                if local_game_state["shapes"][player_color][f"number_of_{shape_type}s"] <= 0:
+                    await websocket.send_json({"action": "error", "message": f"No {shape_type}s left"})
+                    continue
+
+                local_game_state["shapes"][player_color][f"number_of_{shape_type}s"] -= 1
+                next_empty_slot = tile.slots_for_shapes.index(None)
+                tile.slots_for_shapes[next_empty_slot] = {"shape": shape_type, "color": player_color}
+                local_game_state["whose_turn_is_it"] = "blue" if player_color == "red" else "red"
+                await notify_clients_of_new_game_state()
+            else:
+                await websocket.send_json({"action": "error", "message": "Unknown action"})
     except WebSocketDisconnect:
-        local_game_state["players"] = [p for p in local_game_state["players"] if p["websocket"] != websocket]
-        if len(local_game_state["players"]) == 0:
+        currentPlayers = [p for p in currentPlayers if p["websocket"] != websocket]
+        if len(currentPlayers) == 0:
             local_game_state = None
         print(f"{player_color} player disconnected")
 
+async def notify_clients_of_new_game_state():
+    for player in currentPlayers:
+        await player["websocket"].send_json({
+            "action": "update_game_state",
+            "game_state": json.loads(serialize_game_state(local_game_state))
+        })
 
 def create_initial_game_state():
+
     game_state = {
-        "players": [],
-        "game_state": {
             "shapes": {
-                "player1": { "number_of_circles": 1, "number_of_squares": 0, "number_of_triangles": 0 },
-                "player2": { "number_of_circles": 1, "number_of_squares": 0, "number_of_triangles": 0 }
+                "red": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 },
+                "blue": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 }
             },
-            "tiles": [
-                {
-                    "name": f"Tile {index + 1}",
-                    "description": f"This is tile {index + 1}",
-                    "ruling_criteria": f"Criterion {index + 1}",
-                    "ruling_benefits": f"Benefit {index + 1}",
-                    "slots_for_shapes": [None] * random.randint(1, 5)
-                } for index in range(9)
+            "tiles": [  
+                AlgebraTile()
             ],
             "whose_turn_is_it": "red"
         }
-    }
     return game_state
+
+
+def serialize_game_state(game_state):
+    serialized_game_state = {
+            "shapes": game_state["shapes"],
+            "tiles": [tile.serialize() for tile in game_state["tiles"]],
+            "whose_turn_is_it": game_state["whose_turn_is_it"]
+        }
+    return json.dumps(serialized_game_state)
