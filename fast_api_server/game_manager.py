@@ -1,66 +1,97 @@
 import random
-from typing import List, Dict
-
-from fast_api_server.tiles.tiles import Tile, AlgebraTile
+from typing import List, Dict, Callable
+from fast_api_server.tiles.tiles import Tile, Algebra, Boron
 
 class GameManager:
     def __init__(self):
-        self.game_state = self.create_initial_game_state()
-        self.current_turn = 0
+        self.notify_clients_of_new_log_callback = None
+        self.notify_clients_of_new_game_state_callback = None
 
-    def create_initial_game_state(self):
-        algebra_tile = AlgebraTile()
-        game_state = {
-            "shapes": {
-                "red": {"number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10},
-                "blue": {"number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10}
-            },
-            "tiles": [algebra_tile],
-            "whose_turn_is_it": "red"
-        }
-        return game_state
+    def set_notify_clients_of_new_log_callback(self, callback: Callable[[str], None]):
+        self.notify_clients_of_new_log_callback = callback
 
-    def start_round(self):
-        # Run start of round tile effects
-        for tile in self.game_state["tiles"]:
-            tile.start_of_round_effect()
+    def set_notify_clients_of_new_game_state_callback(self, callback: Callable[[str], None]):
+        self.notify_clients_of_new_game_state_callback = callback
 
-    def player_turn(self, player_color: str, action: Dict):
-        # Process player action
-        if action["type"] == "use_tile":
-            self.use_tile(player_color, action["tile_index"])
-        elif action["type"] == "place_shape":
-            self.place_shape_from_storage(player_color, action["shape_type"], action["tile_index"])
-        elif action["type"] == "pass":
-            self.pass_turn(player_color)
+    async def start_round(self, game_state):
+        await self.notify_clients_of_new_log_callback("Starting new round")
+        if game_state['first_player']:
+            game_state['whose_turn_is_it'] = game_state['first_player']
+        else:
+            game_state['whose_turn_is_it'] = 'red'           
+        game_state['first_player'] = None
+        game_state['player_has_passed']['red'] = False
+        game_state['player_has_passed']['blue'] = False
+        for tile in game_state["tiles"]:
+            await tile.start_of_round_effect(game_state, self.notify_clients_of_new_log_callback)
 
-    def use_tile(self, player_color: str, tile_index: int):
-        tile = self.game_state["tiles"][tile_index]
-        tile.use_tile(player_color)
+    async def player_takes_place_shape_on_tile_action(self, game_state, player_color, tile_index, shape_type):
+        if game_state["whose_turn_is_it"] != player_color:
+            await self.notify_clients_of_new_log_callback("Not your turn")
+            return
 
-    def place_shape_from_storage(self, player_color: str, shape_type: str, tile_index: int):
-        if self.game_state["shapes"][player_color][f"number_of_{shape_type}s"] > 0:
-            tile = self.game_state["tiles"][tile_index]
-            next_empty_slot = tile.slots_for_shapes.index(None)
-            tile.slots_for_shapes[next_empty_slot] = {"shape": shape_type, "color": player_color}
-            self.game_state["shapes"][player_color][f"number_of_{shape_type}s"] -= 1
+        tile = game_state["tiles"][tile_index]
+        if None not in tile.slots_for_shapes:
+            await self.notify_clients_of_new_log_callback("No empty slots on this tile")
+            return
 
-    def pass_turn(self, player_color: str):
-        self.current_turn += 1
-        if self.current_turn >= len(self.game_state["tiles"]):
-            self.end_round()
+        if game_state["shapes"][player_color][f"number_of_{shape_type}s"] <= 0:
+            await self.notify_clients_of_new_log_callback(f"No {shape_type}s in storage")
+            return
 
-    def end_round(self):
-        # Run end of round tile effects
-        for tile in self.game_state["tiles"]:
-            tile.end_of_round_effect()
-        self.check_end_of_game()
+        game_state["shapes"][player_color][f"number_of_{shape_type}s"] -= 1
+        next_empty_slot = tile.slots_for_shapes.index(None)
+        tile.slots_for_shapes[next_empty_slot] = {"shape": shape_type, "color": player_color}
+        await self.notify_clients_of_new_log_callback(f"{player_color} placed a {shape_type} on tile {tile_index}")
 
-    def check_end_of_game(self):
-        ruling_tiles = [tile for tile in self.game_state["tiles"] if tile.ruler is not None]
-        if len(ruling_tiles) >= 6:
-            self.end_game()
+        if game_state["player_has_passed"][self.get_other_player_color(player_color)] == False:
+            game_state["whose_turn_is_it"] = self.get_other_player_color(player_color)
+            await self.notify_clients_of_new_log_callback(f"turn passes to {game_state['whose_turn_is_it']} player")
+        else:
+            await self.notify_clients_of_new_log_callback(f"{self.get_other_player_color(player_color)} has passed, turn remains with {player_color}")
+        await self.notify_clients_of_new_game_state_callback()
 
-    def end_game(self):
+    async def player_passes(self, game_state, player_color):
+        if game_state["whose_turn_is_it"] != player_color:
+            await self.notify_clients_of_new_log_callback("Not your turn")
+            return
+        
+        await self.notify_clients_of_new_log_callback(f"{player_color} passes")
+        game_state["player_has_passed"][player_color] = True
+
+        if game_state["player_has_passed"][self.get_other_player_color(player_color)] == False:
+            await self.notify_clients_of_new_log_callback(f"{player_color} is first player to pass this round and becomes first player")
+            game_state["first_player"] = player_color
+
+        if game_state["player_has_passed"]["red"] and game_state["player_has_passed"]["blue"]:
+            await self.end_round(game_state)
+
+        else:
+            game_state["whose_turn_is_it"] = self.get_other_player_color(player_color)
+            await self.notify_clients_of_new_log_callback(f"turn passes to {game_state['whose_turn_is_it']}")
+
+        await self.notify_clients_of_new_game_state_callback()
+
+    async def end_round(self, game_state):
+        await self.notify_clients_of_new_log_callback(f"both players have passed, ending round")
+
+        for tile in game_state["tiles"]:
+            await tile.end_of_round_effect(game_state, self.notify_clients_of_new_log_callback)
+
+        if not await self.check_for_end_of_game(game_state):
+            await self.start_round(game_state)
+
+    async def check_for_end_of_game(self, game_state):
+        await self.notify_clients_of_new_log_callback(f"checking for end of game")
+        # ruling_tiles = [tile for tile in self.game_state["tiles"] if tile.ruler is not None]
+        # if len(ruling_tiles) >= 6:
+        #   self.end_game(game_state)
+        #   return True
+        return False
+
+    def end_game(self, game_state):
         # Handle end of game logic
         print("Game over")
+
+    def get_other_player_color(self, player_color):
+        return 'blue' if player_color == 'red' else 'red'

@@ -30,12 +30,12 @@ const Game = ({}) => {
 
     const handleShapeClick = (shapeType, color_of_shape) => {
         if (gameState.whose_turn_is_it !== clientColor) {
-            addLog("not your turn")
+            addLog("Not your turn")
             return
         }
 
         if (color_of_shape !== clientColor) {
-            addLog("those aren't yours")
+            addLog("Those aren't yours")
             return
         }
         if(UI_mode === UIModes.IDLE) {
@@ -43,16 +43,22 @@ const Game = ({}) => {
             request.current.action = 'place_shape_on_tile'
             request.current.shape_type = shapeType
         }
-        addLog(`Player clicked on ${shapeType}`);
     }
 
     const handleTileClick = (tileIndex) => {
         if (UI_mode === 'SELECT_A_TILE_WITH_AN_EMPTY_SLOT') {
             request.current.tile_index = tileIndex 
-            addLog(`Tile ${tileIndex} clicked`);
             sendRequest()
             setUIMode(UIModes.IDLE)
         }
+    }
+
+    const playerPasses = () => {
+        if (gameState.whose_turn_is_it !== clientColor) {
+            addLog("Not your turn") }
+        else {
+            request.current.action = 'pass'
+            sendRequest() }
     }
 
     const sendRequest = () => {
@@ -73,6 +79,9 @@ const Game = ({}) => {
             switch (data.action) {
                 case "error":
                     addLog(`Error: ${data.message}`);
+                    break;
+                case "message":
+                    addLog(`${data.message}`);
                     break;
                 case "initialize":
                     setGameState(data.game_state);
@@ -134,6 +143,9 @@ const Game = ({}) => {
                     whose_turn_is_it={gameState.whose_turn_is_it}
                     onShapeClick={handleShapeClick}
                 />
+
+                <button onClick={playerPasses}>Pass</button>
+
                 <div className="directive-text">
                     <p>{directiveText}</p>
                 </div>
