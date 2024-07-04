@@ -4,34 +4,43 @@ import Circle from './shapes/circle';
 import Square from './shapes/square';
 import Triangle from './shapes/triangle';
 
-const PlayerShapes = ({ player, clients_color, shapes, whose_turn_is_it, onShapeClick }) => {
+const PlayerShapes = ({ player_color, clients_color, shapes, whose_turn_is_it, onShapeClick, selectors, tile_in_use}) => {
+
+    const isSelectable = (shapeType, selectors, number_of_shape) => {
+        if (whose_turn_is_it !== clients_color) {return false}
+        if (!selectors.includes("shape-from-storage")) {return false}
+        if (selectors.includes("shape-owned-by-client-color") && clients_color !== player_color) {return false}
+        if (number_of_shape <= 0) {return false}
+        return true;
+    };
+
     return (
         <div className="player-shapes">
-            <h3>{player}'s shapes in storage</h3>
+            <h3>{player_color}'s shapes in storage</h3>
 
             <div className="shape-and-amount-container">
                 <Circle 
-                    playerColor={player} 
-                    selectable={whose_turn_is_it === clients_color && clients_color === player && shapes.number_of_circles > 0}
-                    onClick={() => onShapeClick("circle", player)}
+                    playerColor={player_color} 
+                    selectable={isSelectable('circle', selectors, shapes.number_of_circles)}
+                    onClick={() => onShapeClick("circle", player_color)}
                 />
                 <p>{shapes.number_of_circles}</p>
             </div>
 
             <div className="shape-and-amount-container">
                 <Square 
-                    playerColor={player} 
-                    selectable={whose_turn_is_it === clients_color && clients_color === player && shapes.number_of_squares > 0}
-                    onClick={() => onShapeClick("square", player)}
+                    playerColor={player_color} 
+                    selectable={isSelectable('square', selectors, shapes.number_of_squares)}
+                    onClick={() => onShapeClick("square", player_color)}
                 />
                 <p>{shapes.number_of_squares}</p>
             </div>
 
             <div className="shape-and-amount-container">
                 <Triangle 
-                    playerColor={player} 
-                    selectable={whose_turn_is_it === clients_color && clients_color === player && shapes.number_of_triangles > 0}
-                    onClick={() => onShapeClick("triangle", player)}
+                    playerColor={player_color} 
+                    selectable={isSelectable('triangle', selectors, shapes.number_of_triangles)}
+                    onClick={() => onShapeClick("triangle", player_color)}
                 />
                 <p>{shapes.number_of_triangles}</p>
             </div>

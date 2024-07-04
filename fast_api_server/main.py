@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 from typing import List, Dict
 from fast_api_server import models
 from fast_api_server.database import get_db
-from fast_api_server.tiles.tiles import Tile, Algebra, Boron
+from fast_api_server.tiles.tile import Tile
+from fast_api_server.tiles.algebra import Algebra
+from fast_api_server.tiles.boron import Boron
+from fast_api_server.tiles.pluto import Pluto
+from fast_api_server.tiles.sword import Sword
 from fast_api_server.game_manager import GameManager
 import random
 import json
@@ -173,11 +177,17 @@ async def websocket_game_endpoint(websocket: WebSocket):
 
             action = data.get("action")
 
-            if action == "place_shape_on_tile":
-                tile_index = data.get("tile_index")
+            if action == "place_shape_on_slot":
+                tile_index = data.get("tile_index_to_place_on")
+                slot_index = data.get("slot_to_place_on")
                 shape_type = data.get("shape_type")
 
-                await game_manager.player_takes_place_shape_on_tile_action(local_game_state, player_color, tile_index, shape_type)
+                await game_manager.player_takes_place_on_slot_on_tile_action(local_game_state, player_color, slot_index, tile_index, shape_type)
+
+            elif action == 'use_tile':
+                tile_index_to_use = data.get("tile_index_to_use")
+                use_tile_args = data.get("use_tile_args", {})
+                await game_manager.player_takes_use_tile_action(local_game_state, tile_index_to_use, player_color, **use_tile_args)               
 
             elif action == "pass":
                 await game_manager.player_passes(local_game_state, player_color)
@@ -193,26 +203,29 @@ async def websocket_game_endpoint(websocket: WebSocket):
 def create_initial_game_state():
 
     game_state = {
+            "round": 1,
             "shapes": {
                 "red": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 },
                 "blue": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 }
+            },
+            "points": {
+                "red": 0,
+                "blue": 0
             },
             "player_has_passed": {
                 "red": False,
                 "blue": False,
             },
-            "tiles": [  
-                Algebra(), Boron()
+            "tiles": [
+                Algebra(), Boron(), Pluto(), Sword()
             ],
             "whose_turn_is_it": "red",
             "first_player": None
         }
 
     return game_state
+
 def serialize_game_state(game_state):
-    serialized_game_state = {
-            "shapes": game_state["shapes"],
-            "tiles": [tile.serialize() for tile in game_state["tiles"]],
-            "whose_turn_is_it": game_state["whose_turn_is_it"]
-        }
+    serialized_game_state = game_state.copy()  # Create a copy of the game state
+    serialized_game_state["tiles"] = [tile.serialize() for tile in game_state["tiles"]]  # Serialize each tile
     return json.dumps(serialized_game_state)

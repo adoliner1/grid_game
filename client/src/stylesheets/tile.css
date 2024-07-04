@@ -32,7 +32,7 @@
 
 .selectable-tile:active {
     border-color: gold;
-    animation: flash 0.2s; /* Add a flash animation when clicked */
+    animation: flash 0.2s;
 }
 
 @keyframes flash {
