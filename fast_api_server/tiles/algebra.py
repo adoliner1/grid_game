@@ -4,8 +4,8 @@ from fast_api_server.tiles.tile import Tile
 class Algebra(Tile):
     def __init__(self):
         super().__init__(
-            name="algebra",
-            description = f"Ruling Criteria: most shapes\nRuling Benefits: at the start of the round, produce 1 circle",
+            name="Algebra",
+            description = f"Ruling Criteria: Most shapes\nRuling Benefits: At the start of the round, produce 1 circle",
             number_of_slots=3,
         )
 

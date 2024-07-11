@@ -1,0 +1,46 @@
+from fast_api_server.game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile, find_index_of_tile_by_name, determine_if_directly_adjacent
+from fast_api_server.tiles.tile import Tile
+
+class Caves(Tile):
+    def __init__(self):
+        super().__init__(
+            name="Caves",
+            description = f"Ruling Criteria: most shapes, minimum 3\nRuling Benefits: When you place a shape on an adjacent tile, produce a circle. At the end of the game, +2 points",
+            number_of_slots=5,
+        )
+
+    def determine_ruler(self, game_state):
+        red_count = 0
+        blue_count = 0
+
+        for slot in self.slots_for_shapes:
+            if slot:
+                if slot["color"] == "red":
+                    red_count += 1
+                elif slot["color"] == "blue":
+                    blue_count += 1
+        if red_count > blue_count and red_count >= 3:
+            self.ruler = 'red'
+            return 'red'
+        elif blue_count > red_count and blue_count >= 3:
+            self.ruler = 'blue'
+            return 'blue'
+        self.ruler = None
+        return None
+    
+    def setup_listener(self, game_state):
+        game_state["listeners"]["on_place"][self.name] = self.on_place_effect
+
+    async def on_place_effect(self, game_state, callback, **data):
+            placer = data.get('placer')
+            index_of_tile_placed_at = data.get('index_of_tile_placed_at')
+            index_of_caves = find_index_of_tile_by_name(game_state, self.name)
+
+            if not determine_if_directly_adjacent(index_of_caves, index_of_tile_placed_at):
+                return
+
+            ruler = self.determine_ruler(game_state)
+            if ruler != placer:
+                return
+
+            await produce_shape_for_player(game_state, placer, 1, "circle", self.name, callback)

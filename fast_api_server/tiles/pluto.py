@@ -4,8 +4,8 @@ from fast_api_server.tiles.tile import Tile
 class Pluto(Tile):
     def __init__(self):
         super().__init__(
-            name="pluto",
-            description = f"Ruling Criteria: 3 or more circles\nRuling Benefits: at the end of the game: 2vp. You may use this tile to burn one of your circles here and produce a square in storage",
+            name="Pluto",
+            description = f"Ruling Criteria: 3 or more circles\nRuling Benefits: You may use this tile to burn one of your circles here and produce a square in storage. At the end of the game: 2vp.",
             number_of_slots=5,
             has_use_action_for_ruler = True
         )

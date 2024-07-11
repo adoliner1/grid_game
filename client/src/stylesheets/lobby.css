@@ -29,7 +29,7 @@ input[type="text"] {
   margin-right: 10px;
 }
 
-button {
+.lobby-div button {
   padding: 10px 20px;
   margin: 10px 0;
   background-color: #007bff;
@@ -38,6 +38,6 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+.lobby-div button:hover {
   background-color: #0056b3;
 }

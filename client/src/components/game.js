@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../stylesheets/game.css';
 import Tile from './tile';
-import PlayerShapes from './player_shapes';
+import ShapesInStorage from './shapes_in_storage';
 import GameLog from './game_log';
 
 const Game = () => {
@@ -9,34 +9,33 @@ const Game = () => {
     const socket = useRef(null)
     const [logs, setLogs] = useState([])
     const [clientColor, setClientColor] = useState(null);
-    const request = useRef({'initial-shape-from-storage-or-usable-tile': null})
+    const request = useRef({'initial_shape_from_storage_or_usable_tile': null})
     const [selectors, setSelectors] = useState(['shape-from-storage', 'shape-owned-by-client-color', 'tile', 'usable-by-all', 'usable-by-ruler'])
-    const next_part_of_request_to_fill = useRef('initial-shape-from-storage-or-usable-tile')
+    const next_part_of_request_to_fill = useRef('initial_shape_from_storage_or_usable_tile')
     const tileInUse = useRef(null)
 
     const sendRequestIfReadyAndUpdateSelectors = () => {
 
         //get the next piece of data the request needs by finding a key with a corresponding null value
-        const keys_in_current_request = Object.keys(request.current);
-        next_part_of_request_to_fill.current = keys_in_current_request.find(key => request.current[key] === null);
+        next_part_of_request_to_fill.current = findFirstNullValueKey(request.current)
 
-        //request is ready to send (it has no null values), send it, reset selectors and request to default  
-        if (next_part_of_request_to_fill.current === undefined) {
+        //request is ready to send because it has no keys with null values, send it, reset selectors and request to default  
+        if (next_part_of_request_to_fill.current === null) {
             sendRequest()
             setSelectors(['shape-from-storage', 'shape-owned-by-client-color', 'tile', 'usable-by-all', 'usable-by-ruler'])
-            request.current = {'initial-shape-from-storage-or-usable-tile': null}
-            next_part_of_request_to_fill.current = 'initial-shape-from-storage-or-usable-tile'
+            request.current = {'initial_shape_from_storage_or_usable_tile': null}
+            next_part_of_request_to_fill.current = 'initial_shape_from_storage_or_usable_tile'
             tileInUse.current = null
             return
         }
 
-        //tile in use, update selectors based on it
+        //request not ready to send, tile in use, update selectors based on the next piece of data it needs
         else if (tileInUse.current !== null) {
-            setSelectors(tileInUse.current.data_needed_for_use[next_part_of_request_to_fill.current])
+            setSelectors(tileInUse.current.data_needed_for_use_with_selectors[next_part_of_request_to_fill.current])
         }
 
-        //we're doing a placement from initial state, we have the tile from storage, need the slot now
-        else if (next_part_of_request_to_fill.current === "slot_to_place_on")
+        //we're doing a placement from initial state, we have the shape from storage, to get the slot and tile to place it on
+        else if (next_part_of_request_to_fill.current === "tile_and_slot_to_place_on")
         {
             setSelectors(['slot', 'empty-or-weaker-shape'])
         }
@@ -46,20 +45,38 @@ const Game = () => {
         setLogs((prevLogs) => [...prevLogs, message]);
     };
 
-    const addKeysToRequest = (data_needed_for_use) => {
-        const keys = Object.keys(data_needed_for_use);
-        keys.forEach(key => {
-            request.current[key] = null;
+    const addKeysToRequest = (data_needed_for_use_with_selectors) => {
+        Object.entries(data_needed_for_use_with_selectors).forEach(([key, requirements]) => {
+            if (requirements.includes('slot')) {
+                request.current[key] = { 'tile': null, 'slot': null };
+            } else {
+                request.current[key] = null;
+            }
         });
     };
 
+    const findFirstNullValueKey = (obj) => {
+        for (let key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                if (obj[key] === null) {
+                    return key;
+                } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    if (Object.values(obj[key]).every(value => value === null)) {
+                        return key;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     const handleShapeInStorageClick = (shapeType, color_of_shape) => {
         //special case for initial state, to select a shape from storage to place on a tile
-        if (next_part_of_request_to_fill.current === 'initial-shape-from-storage-or-usable-tile') {
+        if (next_part_of_request_to_fill.current === 'initial_shape_from_storage_or_usable_tile') {
             request.current.action = 'place_shape_on_slot'
-            request.current[next_part_of_request_to_fill.current] = "filled"
+            request.current[next_part_of_request_to_fill.current] = shapeType
             request.current.shape_type = shapeType
-            request.current.slot_to_place_on = null
+            request.current.tile_and_slot_to_place_on = {'tile': null, "slot": null}
             sendRequestIfReadyAndUpdateSelectors()
         }
 
@@ -71,35 +88,29 @@ const Game = () => {
     }
 
     const handleTileClick = (tileIndex) => {
-        //special case for initial state, to start using a tile
-        if (selectors.includes('tile') && next_part_of_request_to_fill.current === 'initial-shape-from-storage-or-usable-tile') {
+        //special case for initial state to start using a tile
+        if (selectors.includes('tile') && next_part_of_request_to_fill.current === 'initial_shape_from_storage_or_usable_tile') {
             request.current.action = 'use_tile'
-            request.current[next_part_of_request_to_fill.current] = "filled"
+            request.current[next_part_of_request_to_fill.current] = tileIndex
             request.current.tile_index_to_use = tileIndex
             tileInUse.current = gameState["tiles"][tileIndex]
             
-            if (tileInUse.current.data_needed_for_use !== null) {
-            addKeysToRequest(tileInUse.current.data_needed_for_use) }
+            if (tileInUse.current.data_needed_for_use_with_selectors !== null) {
+            addKeysToRequest(tileInUse.current.data_needed_for_use_with_selectors) }
             sendRequestIfReadyAndUpdateSelectors()
         }
 
-        //general case, this tile is being used as part of some other action
         else if (selectors.includes('tile')) {
-
+            request.current[next_part_of_request_to_fill.current] = tileIndex
+            sendRequestIfReadyAndUpdateSelectors()
         }
     }
 
     const handleSlotClick = (tileIndex, slotIndex) => {
-        //special case for placing from initial state
-        if (selectors.includes('slot') && request.current['initial-shape-from-storage-or-usable-tile'] !== null) {
-            request.current.tile_index_to_place_on = tileIndex
-            request.current[next_part_of_request_to_fill.current] = slotIndex
+        if (selectors.includes('slot')) {
+            request.current[next_part_of_request_to_fill.current].tile = tileIndex
+            request.current[next_part_of_request_to_fill.current].slot = slotIndex
             sendRequestIfReadyAndUpdateSelectors()
-        }
-
-        //we're in the middle of a tile-use
-        else if (selectors.includes('slot')) {
-
         }
     };
 
@@ -160,9 +171,9 @@ const Game = () => {
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
                 setSelectors(['shape-from-storage', 'shape-owned-by-client-color', 'tile', 'usable-by-all', 'usable-by-ruler'])
-                request.current = {'initial-shape-from-storage-or-usable-tile': null}
+                request.current = {'initial_shape_from_storage_or_usable_tile': null}
+                next_part_of_request_to_fill.current = 'initial_shape_from_storage_or_usable_tile'
                 tileInUse.current = null
-                next_part_of_request_to_fill.current = null
                 addLog("Escape key pressed, selectors and request reset");
             }
         };
@@ -181,7 +192,11 @@ const Game = () => {
         <div className="game-container">
             <div className="players-shapes-directive-and-log-container">
                 <div> you are {clientColor} </div>
-                <PlayerShapes   
+                <div>
+                    <h1>Round Bonuses</h1>
+                    {gameState.round_bonuses.map((bonus, index) => (<p key={index}>Round {index + 1}: {bonus}</p>))}
+                </div>
+                <ShapesInStorage   
                     player_color="red"
                     clients_color={clientColor}
                     shapes={gameState.shapes.red}
@@ -190,7 +205,7 @@ const Game = () => {
                     selectors = {selectors}
                     tile_in_use = {request.current.tile_index_to_use}
                 />
-                <PlayerShapes 
+                <ShapesInStorage 
                     player_color="blue" 
                     clients_color={clientColor}
                     shapes={gameState.shapes.blue} 
@@ -200,16 +215,18 @@ const Game = () => {
                     tile_in_use = {request.current.tile_index_to_use}
                 />
 
-                <button onClick={playerPasses}>Pass</button>
+                <button 
+                    onClick={playerPasses} 
+                    disabled={gameState.whose_turn_is_it !== clientColor}
+                    className={gameState.whose_turn_is_it === clientColor ? 'btn-enabled' : 'btn-disabled'} >
+                Pass
+                </button>
                 <p> Round: {gameState.round} </p>
                 <p> First Player: {gameState.first_player} </p>
                 <p> Red Has Passed: {gameState.player_has_passed.red.toString()}</p>
                 <p> Blue Has Passed: {gameState.player_has_passed.blue.toString()}</p>
                 <p> Red Points: {gameState.points.red}</p>
-                <p> Red Has Passed: {gameState.points.blue}</p>
-                <p> current request: {JSON.stringify(request.current)}</p>
-                <p> next part of request to fill {next_part_of_request_to_fill.current} </p>
-                <p> selectors: {selectors.join(', ')}</p>
+                <p> Blue Points: {gameState.points.blue}</p>
                 <GameLog logs={logs} />
             </div>
             <div className="grid">

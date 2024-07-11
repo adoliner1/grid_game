@@ -8,7 +8,10 @@ from fast_api_server.tiles.algebra import Algebra
 from fast_api_server.tiles.boron import Boron
 from fast_api_server.tiles.pluto import Pluto
 from fast_api_server.tiles.sword import Sword
+from fast_api_server.tiles.prince import Prince
+from fast_api_server.tiles.caves import Caves
 from fast_api_server.game_manager import GameManager
+from fast_api_server.round_bonuses import PointsPerCircle
 import random
 import json
 
@@ -133,6 +136,7 @@ async def websocket_game_endpoint(websocket: WebSocket):
     await websocket.accept()
     if not local_game_state:
         local_game_state = create_initial_game_state()
+        setup_tile_listeners(local_game_state)
     if len(currentPlayers) >= 2:
         await websocket.send_json({
             "action": "error",
@@ -178,16 +182,17 @@ async def websocket_game_endpoint(websocket: WebSocket):
             action = data.get("action")
 
             if action == "place_shape_on_slot":
-                tile_index = data.get("tile_index_to_place_on")
-                slot_index = data.get("slot_to_place_on")
+
+                tile_index = data.get("tile_and_slot_to_place_on").get("tile")
+                slot_index = data.get("tile_and_slot_to_place_on").get("slot")
                 shape_type = data.get("shape_type")
 
                 await game_manager.player_takes_place_on_slot_on_tile_action(local_game_state, player_color, slot_index, tile_index, shape_type)
 
             elif action == 'use_tile':
+
                 tile_index_to_use = data.get("tile_index_to_use")
-                use_tile_args = data.get("use_tile_args", {})
-                await game_manager.player_takes_use_tile_action(local_game_state, tile_index_to_use, player_color, **use_tile_args)               
+                await game_manager.player_takes_use_tile_action(local_game_state, tile_index_to_use, player_color, **data)               
 
             elif action == "pass":
                 await game_manager.player_passes(local_game_state, player_color)
@@ -199,11 +204,10 @@ async def websocket_game_endpoint(websocket: WebSocket):
             local_game_state = None
         print(f"{player_color} player disconnected")
 
-
 def create_initial_game_state():
 
     game_state = {
-            "round": 1,
+            "round": 0,
             "shapes": {
                 "red": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 },
                 "blue": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 }
@@ -217,15 +221,24 @@ def create_initial_game_state():
                 "blue": False,
             },
             "tiles": [
-                Algebra(), Boron(), Pluto(), Sword()
+                Algebra(), Boron(), Pluto(), Sword(), Prince(), Caves()
             ],
             "whose_turn_is_it": "red",
-            "first_player": None
+            "first_player": None,
+            "round_bonuses": [PointsPerCircle(),PointsPerCircle(),PointsPerCircle(),PointsPerCircle(),PointsPerCircle()],
+            "listeners": {"on_place": {}, "start_of_round": {}, "end_of_round": {}},
         }
 
     return game_state
 
+def setup_tile_listeners(game_state):
+    for tile in game_state["tiles"]:
+        if hasattr(tile, 'setup_listener'):
+            tile.setup_listener(game_state)
+
 def serialize_game_state(game_state):
-    serialized_game_state = game_state.copy()  # Create a copy of the game state
-    serialized_game_state["tiles"] = [tile.serialize() for tile in game_state["tiles"]]  # Serialize each tile
+    serialized_game_state = game_state.copy()
+    del serialized_game_state['listeners'] #server only piece of game_state
+    serialized_game_state["tiles"] = [tile.serialize() for tile in game_state["tiles"]]
+    serialized_game_state["round_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["round_bonuses"]]
     return json.dumps(serialized_game_state)

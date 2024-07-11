@@ -4,6 +4,7 @@ from fast_api_server.tiles.tile import Tile
 from fast_api_server.tiles.algebra import Algebra
 from fast_api_server.tiles.boron import Boron
 from fast_api_server.tiles.pluto import Pluto
+from fast_api_server.tiles.prince import Prince
 from fast_api_server.game_utilities import get_other_player_color, determine_rulers
 
 class GameManager:
@@ -26,6 +27,12 @@ class GameManager:
 
     async def start_round(self, game_state):
         await self.notify_clients_of_new_log_callback("Starting new round")
+
+        round = game_state["round"] 
+        if (round > 0):
+            game_state["round_bonuses"][round-1].cleanup(game_state)
+        game_state["round_bonuses"][round].setup(game_state)
+
         if game_state['first_player']:
             game_state['whose_turn_is_it'] = game_state['first_player']
         else:
@@ -74,6 +81,10 @@ class GameManager:
         game_state["shapes"][player_color][f"number_of_{shape_type}s"] -= 1
 
         await tile.place_shape_at_index(game_state, slot_index, shape_type, player_color, self.notify_clients_of_new_log_callback)
+
+        for listener_name, listener_function in game_state["listeners"]["on_place"].items():
+            await listener_function(game_state, self.notify_clients_of_new_log_callback, placer=player_color, shape=shape_type, index_of_tile_placed_at=tile_index)  
+
         determine_rulers(game_state)
 
         if game_state["player_has_passed"][get_other_player_color(player_color)] == False:

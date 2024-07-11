@@ -20,27 +20,32 @@ const Tile = ({
 }) => {
 
     const isSelectable = (selectors) => {
-        if (whose_turn_is_it !== clients_color) {return false}
-        if (!selectors.includes("tile")) {return false}
-        if (selectors.includes("usable-by-all") && !has_use_action_for_all && !has_use_action_for_ruler) {return false}
-        if (selectors.includes("usable-by-ruler") && (!has_use_action_for_ruler || ruler !== clients_color) && !has_use_action_for_all) {return false}
-        return true
+        if (whose_turn_is_it !== clients_color) { return false; }
+        if (!selectors.includes("tile")) { return false; }
+        if (selectors.includes("usable-by-all") && !has_use_action_for_all && !has_use_action_for_ruler) { return false; }
+        if (selectors.includes("usable-by-ruler") && (!has_use_action_for_ruler || ruler !== clients_color) && !has_use_action_for_all) { return false; }
+        return true;
     };
 
+    const tileClickHandler = isSelectable(selectors) ? onTileClick : undefined;
+
+    // Replace \n with <br> tags and add HTML tags for bold text
+    const formattedDescription = description.replace(/\n/g, '<br><br>').replace(/Ruling Criteria:/g, '<strong>Ruling Criteria:</strong>').replace(/Ruling Benefits:/g, '<strong>Ruling Benefits:</strong>');
+
     return (
-        <div className={isSelectable(selectors) ? 'tile selectable-tile' : 'tile'} onClick={onTileClick}>
+        <div className={`${isSelectable(selectors) ? 'tile selectable-tile' : 'tile'} ${ruler ? `tile-${ruler}` : ''}`} onClick={tileClickHandler}>
             <h3>{name}</h3>
-            <p>{description}</p>
+            <p className="tile-description" dangerouslySetInnerHTML={{ __html: formattedDescription }}></p>
             <ShapesOnTile 
                 slots_for_shapes={slots_for_shapes} 
                 shape_to_place={shape_to_place} 
                 onSlotClick={onSlotClick}
                 selectors={selectors}
                 clients_color={clients_color}
-                tile_index= {tile_index}
-                tile_in_use = {tile_in_use}
+                tile_index={tile_index}
+                tile_in_use={tile_in_use}
                 whose_turn_is_it={whose_turn_is_it}
-                ruler = {ruler}
+                ruler={ruler}
             />
         </div>
     );

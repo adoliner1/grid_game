@@ -31,7 +31,6 @@ p {
     flex-direction: column;
     margin-bottom: 30px;
     margin-right: 20px;
-    max-width: 300px
 }
 
 svg.owner-red {
@@ -93,4 +92,24 @@ svg.selectable {
     max-width: 300px; /* Adjust this value as needed */
     word-wrap: break-word;
     white-space: normal;
+}
+
+.btn-enabled {
+  padding: 10px 20px;
+  margin: 10px 0;
+  border: none;
+  background-color: #007bff;
+  cursor: pointer;
+}
+
+.btn-disabled {
+  padding: 10px 20px;
+  margin: 10px 0;
+  border: none;
+  background-color: #cccccc;
+  color: #666666;
+}
+
+.btn-enabled:hover {
+  background-color: #0056b3;
 }

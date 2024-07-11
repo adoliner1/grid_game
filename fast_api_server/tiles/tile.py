@@ -1,7 +1,7 @@
 from fast_api_server.game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile
 
 class Tile:
-    def __init__(self, name, description, number_of_slots, directions_for_client_to_use=None, has_use_action_for_all=False, has_use_action_for_ruler=False, data_needed_for_use=None):
+    def __init__(self, name, description, number_of_slots, directions_for_client_to_use=None, has_use_action_for_all=False, has_use_action_for_ruler=False, data_needed_for_use_with_selectors=None):
         self.name = name
         self.description = description
         self.number_of_slots = number_of_slots
@@ -10,7 +10,7 @@ class Tile:
         self.has_use_action_for_all = has_use_action_for_all
         self.has_use_action_for_ruler = has_use_action_for_ruler
         self.ruler = None
-        self.data_needed_for_use = data_needed_for_use
+        self.data_needed_for_use_with_selectors = data_needed_for_use_with_selectors
 
     def determine_ruler(self, game_state):
         pass
@@ -48,5 +48,5 @@ class Tile:
             "has_use_action_for_all": self.has_use_action_for_all,
             "has_use_action_for_ruler": self.has_use_action_for_ruler,
             "ruler": self.ruler,
-            "data_needed_for_use": self.data_needed_for_use,
+            "data_needed_for_use_with_selectors": self.data_needed_for_use_with_selectors,
         } 

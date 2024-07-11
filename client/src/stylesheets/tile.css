@@ -11,14 +11,24 @@
 }
 
 .tile h3 {
-    flex: 0 0 auto;
-    display: flex;
     text-align: center;
 }
 
-.tile p {
-    flex: 0 0 auto;
-    display: flex;
+@keyframes flash {
+    0% { border-color: gold; }
+    50% { border-color: black; }
+    100% { border-color: gold; }
+}
+
+/* New styles for ruler colors */
+.tile-red {
+    border: 3px solid;
+    border-color: rgb(255, 41, 41);
+}
+
+.tile-blue {
+    border: 3px solid;
+    border-color: rgb(52, 52, 255);
 }
 
 .selectable-tile {
@@ -33,10 +43,4 @@
 .selectable-tile:active {
     border-color: gold;
     animation: flash 0.2s;
-}
-
-@keyframes flash {
-    0% { border-color: gold; }
-    50% { border-color: black; }
-    100% { border-color: gold; }
 }

@@ -1,9 +1,9 @@
-async def produce_shape_for_player(game_state, player_color, amount, shape_type, calling_tile, callback=None):
+async def produce_shape_for_player(game_state, player_color, amount, shape_type, calling_tile_name, callback=None):
 
     game_state["shapes"][player_color][f"number_of_{shape_type}s"] += amount
 
     if callback:
-        await callback(f" {calling_tile} produced {amount} {shape_type}(s) for {player_color}")
+        await callback(f" {calling_tile_name} produced {amount} {shape_type}(s) for {player_color}")
 
 async def player_receives_a_shape_on_tile(game_state, player_color, tile, shape_type, callback=None):
 

@@ -49,7 +49,7 @@ const ShapesOnTile = ({ slots_for_shapes, shape_to_place, onSlotClick, selectors
         if (whose_turn_is_it !== clients_color) {return false}
         if (!selectors.includes('slot')) {return false}
         if (selectors.includes('non-empty') && !slot) {return false}
-        if (selectors.includes('empty-or-weaker-shape') && slot && shapeHierarchy[shape_to_place] < shapeHierarchy[slot.shape]) { return false }
+        if (selectors.includes('empty-or-weaker-shape') && slot && shapeHierarchy[shape_to_place] <= shapeHierarchy[slot.shape]) { return false }
         if (selectors.includes('user-color') && slot && clients_color !== slot.color) {return false}
         if (selectors.includes('calling-tile') && tile_index !== tile_in_use) {return false}
         if (selectors.includes('adjacent-to_calling-tile') && !determineIfDirectlyAdjacent(tile_index, tile_in_use)) {return false}

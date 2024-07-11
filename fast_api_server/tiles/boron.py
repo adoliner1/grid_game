@@ -4,8 +4,8 @@ from fast_api_server.tiles.tile import Tile
 class Boron(Tile):
     def __init__(self):
         super().__init__(
-            name="boron",
-            description = f"at the end of the round, if you have a square here, receive a circle here\nRuling Criteria: 7 or more circles\nRuling Benefits: at the end of the game: 2vp. At the end of round: produce 1 triangle",
+            name="Boron",
+            description = f"At the end of the round, if you have a square here, receive a circle here\nRuling Criteria: 7 or more circles \nRuling Benefits: At the end of round: produce 1 triangle. At the end of the game: 2vp",
             number_of_slots=11,
         )
 
