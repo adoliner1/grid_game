@@ -1,18 +1,17 @@
 from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List, Dict
-from fast_api_server import models
-from fast_api_server.database import get_db
-from fast_api_server.tiles.tile import Tile
-from fast_api_server.tiles.algebra import Algebra
-from fast_api_server.tiles.boron import Boron
-from fast_api_server.tiles.pluto import Pluto
-from fast_api_server.tiles.sword import Sword
-from fast_api_server.tiles.prince import Prince
-from fast_api_server.tiles.caves import Caves
-from fast_api_server.game_manager import GameManager
-from fast_api_server.round_bonuses import PointsPerCircle
-import random
+import models
+from database import get_db
+from tiles.tile import Tile
+from tiles.algebra import Algebra
+from tiles.boron import Boron
+from tiles.pluto import Pluto
+from tiles.sword import Sword
+from tiles.prince import Prince
+from tiles.caves import Caves
+from game_manager import GameManager
+from round_bonuses import PointsPerCircle
 import json
 
 app = FastAPI()
@@ -238,7 +237,7 @@ def setup_tile_listeners(game_state):
 
 def serialize_game_state(game_state):
     serialized_game_state = game_state.copy()
-    del serialized_game_state['listeners'] #server only piece of game_state
+    del serialized_game_state['listeners'] #delete listeners, it's a server only piece of game_state
     serialized_game_state["tiles"] = [tile.serialize() for tile in game_state["tiles"]]
     serialized_game_state["round_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["round_bonuses"]]
     return json.dumps(serialized_game_state)

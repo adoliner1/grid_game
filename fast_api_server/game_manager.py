@@ -1,11 +1,5 @@
-import random
-from typing import List, Dict, Callable
-from fast_api_server.tiles.tile import Tile
-from fast_api_server.tiles.algebra import Algebra
-from fast_api_server.tiles.boron import Boron
-from fast_api_server.tiles.pluto import Pluto
-from fast_api_server.tiles.prince import Prince
-from fast_api_server.game_utilities import get_other_player_color, determine_rulers
+from typing import Callable
+from game_utilities import get_other_player_color, determine_rulers
 
 class GameManager:
 
@@ -45,14 +39,14 @@ class GameManager:
 
         determine_rulers(game_state)
 
-    async def player_takes_use_tile_action(self, game_state, tile_index, player_color, **kwargs):
+    async def player_takes_use_tile_action(self, game_state, tile_index, player_color, **data):
 
         if game_state["whose_turn_is_it"] != player_color:
             await self.notify_clients_of_new_log_callback("Not your turn")
             return
         
         tile = game_state["tiles"][tile_index]
-        await tile.use_tile(game_state, player_color, self.notify_clients_of_new_log_callback, **kwargs)
+        await tile.use_tile(game_state, player_color, self.notify_clients_of_new_log_callback, **data)
         determine_rulers(game_state)
         if game_state["player_has_passed"][get_other_player_color(player_color)] == False:
             game_state["whose_turn_is_it"] = get_other_player_color(player_color)

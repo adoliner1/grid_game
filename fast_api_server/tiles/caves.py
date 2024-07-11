@@ -1,5 +1,5 @@
-from fast_api_server.game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile, find_index_of_tile_by_name, determine_if_directly_adjacent
-from fast_api_server.tiles.tile import Tile
+from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile, find_index_of_tile_by_name, determine_if_directly_adjacent
+from tiles.tile import Tile
 
 class Caves(Tile):
     def __init__(self):

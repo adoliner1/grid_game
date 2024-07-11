@@ -42,3 +42,10 @@ def determine_if_directly_adjacent(index1, index2):
         return True
 
     return False
+
+def count_number_of_shape_for_player_on_tile(shape, player, tile):
+    count = 0
+    for slot in tile.slots_for_shapes:
+        if slot and slot["shape"] == shape and slot["color"] == player:
+            count += 1
+    return count
