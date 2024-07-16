@@ -1,18 +1,36 @@
 from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List, Dict
+import inspect
 import models
 from database import get_db
 from tiles.tile import Tile
 from tiles.algebra import Algebra
 from tiles.boron import Boron
+from tiles.carbon import Carbon
+from tiles.waterfalls import Waterfalls
+from tiles.queen import Queen
+from tiles.king import King
+from tiles.plains import Plains
+from tiles.jupiter import Jupiter
+from tiles.saturn import Saturn
 from tiles.pluto import Pluto
+from tiles.duke import Duke
+from tiles.nitrogen import Nitrogen
 from tiles.sword import Sword
+from tiles.spear import Spear
+from tiles.jester import Jester
 from tiles.prince import Prince
 from tiles.caves import Caves
+from tiles.combinatorics import Combinatorics
+from tiles.geometry import Geometry
 from game_manager import GameManager
-from round_bonuses import PointsPerCircle
+from round_bonuses import *
 import json
+import random
+import os
+import importlib
+import sys
 
 app = FastAPI()
 connected_clients: List[Dict] = []
@@ -178,6 +196,8 @@ async def websocket_game_endpoint(websocket: WebSocket):
                 await websocket.send_json({"action": "error", "message": "Player not found in game"})
                 continue
 
+            await game_manager.perform_conversions(local_game_state, player_color, data.get("conversions"))
+
             action = data.get("action")
 
             if action == "place_shape_on_slot":
@@ -203,30 +223,59 @@ async def websocket_game_endpoint(websocket: WebSocket):
             local_game_state = None
         print(f"{player_color} player disconnected")
 
+def import_all_tiles_from_folder(folder_name):
+    sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+    tile_classes = []
+    folder_path = os.path.join(os.path.dirname(__file__), folder_name)
+    module_names = [f[:-3] for f in os.listdir(folder_path) if f.endswith('.py') and f != '__init__.py']
+    
+    for module_name in module_names:
+        module = importlib.import_module(f'{folder_name}.{module_name}')
+        for attribute_name in dir(module):
+            attribute = getattr(module, attribute_name)
+            if isinstance(attribute, type) and issubclass(attribute, Tile) and attribute is not Tile:
+                tile_classes.append(attribute)
+    
+    return tile_classes
+
+def get_all_round_bonuses():
+    module_name = 'round_bonuses'
+    module = importlib.import_module(module_name)
+    
+    round_bonus_classes = []
+    
+    for name, obj in inspect.getmembers(module, inspect.isclass):
+        if issubclass(obj, RoundBonus) and obj is not RoundBonus:
+            round_bonus_classes.append(obj)
+    
+    return round_bonus_classes
+
 def create_initial_game_state():
+    all_round_bonuses = get_all_round_bonuses()
+    all_tiles = import_all_tiles_from_folder('tiles')
+    chosen_tiles = random.sample(all_tiles, 9)
+    chosen_round_bonuses = [random.choice(all_round_bonuses)() for _ in range(6)]
 
     game_state = {
-            "round": 0,
-            "shapes": {
-                "red": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 },
-                "blue": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 }
-            },
-            "points": {
-                "red": 0,
-                "blue": 0
-            },
-            "player_has_passed": {
-                "red": False,
-                "blue": False,
-            },
-            "tiles": [
-                Algebra(), Boron(), Pluto(), Sword(), Prince(), Caves()
-            ],
-            "whose_turn_is_it": "red",
-            "first_player": None,
-            "round_bonuses": [PointsPerCircle(),PointsPerCircle(),PointsPerCircle(),PointsPerCircle(),PointsPerCircle()],
-            "listeners": {"on_place": {}, "start_of_round": {}, "end_of_round": {}},
-        }
+        "round": 0,
+        "shapes": {
+            "red": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 },
+            "blue": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 }
+        },
+        "points": {
+            "red": 0,
+            "blue": 0
+        },
+        "player_has_passed": {
+            "red": False,
+            "blue": False,
+        },
+        "tiles": [tile() for tile in chosen_tiles],
+        "whose_turn_is_it": "red",
+        "first_player": "red",
+        "round_bonuses": chosen_round_bonuses,
+        "listeners": {"on_place": {}, "start_of_round": {}, "end_of_round": {}, "on_produce": {}},
+    }
 
     return game_state
 

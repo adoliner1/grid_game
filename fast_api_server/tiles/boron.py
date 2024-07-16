@@ -5,7 +5,7 @@ class Boron(Tile):
     def __init__(self):
         super().__init__(
             name="Boron",
-            description = f"At the end of the round, if you have a square here, receive a circle here\nRuling Criteria: 7 or more circles \nRuling Benefits: At the end of round: produce 1 triangle. At the end of the game: 2vp",
+            description = f"At the end of the round, if you have a square here, receive a circle here\nRuling Criteria: 6 or more circles \nRuling Benefits: At the end of round: produce 1 triangle. At the end of the game +2 points",
             number_of_slots=11,
         )
 

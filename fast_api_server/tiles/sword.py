@@ -5,11 +5,11 @@ class Sword(Tile):
     def __init__(self):
         super().__init__(
             name="Sword",
-            description = f"Ruling Criteria: Most shapes, minimum 3\nRuling Benefits: You may use this tile to burn one of your shapes here and a shape on an adjacent tile",
-            number_of_slots=5,
+            description = f"Ruling Criteria: Most shapes, minimum 4\nRuling Benefits: You may use this tile to burn one of your shapes here and a shape on an adjacent tile",
+            number_of_slots=7,
             has_use_action_for_ruler = True,
             data_needed_for_use_with_selectors={"slot_and_tile_to_burn_shape_from":  ["slot", "user-color", "calling-tile", "non-empty"],
-                                 "slot_and_tile_to_burn_shape_at": ["slot", "adjacent-to_calling-tile", "non-empty"]}
+                                                "slot_and_tile_to_burn_shape_at": ["slot", "adjacent-to_calling-tile", "non-empty"]}
         )
 
     def determine_ruler(self, game_state):
@@ -22,10 +22,10 @@ class Sword(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 3:
+        if red_count >= 4:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 3:
+        elif blue_count >= 4:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -35,11 +35,11 @@ class Sword(Tile):
         self.determine_ruler(game_state)
         if not self.ruler:
             await callback(f"No ruler determined for {self.name} cannot use")
-            return
+            return False
         
         if self.ruler != player_color:
             await callback(f"Non-ruler tried to use {self.name}")
-            return
+            return False
 
         index_of_sword = find_index_of_tile_by_name(game_state, self.name)
         slot_to_burn_shape_from_here = kwargs.get('slot_and_tile_to_burn_shape_from').get('slot')
@@ -48,20 +48,22 @@ class Sword(Tile):
 
         if not determine_if_directly_adjacent(index_of_sword, index_of_tile_to_burn_shape_at):
             await callback(f"Tried to use {self.name} but chose a non-adjacent tile")
-            return
+            return False
         
         if self.slots_for_shapes[slot_to_burn_shape_from_here] == None:
             await callback(f"Tried to use {self.name} but chose a slot with no shape to burn at {self.name}")
-            return
+            return False
         
         if game_state["tiles"][index_of_tile_to_burn_shape_at].slots_for_shapes[slot_to_burn_shape_at] == None:
             await callback(f"Tried to use {self.name} but chose a slot with no shape to burn at {game_state['tiles'][index_of_tile_to_burn_shape_at].name}")
-            return
+            return False
 
         if self.slots_for_shapes[slot_to_burn_shape_from_here]["color"] != self.ruler:
-            await callback(f"Tried to use {self.name} but chose shape that didn't belong to them at {self.name}")
-            return
+            await callback(f"Tried to use {self.name} but chose shape that didn't belong to them")
+            return False
         
         await callback(f"Using {self.name}")
         await self.burn_shape_at_index(game_state, slot_to_burn_shape_from_here, callback)
         await game_state["tiles"][index_of_tile_to_burn_shape_at].burn_shape_at_index(game_state, slot_to_burn_shape_at, callback)
+
+        return True

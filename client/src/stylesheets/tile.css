@@ -32,12 +32,19 @@
 }
 
 .selectable-tile {
-    border: 2px solid gold;
+    border: 3px solid gold;
 }
 
 .selectable-tile:hover {
     border-color: black;
     cursor: pointer;
+    animation: hover-flash 2s infinite; /* Adjusted animation */
+}
+
+@keyframes hover-flash {
+    0% { border-color: gold; }
+    50% { border-color: black; }
+    100% { border-color: gold; }
 }
 
 .selectable-tile:active {

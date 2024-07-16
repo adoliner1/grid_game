@@ -15,9 +15,9 @@ class Prince(Tile):
 
         for slot in self.slots_for_shapes:
             if slot:
-                if slot["color"] == "red" and slot["shape"] == "circle":
+                if slot["color"] == "red":
                     red_count += 1
-                elif slot["color"] == "blue" and slot["shape"] == "circle":
+                elif slot["color"] == "blue":
                     blue_count += 1
         if red_count > blue_count:
             self.ruler = 'red'
@@ -53,10 +53,12 @@ class Prince(Tile):
             pairs = sum(count // 2 for count in shape_count[color].values())
             points_earned = pairs * 2
             game_state["points"][color] += points_earned
-            await callback(f"{color} player earned {points_earned} points from pairs of shapes on {self.name}")
+
+            if points_earned > 0:
+                await callback(f"{color} player earned {points_earned} points from pairs of shapes on {self.name}")
 
     async def end_of_game_effect(self, game_state, callback):
         ruler = self.determine_ruler(game_state)
         if (ruler != None):
-            await callback(f"Prince gives 5 points to {ruler}")
+            await callback(f"{self.name} gives 5 points to {ruler}")
             game_state["points"][ruler] += 5

@@ -19,6 +19,44 @@ class GameManager:
     def set_notify_clients_of_new_game_state_callback(self, callback: Callable[[str], None]):
         self.notify_clients_of_new_game_state_callback = callback
 
+    async def perform_conversions(self, local_game_state, player_color, conversions):
+        if local_game_state["whose_turn_is_it"] != player_color:
+            await self.notify_clients_of_new_log_callback(f"It's not {player_color}'s turn.")
+            return
+
+        for conversion in conversions:
+                match conversion:
+                    case "circle to square":
+                        if local_game_state["shapes"][player_color]["number_of_circles"] >= 3:
+                            local_game_state["shapes"][player_color]["number_of_circles"] -= 3
+                            local_game_state["shapes"][player_color]["number_of_squares"] += 1
+                            await self.notify_clients_of_new_log_callback(f"{player_color} converts 3 circles to a square")
+                        else:
+                            await self.notify_clients_of_new_log_callback(f"{player_color} tries to convert 3 circles to a square but doesn't have enough circles")
+                    case "square to triangle":
+                        if local_game_state["shapes"][player_color]["number_of_squares"] >= 3:
+                            local_game_state["shapes"][player_color]["number_of_squares"] -= 3
+                            local_game_state["shapes"][player_color]["number_of_triangles"] += 1
+                            await self.notify_clients_of_new_log_callback(f"{player_color} converts 3 squares to a triangle")
+                        else:
+                            await self.notify_clients_of_new_log_callback(f"{player_color} tries to convert 3 squares to a triangle but doesn't have enough squares")
+
+                    case "triangle to square":
+                        if local_game_state["shapes"][player_color]["number_of_triangles"] >= 1:
+                            local_game_state["shapes"][player_color]["number_of_triangles"] -= 1
+                            local_game_state["shapes"][player_color]["number_of_squares"] += 1
+                            await self.notify_clients_of_new_log_callback(f"{player_color} converts 1 triangle to a square")
+                        else:
+                            await self.notify_clients_of_new_log_callback(f"{player_color} tries to convert a triangle to a square but doesn't have enough triangles")
+
+                    case "square to circle":
+                        if local_game_state["shapes"][player_color]["number_of_squares"] >= 1:
+                            local_game_state["shapes"][player_color]["number_of_squares"] -= 1
+                            local_game_state["shapes"][player_color]["number_of_circles"] += 1
+                            await self.notify_clients_of_new_log_callback(f"{player_color} converts 1 square to 1 circle")
+                        else:
+                            await self.notify_clients_of_new_log_callback(f"{player_color} tries to convert a square to a circle but doesn't have enough squares")
+
     async def start_round(self, game_state):
         await self.notify_clients_of_new_log_callback("Starting new round")
 
@@ -46,7 +84,9 @@ class GameManager:
             return
         
         tile = game_state["tiles"][tile_index]
-        await tile.use_tile(game_state, player_color, self.notify_clients_of_new_log_callback, **data)
+        # if use tile returns false, the action failed, so don't update the rest of the game state
+        if not await tile.use_tile(game_state, player_color, self.notify_clients_of_new_log_callback, **data):
+            return
         determine_rulers(game_state)
         if game_state["player_has_passed"][get_other_player_color(player_color)] == False:
             game_state["whose_turn_is_it"] = get_other_player_color(player_color)
@@ -115,6 +155,9 @@ class GameManager:
 
         for tile in game_state["tiles"]:
             await tile.end_of_round_effect(game_state, self.notify_clients_of_new_log_callback)
+
+        for listener_name, listener_function in game_state["listeners"]["end_of_round"].items():
+            await listener_function(game_state, self.notify_clients_of_new_log_callback)  
 
         determine_rulers(game_state)
 

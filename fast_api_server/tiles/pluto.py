@@ -5,7 +5,7 @@ class Pluto(Tile):
     def __init__(self):
         super().__init__(
             name="Pluto",
-            description = f"Ruling Criteria: 3 or more circles\nRuling Benefits: You may use this tile to burn one of your circles here and produce a square in storage. At the end of the game: 2vp.",
+            description = f"Ruling Criteria: 3 or more circles\nRuling Benefits: You may use this tile to burn one of your circles here to produce a square. At the end of the game +2 points",
             number_of_slots=5,
             has_use_action_for_ruler = True
         )
@@ -33,11 +33,11 @@ class Pluto(Tile):
         ruler = self.determine_ruler(game_state)
         if not ruler:
             await callback(f"No ruler determined for {self.name} cannot use")
-            return
+            return False
         
         if ruler != player_color:
             await callback(f"Non-ruler tried to use {self.name}")
-            return
+            return False
         
         circle_found = False
         for i, slot in enumerate(self.slots_for_shapes):
@@ -49,12 +49,14 @@ class Pluto(Tile):
         
         if not circle_found:
             await callback(f"No circle to burn on {self.name}")
-            return
+            return False
         
         if (ruler == 'red'):
             await produce_shape_for_player(game_state, 'red', 1, 'square', self.name, callback)
         elif (ruler == 'blue'):
             await produce_shape_for_player(game_state, 'blue', 1, 'square', self.name, callback)
+
+        return True
 
     async def end_of_game_effect(self, game_state, callback):
         ruler = self.determine_ruler(game_state)

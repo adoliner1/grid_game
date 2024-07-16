@@ -71,10 +71,10 @@ svg.selectable {
     border: 1px solid #ddd;
     background-color: #f9f9f9;
     border-radius: 5px;
-    height: 300px;
     overflow-y: scroll;
     font-size: 0.9em;
-    max-width: 300px;
+    max-height: 150px;
+    min-height: 150px;
 }
 
 .game-log p {
@@ -112,4 +112,17 @@ svg.selectable {
 
 .btn-enabled:hover {
   background-color: #0056b3;
+}
+
+.current-round {
+  outline: 2px solid rgb(0, 0, 0);
+  padding: 5px;
+}
+
+.red-text {
+  color: red;
+}
+
+.blue-text {
+  color: blue;
 }

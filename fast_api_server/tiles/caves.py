@@ -5,7 +5,7 @@ class Caves(Tile):
     def __init__(self):
         super().__init__(
             name="Caves",
-            description = f"Ruling Criteria: most shapes, minimum 3\nRuling Benefits: When you place a shape on an adjacent tile, produce a circle. At the end of the game, +2 points",
+            description = f"Ruling Criteria: Most shapes, minimum 3\nRuling Benefits: When you place a shape on an adjacent tile, produce a circle. At the end of the game, +2 points",
             number_of_slots=5,
         )
 

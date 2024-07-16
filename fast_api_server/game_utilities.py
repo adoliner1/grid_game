@@ -2,6 +2,9 @@ async def produce_shape_for_player(game_state, player_color, amount, shape_type,
 
     game_state["shapes"][player_color][f"number_of_{shape_type}s"] += amount
 
+    for listener_name, listener_function in game_state["listeners"]["on_produce"].items():
+        await listener_function(game_state, callback, amount_produced=amount, producer=player_color, shape=shape_type, producing_tile_name=calling_tile_name)
+
     if callback:
         await callback(f" {calling_tile_name} produced {amount} {shape_type}(s) for {player_color}")
 
@@ -49,3 +52,34 @@ def count_number_of_shape_for_player_on_tile(shape, player, tile):
         if slot and slot["shape"] == shape and slot["color"] == player:
             count += 1
     return count
+
+def determine_how_many_full_rows_player_rules(game_state, player):
+    full_rows = 0
+    for row in range(3):
+        player_rules_row = True
+        for col in range(3):
+            tile_index = row * 3 + col
+            tile = game_state["tiles"][tile_index]
+            if tile.ruler != player:
+                player_rules_row = False
+                break
+        if player_rules_row:
+            full_rows += 1
+
+    return full_rows
+
+def determine_how_many_full_columns_player_rules(game_state, player):
+    full_columns = 0
+
+    for col in range(3):
+        player_rules_column = True
+        for row in range(3):
+            tile_index = row * 3 + col
+            tile = game_state["tiles"][tile_index]
+            if tile["ruler"] != player:
+                player_rules_column = False
+                break  # Exit the inner loop and move to the next column
+        if player_rules_column:
+            full_columns += 1
+
+    return full_columns
