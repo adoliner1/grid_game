@@ -82,7 +82,7 @@ class PointsPerRow(RoundBonus):
 
         if blue_complete_rows > 0:
             points_to_gain = 10*blue_complete_rows
-            game_state["points"]["red"] += points_to_gain
+            game_state["points"]["blue"] += points_to_gain
             await callback(f"blue gets {points_to_gain} points for round bonus") 
 
 class PointsPerColumn(RoundBonus):

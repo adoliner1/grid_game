@@ -1,14 +1,21 @@
 /* shapes_in_storage.css */
-.player-shapes {
+.player-shapes-and-info {
     border: 1px solid black;
-    padding: 10px;
-    margin-bottom: 20px;
-}
-
-.shapes-with-arrows {
+    padding: 2px;
+    margin-bottom: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.passed-row {
+    display: flex;
+    justify-content: center;
+}
+
+.points-row {
+    display: flex;
+    justify-content: center;
 }
 
 .arrows-row {

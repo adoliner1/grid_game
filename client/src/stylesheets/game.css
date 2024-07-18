@@ -1,18 +1,28 @@
 
 .game-container {
-    display: flex;
-    align-items: flex-start;
-    margin: 20px;
-    flex-direction: row;
+  display: flex;
+  align-items: flex-start;
+  margin: 20px;
+  flex-direction: row;
 }
 
 .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 10px;
-    flex: 1 1 auto;
-    justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 10px;
+  flex: 3 1 auto;
+  justify-content: center;
+}
+
+.players-shapes-directive-and-log-container {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+  margin-right: 20px;
+  max-width: 25%;
+  min-width: 25%;
 }
 
 div {
@@ -23,14 +33,6 @@ p {
     white-space: normal;
     word-wrap: break-word; /* For older browsers */
     word-break: break-word; /* For newer browsers */
-}
-
-.players-shapes-directive-and-log-container {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 30px;
-    margin-right: 20px;
 }
 
 svg.owner-red {

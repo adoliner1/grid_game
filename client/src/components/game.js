@@ -254,7 +254,8 @@ const Game = () => {
     }
     
     useEffect(() => {
-        socket.current = new WebSocket(`ws://localhost:8000/ws/game/`)
+        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
+        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         socket.current.onopen = () => {
             console.log("WebSocket connection established")
         }
@@ -314,7 +315,7 @@ const Game = () => {
             <div className="players-shapes-directive-and-log-container">
                 <div className={clientColor.current === 'red' ? 'red-text' : 'blue-text'}> You are {clientColor.current} </div>
                 <div>
-                    {gameState.round_bonuses.map((bonus, index) => (<p key={index} className={index === gameState.round ? 'current-round' : ''}>Round {index}: {bonus}</p>))}
+                    {gameState.round_bonuses.map((bonus, index) => (<p key={index} className={index === gameState.round ? 'current-round' : ''}> <b>Round {index}: </b> {bonus}</p>))}
                 </div>
                 <ShapesInStorage   
                     player_color="red"
@@ -325,6 +326,8 @@ const Game = () => {
                     selectors = {selectors}
                     tile_in_use = {request.current.tile_index_to_use}
                     onConversionArrowClick={handleConversionArrowClick}
+                    hasPassed={gameState.player_has_passed.red.toString()}
+                    points={gameState.points.red}
                 />
                 <ShapesInStorage 
                     player_color="blue" 
@@ -335,19 +338,15 @@ const Game = () => {
                     selectors = {selectors}
                     tile_in_use = {request.current.tile_index_to_use}
                     onConversionArrowClick={handleConversionArrowClick}
+                    hasPassed={gameState.player_has_passed.blue.toString()}
+                    points={gameState.points.blue}
                 />
-
                 <button 
                     onClick={playerPasses} 
                     disabled={gameState.whose_turn_is_it !== clientColor.current}
                     className={gameState.whose_turn_is_it === clientColor.current ? 'btn-enabled' : 'btn-disabled'} >
                     Pass
                 </button>
-                <p> First Player: {gameState.first_player} </p>
-                <p> Red Has Passed: {gameState.player_has_passed.red.toString()}</p>
-                <p> Blue Has Passed: {gameState.player_has_passed.blue.toString()}</p>
-                <p> Red Points: {gameState.points.red}</p>
-                <p> Blue Points: {gameState.points.blue}</p>
                 <GameLog logs={logs} />
             </div>
             <div className="grid">

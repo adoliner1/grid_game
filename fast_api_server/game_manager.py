@@ -1,5 +1,5 @@
 from typing import Callable
-from game_utilities import get_other_player_color, determine_rulers
+from game_utilities import *
 
 class GameManager:
 
@@ -75,7 +75,23 @@ class GameManager:
         for tile in game_state["tiles"]:
             await tile.start_of_round_effect(game_state, self.notify_clients_of_new_log_callback)
 
+        #give base income
+        await self.give_base_income_to_players(game_state)
         determine_rulers(game_state)
+
+    async def give_base_income_to_players(self, game_state):
+        shapes_to_give = [
+            ('circle', 2),
+            ('square', 1),
+            ('triangle', 1)
+        ]
+
+        player_colors = ["red", "blue"]
+
+        await self.notify_clients_of_new_log_callback("Giving base income")
+        for player_color in player_colors:
+            for shape, amount in shapes_to_give:
+                await produce_shape_for_player(game_state, player_color, amount, shape, None)
 
     async def player_takes_use_tile_action(self, game_state, tile_index, player_color, **data):
 
@@ -170,15 +186,25 @@ class GameManager:
         tiles_with_a_ruler = [tile for tile in game_state["tiles"] if tile.determine_ruler(game_state) is not None]
         if len(tiles_with_a_ruler) >= 7:
            await self.notify_clients_of_new_log_callback(f"7 or more tiles have a ruler, ending game")
-           self.end_game(game_state)
+           await self.end_game(game_state)
            return True
         if (game_state["round"] == 5):
             await self.notify_clients_of_new_log_callback(f"Round 5, ending game")
+            await self.end_game(game_state)
             return True
         
         return False
 
     async def end_game(self, game_state):
-        await self.notify_clients_of_new_log_callback("Game over. Doing end game scoring")
         for tile in game_state["tiles"]:
             await tile.end_of_game_effect(game_state, self.notify_clients_of_new_log_callback)
+
+        await self.notify_clients_of_new_game_state_callback()
+        await self.notify_clients_of_new_log_callback(f"Final Score: Red: {game_state['points']['red']} Blue: {game_state['points']['blue']}")
+
+        if game_state["points"]["red"] > game_state["points"]["blue"]:
+            await self.notify_clients_of_new_log_callback("Red wins!")
+        elif game_state["points"]["blue"] > game_state["points"]["red"]:
+            await self.notify_clients_of_new_log_callback("Blue wins!")
+        else:
+            await self.notify_clients_of_new_log_callback("It's a tie!")

@@ -5,7 +5,7 @@ class Caves(Tile):
     def __init__(self):
         super().__init__(
             name="Caves",
-            description = f"Ruling Criteria: Most shapes, minimum 3\nRuling Benefits: When you place a shape on an adjacent tile, produce a circle. At the end of the game, +2 points",
+            description = f"Ruling Criteria: Most shapes, minimum 3\nRuling Benefits: When you place a square on a triangle on an adjacent tile, produce a circle.",
             number_of_slots=5,
         )
 
@@ -33,6 +33,11 @@ class Caves(Tile):
 
     async def on_place_effect(self, game_state, callback, **data):
             placer = data.get('placer')
+            shape = data.get('shape')
+
+            if shape == "circle":
+                return
+            
             index_of_tile_placed_at = data.get('index_of_tile_placed_at')
             index_of_caves = find_index_of_tile_by_name(game_state, self.name)
 

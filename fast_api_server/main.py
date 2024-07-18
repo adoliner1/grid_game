@@ -36,6 +36,7 @@ app = FastAPI()
 connected_clients: List[Dict] = []
 local_game_state = None
 currentPlayers = []
+currentUseTileRequest = {}
 game_manager = GameManager()
 
 @app.websocket("/ws/lobby/")
@@ -146,10 +147,11 @@ async def websocket_game_endpoint(websocket: WebSocket):
 
     global local_game_state
     global currentPlayers
+    global currentUseTileRequest
     game_manager.set_notify_clients_of_new_log_callback(notify_clients_of_new_log)
     game_manager.set_notify_clients_of_new_game_state_callback(notify_clients_of_new_game_state)
 
-    #this will all be lobby code
+    #this will all be done in lobby
     await websocket.accept()
     if not local_game_state:
         local_game_state = create_initial_game_state()
@@ -178,7 +180,7 @@ async def websocket_game_endpoint(websocket: WebSocket):
     if len(currentPlayers) == 2:
         await game_manager.start_round(local_game_state)
         await notify_clients_of_new_game_state()
-    # ^^^ this will all be lobby code ^^^
+    # ^^^ this will all be done in lobby ^^^
 
     try:
         while True:
@@ -215,6 +217,9 @@ async def websocket_game_endpoint(websocket: WebSocket):
 
             elif action == "pass":
                 await game_manager.player_passes(local_game_state, player_color)
+
+            elif action == 'update_use_tile_data':
+                pass
             else:
                 await websocket.send_json({"action": "error", "message": "Unknown action"})
     except WebSocketDisconnect:
@@ -259,8 +264,8 @@ def create_initial_game_state():
     game_state = {
         "round": 0,
         "shapes": {
-            "red": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 },
-            "blue": { "number_of_circles": 10, "number_of_squares": 10, "number_of_triangles": 10 }
+            "red": { "number_of_circles": 0, "number_of_squares": 0, "number_of_triangles": 0 },
+            "blue": { "number_of_circles": 1, "number_of_squares": 0, "number_of_triangles": 0 }
         },
         "points": {
             "red": 0,

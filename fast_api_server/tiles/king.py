@@ -5,7 +5,7 @@ class King(Tile):
     def __init__(self):
         super().__init__(
             name="King",
-            description = f"Ruling Criteria: Most shapes, minimum 6\nRuling Benefits: At the end of the game, the ruler gets +20 points",
+            description = f"Ruling Criteria: Most shapes, minimum 6\nRuling Benefits: At the end of the game +20 points",
             number_of_slots=11,
         )
 

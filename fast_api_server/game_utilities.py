@@ -6,7 +6,10 @@ async def produce_shape_for_player(game_state, player_color, amount, shape_type,
         await listener_function(game_state, callback, amount_produced=amount, producer=player_color, shape=shape_type, producing_tile_name=calling_tile_name)
 
     if callback:
-        await callback(f" {calling_tile_name} produced {amount} {shape_type}(s) for {player_color}")
+        if calling_tile_name:
+            await callback(f" {calling_tile_name} produced {amount} {shape_type}(s) for {player_color}")
+        else:
+            await callback(f" {player_color} produced {amount} {shape_type}(s)")            
 
 async def player_receives_a_shape_on_tile(game_state, player_color, tile, shape_type, callback=None):
 
@@ -76,7 +79,7 @@ def determine_how_many_full_columns_player_rules(game_state, player):
         for row in range(3):
             tile_index = row * 3 + col
             tile = game_state["tiles"][tile_index]
-            if tile["ruler"] != player:
+            if tile.ruler != player:
                 player_rules_column = False
                 break  # Exit the inner loop and move to the next column
         if player_rules_column:

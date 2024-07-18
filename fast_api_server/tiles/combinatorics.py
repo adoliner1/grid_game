@@ -5,7 +5,7 @@ class Combinatorics(Tile):
     def __init__(self):
         super().__init__(
             name="Combinatorics",
-            description = f"Ruling Criteria: Most pairs\nRuling Benefits: At the end of the round, per pair, produce 1 shape of that type",
+            description = f"Ruling Criteria: Most pairs\nRuling Benefits: At the end of the round, per pair here, produce 1 shape of that type",
             number_of_slots=8,
         )
 
