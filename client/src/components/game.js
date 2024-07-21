@@ -51,6 +51,7 @@ const Game = () => {
                 default:
                     break
             }
+            request.current.conversions = []
         })
     }, [setGameState]);
 
@@ -166,6 +167,7 @@ const Game = () => {
 
     const sendRequest = () => {
         socket.current.send(JSON.stringify(request.current))
+        request.current = {'conversions': []}
     }
     
     useEffect(() => {
@@ -216,7 +218,6 @@ const Game = () => {
                 resetConversions()
                 request.current.action = "reset_current_action"
                 sendRequest()
-                request.current = {'conversions': []}
             }
         }
     
