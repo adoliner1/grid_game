@@ -7,8 +7,20 @@ class Pluto(Tile):
             name="Pluto",
             description = f"Ruling Criteria: 3 or more circles\nRuling Benefits: You may use this tile to burn one of your circles here to produce a square. At the end of the game +2 points",
             number_of_slots=5,
-            has_use_action_for_ruler = True
         )
+
+    def is_useable(self, game_state):
+        whose_turn_is_it = game_state["whose_turn_is_it"]
+        ruler = self.determine_ruler(game_state)
+
+        if whose_turn_is_it != ruler:
+            return False
+        
+        for slot in self.slots_for_shapes:
+            if slot["shape"] == "circle" and slot["color"] == ruler:
+                return True
+        
+        return False
 
     def determine_ruler(self, game_state):
         red_count = 0

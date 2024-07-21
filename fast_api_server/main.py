@@ -35,8 +35,9 @@ import sys
 app = FastAPI()
 connected_clients: List[Dict] = []
 local_game_state = None
-currentPlayers = []
-currentUseTileRequest = {}
+current_players = []
+current_action = {}
+current_piece_of_data_to_fill_in_current_action = ""
 game_manager = GameManager()
 
 @app.websocket("/ws/lobby/")
@@ -132,22 +133,23 @@ async def disconnect_handler(connection: Dict):
 async def websocket_game_endpoint(websocket: WebSocket):
     
     async def notify_clients_of_new_log(message):
-        for player in currentPlayers:
+        for player in current_players:
             await player["websocket"].send_json({
                 "action": "message", 
                 "message": message
             })
 
     async def notify_clients_of_new_game_state():
-        for player in currentPlayers:
+        for player in current_players:
             await player["websocket"].send_json({
                 "action": "update_game_state",
                 "game_state": json.loads(serialize_game_state(local_game_state))
             })
 
     global local_game_state
-    global currentPlayers
-    global currentUseTileRequest
+    global current_players
+    global current_action
+    global current_piece_of_data_to_fill_in_current_action
     game_manager.set_notify_clients_of_new_log_callback(notify_clients_of_new_log)
     game_manager.set_notify_clients_of_new_game_state_callback(notify_clients_of_new_game_state)
 
@@ -156,7 +158,7 @@ async def websocket_game_endpoint(websocket: WebSocket):
     if not local_game_state:
         local_game_state = create_initial_game_state()
         setup_tile_listeners(local_game_state)
-    if len(currentPlayers) >= 2:
+    if len(current_players) >= 2:
         await websocket.send_json({
             "action": "error",
             "message": "Game is full"
@@ -164,22 +166,26 @@ async def websocket_game_endpoint(websocket: WebSocket):
         await websocket.close()
         return
     
-    if len(currentPlayers) == 1:
-        existing_player_color = currentPlayers[0]["color"]
+    if len(current_players) == 1:
+        existing_player_color = current_players[0]["color"]
         player_color = "blue" if existing_player_color == "red" else "red"
     else:
         player_color = "red"
     
-    currentPlayers.append({"websocket": websocket, "color": player_color})
+    current_players.append({"websocket": websocket, "color": player_color})
     await websocket.send_json({
         "action": "initialize",
         "game_state": json.loads(serialize_game_state(local_game_state)),
         "player_color": player_color
     })
 
-    if len(currentPlayers) == 2:
+    if len(current_players) == 2:
         await game_manager.start_round(local_game_state)
         await notify_clients_of_new_game_state()
+
+        available_actions = game_manager.get_available_actions(local_game_state, current_action, current_piece_of_data_to_fill_in_current_action)
+        await send_available_actions_to_players(available_actions)
+
     # ^^^ this will all be done in lobby ^^^
 
     try:
@@ -189,7 +195,7 @@ async def websocket_game_endpoint(websocket: WebSocket):
             
             #determine player color
             player_color = None
-            for player in currentPlayers:
+            for player in current_players:
                 if player["websocket"] == websocket:
                     player_color = player["color"]
                     break
@@ -198,35 +204,110 @@ async def websocket_game_endpoint(websocket: WebSocket):
                 await websocket.send_json({"action": "error", "message": "Player not found in game"})
                 continue
 
+            if player_color != local_game_state["whose_turn_is_it"]:
+                await websocket.send_json({"action": "error", "message": "Not your turn"})
+                continue
+
             await game_manager.perform_conversions(local_game_state, player_color, data.get("conversions"))
 
             action = data.get("action")
+            if action == 'select_a_shape_in_storage':
+                shape_type_to_place = data.get('selected_shape_type_in_storage')
+                #this selected shape in storage is part of some ongoing request
+                if current_action:
+                    current_action[current_piece_of_data_to_fill_in_current_action] = shape_type_to_place
+                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
 
-            if action == "place_shape_on_slot":
+                    if not current_piece_of_data_to_fill_in_current_action:
+                        await game_manager.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
 
-                tile_index = data.get("tile_and_slot_to_place_on").get("tile")
-                slot_index = data.get("tile_and_slot_to_place_on").get("slot")
-                shape_type = data.get("shape_type")
+                #this selected shape in storage is initiating a "place shape on slot request" 
+                else:
+                    current_action["action"] = 'place_shape_on_slot'
+                    current_action["shape_type_to_place"] = shape_type_to_place
+               
+            elif action == 'select_a_tile':
+                selected_tile_index = data.get("tile_index")
+                if current_action:
+                    current_action[current_piece_of_data_to_fill_in_current_action] = selected_tile_index
+                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
 
-                await game_manager.player_takes_place_on_slot_on_tile_action(local_game_state, player_color, slot_index, tile_index, shape_type)
+                    if not current_piece_of_data_to_fill_in_current_action:
+                        await game_manager.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
 
-            elif action == 'use_tile':
+                #this selected tile is initiating a use tile request 
+                else:
+                    current_action["action"] = 'use_tile'
+                    current_action["index_of_tile_in_use"] = selected_tile_index
+                    tile_in_use = local_game_state["tiles"][selected_tile_index]
 
-                tile_index_to_use = data.get("tile_index_to_use")
-                await game_manager.player_takes_use_tile_action(local_game_state, tile_index_to_use, player_color, **data)               
+                    for piece_of_data_needed_for_tile_use in tile_in_use.data_needed_for_use:
+                        if 'slot' in piece_of_data_needed_for_tile_use:
+                            current_action[piece_of_data_needed_for_tile_use] = {}
+                        else:
+                            current_action[piece_of_data_needed_for_tile_use] = None
+
+                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
+
+                    if not current_piece_of_data_to_fill_in_current_action:
+                        await game_manager.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
+                        current_action = {}
+                        current_piece_of_data_to_fill_in_current_action = ""
+
+            elif action == 'select_a_slot':
+                tile_index = data.get("tile_index_of_selected_slot")
+                slot_index = data.get("index_of_selected_slot")
+                if current_action["action"] == 'place_shape_on_slot':
+                    shape_type = current_action["shape_type_to_place"]
+                    await game_manager.player_takes_place_on_slot_on_tile_action(local_game_state, player_color, slot_index, tile_index, shape_type)
+                    current_action = {}
+                    current_piece_of_data_to_fill_in_current_action = ""
+                elif current_action["action"] == "use_tile":
+                    
+                    current_action[current_piece_of_data_to_fill_in_current_action]["slot_index"] = slot_index
+                    current_action[current_piece_of_data_to_fill_in_current_action]["tile_index"] = tile_index
+
+                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
+
+                    if not current_piece_of_data_to_fill_in_current_action:
+                        await game_manager.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
 
             elif action == "pass":
                 await game_manager.player_passes(local_game_state, player_color)
-
-            elif action == 'update_use_tile_data':
-                pass
+            elif action == "reset_current_action":
+                current_action = {}
+                current_piece_of_data_to_fill_in_current_action = ""
             else:
-                await websocket.send_json({"action": "error", "message": "Unknown action"})
+                await websocket.send_json({"action": "error", "message": "Unknown action"})   
+
+            available_actions = game_manager.get_available_actions(local_game_state, current_action, current_piece_of_data_to_fill_in_current_action)
+            await send_available_actions_to_players(available_actions)      
+
     except WebSocketDisconnect:
-        currentPlayers = [p for p in currentPlayers if p["websocket"] != websocket]
-        if len(currentPlayers) == 0:
+        current_players = [p for p in current_players if p["websocket"] != websocket]
+        if len(current_players) == 0:
             local_game_state = None
         print(f"{player_color} player disconnected")
+
+async def send_available_actions_to_players(available_actions):
+    whose_turn_is_it = local_game_state["whose_turn_is_it"]
+    for player in current_players:
+        if player["color"] == whose_turn_is_it:
+            await player["websocket"].send_json({
+                "action": "current_available_actions",
+                "available_actions": available_actions
+            })
+        else:
+            await player["websocket"].send_json({
+                "action": "current_available_actions",
+                "available_actions": {}
+            })
+
+def get_next_piece_of_data_to_fill():
+    for piece_of_data_to_fill, value in current_action.items():
+        if value is None or value == {}:
+            return piece_of_data_to_fill
+    return None
 
 def import_all_tiles_from_folder(folder_name):
     sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -263,9 +344,9 @@ def create_initial_game_state():
 
     game_state = {
         "round": 0,
-        "shapes": {
-            "red": { "number_of_circles": 0, "number_of_squares": 0, "number_of_triangles": 0 },
-            "blue": { "number_of_circles": 1, "number_of_squares": 0, "number_of_triangles": 0 }
+        "shapes_in_storage": {
+            "red": { "circle": 0, "square": 0, "triangle": 0 },
+            "blue": { "circle": 1, "square": 0, "triangle": 0 }
         },
         "points": {
             "red": 0,

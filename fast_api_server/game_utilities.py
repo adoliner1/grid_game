@@ -1,6 +1,6 @@
 async def produce_shape_for_player(game_state, player_color, amount, shape_type, calling_tile_name, callback=None):
 
-    game_state["shapes"][player_color][f"number_of_{shape_type}s"] += amount
+    game_state["shapes_in_storage"][player_color][shape_type] += amount
 
     for listener_name, listener_function in game_state["listeners"]["on_produce"].items():
         await listener_function(game_state, callback, amount_produced=amount, producer=player_color, shape=shape_type, producing_tile_name=calling_tile_name)
@@ -86,3 +86,51 @@ def determine_how_many_full_columns_player_rules(game_state, player):
             full_columns += 1
 
     return full_columns
+
+#returns a dict where the keys are tile indices and the associated list are the indices of the slots on that tile that can be placed on
+def get_slots_that_can_be_placed_on(game_state, shape_type):
+    shape_hierarchy = {
+        "circle": 1,
+        "square": 2,
+        "triangle": 3
+    }
+    
+    shape_strength = shape_hierarchy.get(shape_type)
+    slots_that_can_be_placed_on = {}
+
+    for tile_index, tile in enumerate(game_state["tiles"]):
+        slots_for_tile = []
+        for slot_index, slot in enumerate(tile.slots_for_shapes):
+            if slot is None or shape_hierarchy.get(slot["shape"]) < shape_strength:
+                slots_for_tile.append(slot_index)
+        if slots_for_tile:
+            slots_that_can_be_placed_on[tile_index] = slots_for_tile
+    
+    return slots_that_can_be_placed_on
+
+def get_slots_with_a_shape_of_player_color_at_tile_index(game_state, player_color, tile_index):
+    slots_with_shape = []
+    tile = game_state["tiles"][tile_index]
+    
+    for slot_index, slot in enumerate(tile.slots_for_shapes):
+        if slot and slot["color"] == player_color:
+            slots_with_shape.append(slot_index)
+    
+    return slots_with_shape
+
+def get_adjacent_tile_indices(tile_index):
+    adjacent_indices = []
+    # Determine row and column of the current tile
+    row, col = divmod(tile_index, 3)
+    
+    # Check for adjacent tiles
+    if row > 0:  # Not in the first row, can have a tile above
+        adjacent_indices.append(tile_index - 3)
+    if row < 2:  # Not in the last row, can have a tile below
+        adjacent_indices.append(tile_index + 3)
+    if col > 0:  # Not in the first column, can have a tile to the left
+        adjacent_indices.append(tile_index - 1)
+    if col < 2:  # Not in the last column, can have a tile to the right
+        adjacent_indices.append(tile_index + 1)
+    
+    return adjacent_indices

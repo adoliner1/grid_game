@@ -20,7 +20,6 @@
     100% { border-color: gold; }
 }
 
-/* New styles for ruler colors */
 .tile-red {
     border: 3px solid;
     border-color: rgb(255, 41, 41);
@@ -29,6 +28,14 @@
 .tile-blue {
     border: 3px solid;
     border-color: rgb(52, 52, 255);
+}
+
+.tile-name-red {
+    color: rgb(255, 41, 41);
+}
+
+.tile-name-blue {
+    color: rgb(52, 52, 255);
 }
 
 .selectable-tile {

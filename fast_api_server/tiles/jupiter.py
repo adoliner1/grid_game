@@ -7,8 +7,20 @@ class Jupiter(Tile):
             name="Jupiter",
             description = f"Ruling Criteria: Most shapes, minimum 3\nRuling Benefits: You may use this tile to burn one of your squares here to produce a triangle. At the end of the game +2 points",
             number_of_slots=5,
-            has_use_action_for_ruler = True
         )
+
+    def is_useable(self, game_state):
+        whose_turn_is_it = game_state["whose_turn_is_it"]
+        ruler = self.determine_ruler(game_state)
+
+        if whose_turn_is_it != ruler:
+            return False
+        
+        for slot in self.slots_for_shapes:
+            if slot["shape"] == "square" and slot["color"] == ruler:
+                return True
+        
+        return False
 
     def determine_ruler(self, game_state):
         red_count = 0

@@ -6,7 +6,7 @@
   flex-direction: row;
 }
 
-.grid {
+.tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -15,7 +15,7 @@
   justify-content: center;
 }
 
-.players-shapes-directive-and-log-container {
+.info_section {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;

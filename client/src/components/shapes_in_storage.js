@@ -1,63 +1,23 @@
-import React from 'react';
-import '../stylesheets/shapes_in_storage.css';
-import Circle from './shapes/circle';
-import Square from './shapes/square';
-import Triangle from './shapes/triangle';
+import React from 'react'
+import '../stylesheets/shapes_in_storage.css'
+import Circle from './shapes/circle'
+import Square from './shapes/square'
+import Triangle from './shapes/triangle'
+import ConversionArrow from './conversion_arrow'
 
-const ConversionArrow = ({ player_color, clients_color, whose_turn_is_it, direction, conversion, onConversionArrowClick, numberOfShapeToConvertFrom}) => {
-    const isSelectable = (conversion, numberOfShapeToConvertFrom) => {
-        if (player_color !== clients_color || whose_turn_is_it !== clients_color) {
-            return false;
-        }
-        
-        switch (conversion) {
-            case "circle to square":
-                return numberOfShapeToConvertFrom >= 3;
-            case "square to triangle":
-                return numberOfShapeToConvertFrom >= 3;
-            case "square to circle":
-                return numberOfShapeToConvertFrom >= 1;
-            case "triangle to square":
-                return numberOfShapeToConvertFrom >= 1;
-            default:
-                return false;
-        }
-    };
+const ShapesInStorage = ({player_color, whose_turn_is_it, has_passed, clients_color, shapes, points, available_actions, onShapeClick, onConversionArrowClick}) => {
+    const isSelectable = (shape_type, available_actions) => {
+        return (
+            available_actions.hasOwnProperty('select_a_shape_in_storage') &&
+            available_actions['select_a_shape_in_storage'].includes(shape_type) &&
+            clients_color === player_color &&
+            shapes[shape_type] > 0
+        )
+    }
 
-    const selectable = isSelectable(conversion, numberOfShapeToConvertFrom);
-    const clickHandler = selectable ? () => onConversionArrowClick(conversion, player_color) : undefined;
-
-    return (
-        <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            className={selectable ? 'arrow-selectable' : ''}
-            onClick={clickHandler}
-        >
-            <path
-                d={direction === 'right'
-                    ? "M0,10 L15,10 M10,5 L15,10 L10,15"
-                    : "M20,10 L5,10 M10,5 L5,10 L10,15"}
-                strokeWidth="2"
-                fill="none"
-            />
-        </svg>
-    );
-};
- 
-const ShapesInStorage = ({ player_color, clients_color, shapes, whose_turn_is_it, onShapeClick, selectors, tile_in_use, onConversionArrowClick, hasPassed, points}) => {
-    const isSelectable = (shapeType, selectors, number_of_shape) => {
-        if (whose_turn_is_it !== clients_color) return false;
-        if (!selectors.includes("shape-from-storage")) return false;
-        if (selectors.includes("shape-owned-by-client-color") && clients_color !== player_color) return false;
-        if (number_of_shape <= 0) return false;
-        return true;
-    };
-
-    const renderShapeContainer = (ShapeComponent, shapeType, number) => {
-        const selectable = isSelectable(shapeType, selectors, number);
-        const clickHandler = selectable ? () => onShapeClick(shapeType, player_color) : undefined;
+    const renderShapeContainer = (ShapeComponent, shape_type, amount_of_shape, available_actions) => {
+        const selectable = isSelectable(shape_type, available_actions)
+        const clickHandler = selectable ? () => onShapeClick(shape_type, player_color) : undefined
         return (
             <div className="shape-and-amount-container">
                 <ShapeComponent
@@ -65,15 +25,15 @@ const ShapesInStorage = ({ player_color, clients_color, shapes, whose_turn_is_it
                     selectable={selectable}
                     onClick={clickHandler}
                 />
-                <p>{number}</p>
+                <p>{amount_of_shape}</p>
             </div>
-        );
-    };
+        )
+    }
 
     return (
         <div className="player-shapes-and-info" >
                 <div className="passed-row">
-                    <div> <b>Passed:</b> {hasPassed}</div>
+                    <div> <b>Passed:</b> {has_passed.toString()}</div>
                 </div>
                 <div className="points-row">
                     <div> <b>Points:</b> {points}</div>
@@ -86,7 +46,7 @@ const ShapesInStorage = ({ player_color, clients_color, shapes, whose_turn_is_it
                                          direction="right"
                                          conversion="circle to square"
                                          onConversionArrowClick={onConversionArrowClick}
-                                         numberOfShapeToConvertFrom={shapes.number_of_circles}/>
+                                         numberOfShapeToConvertFrom={shapes.circle}/>
 
                         <ConversionArrow whose_turn_is_it={whose_turn_is_it}
                                          player_color={player_color}
@@ -94,7 +54,7 @@ const ShapesInStorage = ({ player_color, clients_color, shapes, whose_turn_is_it
                                          direction="left"
                                          conversion="square to circle"
                                          onConversionArrowClick={onConversionArrowClick}
-                                         numberOfShapeToConvertFrom={shapes.number_of_squares}/>
+                                         numberOfShapeToConvertFrom={shapes.square}/>
                     </div>
                     <div className="arrow-container">
                         <ConversionArrow whose_turn_is_it={whose_turn_is_it}
@@ -103,7 +63,7 @@ const ShapesInStorage = ({ player_color, clients_color, shapes, whose_turn_is_it
                                          direction="right"
                                          conversion="square to triangle" 
                                          onConversionArrowClick={onConversionArrowClick} 
-                                         numberOfShapeToConvertFrom={shapes.number_of_squares}/>
+                                         numberOfShapeToConvertFrom={shapes.square}/>
 
                         <ConversionArrow whose_turn_is_it = {whose_turn_is_it} 
                                          player_color={player_color} 
@@ -111,16 +71,16 @@ const ShapesInStorage = ({ player_color, clients_color, shapes, whose_turn_is_it
                                          direction="left" 
                                          conversion="triangle to square" 
                                          onConversionArrowClick={onConversionArrowClick} 
-                                         numberOfShapeToConvertFrom={shapes.number_of_triangles}/>
+                                         numberOfShapeToConvertFrom={shapes.triangle}/>
                     </div>
                 </div>
                 <div className="shapes-row">
-                    {renderShapeContainer(Circle, 'circle', shapes.number_of_circles)}
-                    {renderShapeContainer(Square, 'square', shapes.number_of_squares)}
-                    {renderShapeContainer(Triangle, 'triangle', shapes.number_of_triangles)}
+                    {renderShapeContainer(Circle, 'circle', shapes.circle, available_actions)}
+                    {renderShapeContainer(Square, 'square', shapes.square, available_actions)}
+                    {renderShapeContainer(Triangle, 'triangle', shapes.triangle, available_actions)}
                 </div>
         </div>
-    );
-};
+    )
+}
 
-export default ShapesInStorage;
+export default ShapesInStorage

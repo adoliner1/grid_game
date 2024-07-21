@@ -1,19 +1,19 @@
 from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile
 
 class Tile:
-    def __init__(self, name, description, number_of_slots, directions_for_client_to_use=None, has_use_action_for_all=False, has_use_action_for_ruler=False, data_needed_for_use_with_selectors=None):
+    def __init__(self, name, description, number_of_slots, data_needed_for_use=[]):
         self.name = name
         self.description = description
         self.number_of_slots = number_of_slots
         self.slots_for_shapes = [None] * number_of_slots
-        self.directions_for_client_to_use = directions_for_client_to_use
-        self.has_use_action_for_all = has_use_action_for_all
-        self.has_use_action_for_ruler = has_use_action_for_ruler
         self.ruler = None
-        self.data_needed_for_use_with_selectors = data_needed_for_use_with_selectors
+        self.data_needed_for_use = data_needed_for_use
 
     def determine_ruler(self, game_state):
         pass
+
+    def is_useable(self, game_state):
+        return False
 
     async def start_of_round_effect(self, game_state, callback):
         pass
@@ -44,9 +44,8 @@ class Tile:
             "name": self.name,
             "description": self.description,
             "slots_for_shapes": self.slots_for_shapes,
-            "directions_for_client_to_use" : self.directions_for_client_to_use,
-            "has_use_action_for_all": self.has_use_action_for_all,
-            "has_use_action_for_ruler": self.has_use_action_for_ruler,
             "ruler": self.ruler,
-            "data_needed_for_use_with_selectors": self.data_needed_for_use_with_selectors,
         } 
+    
+    def set_available_actions(game_state, current_action, current_piece_of_data_to_fill_in_current_action, available_actions_with_details):
+        return available_actions_with_details

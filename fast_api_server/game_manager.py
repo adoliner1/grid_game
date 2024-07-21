@@ -19,6 +19,36 @@ class GameManager:
     def set_notify_clients_of_new_game_state_callback(self, callback: Callable[[str], None]):
         self.notify_clients_of_new_game_state_callback = callback
 
+    def get_available_actions(self, game_state, current_action, current_piece_of_data_to_fill_in_current_action):
+        available_actions_with_details = {"pass": []}
+
+        if current_action:
+            if current_action["action"] == 'place_shape_on_slot':
+                shape_type_to_place = current_action["shape_type_to_place"]
+                slots_that_can_be_placed_on = get_slots_that_can_be_placed_on(game_state, shape_type_to_place)
+                available_actions_with_details["select_a_slot"] = slots_that_can_be_placed_on
+
+            elif current_action["action"] == 'use_tile':
+                index_of_tile_in_use = current_action["index_of_tile_in_use"]
+                tile_in_use = game_state["tiles"][index_of_tile_in_use]
+                tile_in_use.set_available_actions(game_state, current_action, current_piece_of_data_to_fill_in_current_action, available_actions_with_details)
+
+        #indicates we're in the initial state. Both selecting a shape from storage or a useable tile are options
+        else:
+            whose_turn_is_it = game_state['whose_turn_is_it']
+            available_actions_with_details['select_a_shape_in_storage'] = []
+            available_actions_with_details['select_a_tile'] = []
+
+            for shape, amount in game_state["shapes_in_storage"][whose_turn_is_it].items():
+                if amount > 0:
+                    available_actions_with_details["select_a_shape_in_storage"].append(shape)
+
+            for tile_index, tile in enumerate(game_state["tiles"]):
+                if tile.is_useable(game_state):
+                    available_actions_with_details['select_a_tile'].append(tile_index)
+                
+        return available_actions_with_details
+
     async def perform_conversions(self, local_game_state, player_color, conversions):
         if local_game_state["whose_turn_is_it"] != player_color:
             await self.notify_clients_of_new_log_callback(f"It's not {player_color}'s turn.")
@@ -27,32 +57,32 @@ class GameManager:
         for conversion in conversions:
                 match conversion:
                     case "circle to square":
-                        if local_game_state["shapes"][player_color]["number_of_circles"] >= 3:
-                            local_game_state["shapes"][player_color]["number_of_circles"] -= 3
-                            local_game_state["shapes"][player_color]["number_of_squares"] += 1
+                        if local_game_state["shapes_in_storage"][player_color]["circle"] >= 3:
+                            local_game_state["shapes_in_storage"][player_color]["circle"] -= 3
+                            local_game_state["shapes_in_storage"][player_color]["square"] += 1
                             await self.notify_clients_of_new_log_callback(f"{player_color} converts 3 circles to a square")
                         else:
                             await self.notify_clients_of_new_log_callback(f"{player_color} tries to convert 3 circles to a square but doesn't have enough circles")
                     case "square to triangle":
-                        if local_game_state["shapes"][player_color]["number_of_squares"] >= 3:
-                            local_game_state["shapes"][player_color]["number_of_squares"] -= 3
-                            local_game_state["shapes"][player_color]["number_of_triangles"] += 1
+                        if local_game_state["shapes_in_storage"][player_color]["square"] >= 3:
+                            local_game_state["shapes_in_storage"][player_color]["square"] -= 3
+                            local_game_state["shapes_in_storage"][player_color]["triangle"] += 1
                             await self.notify_clients_of_new_log_callback(f"{player_color} converts 3 squares to a triangle")
                         else:
                             await self.notify_clients_of_new_log_callback(f"{player_color} tries to convert 3 squares to a triangle but doesn't have enough squares")
 
                     case "triangle to square":
-                        if local_game_state["shapes"][player_color]["number_of_triangles"] >= 1:
-                            local_game_state["shapes"][player_color]["number_of_triangles"] -= 1
-                            local_game_state["shapes"][player_color]["number_of_squares"] += 1
+                        if local_game_state["shapes_in_storage"][player_color]["triangle"] >= 1:
+                            local_game_state["shapes_in_storage"][player_color]["triangle"] -= 1
+                            local_game_state["shapes_in_storage"][player_color]["square"] += 1
                             await self.notify_clients_of_new_log_callback(f"{player_color} converts 1 triangle to a square")
                         else:
                             await self.notify_clients_of_new_log_callback(f"{player_color} tries to convert a triangle to a square but doesn't have enough triangles")
 
                     case "square to circle":
-                        if local_game_state["shapes"][player_color]["number_of_squares"] >= 1:
-                            local_game_state["shapes"][player_color]["number_of_squares"] -= 1
-                            local_game_state["shapes"][player_color]["number_of_circles"] += 1
+                        if local_game_state["shapes_in_storage"][player_color]["square"] >= 1:
+                            local_game_state["shapes_in_storage"][player_color]["square"] -= 1
+                            local_game_state["shapes_in_storage"][player_color]["circle"] += 1
                             await self.notify_clients_of_new_log_callback(f"{player_color} converts 1 square to 1 circle")
                         else:
                             await self.notify_clients_of_new_log_callback(f"{player_color} tries to convert a square to a circle but doesn't have enough squares")
@@ -124,11 +154,11 @@ class GameManager:
             await self.notify_clients_of_new_log_callback("Cannot place on this slot")
             return
 
-        if game_state["shapes"][player_color][f"number_of_{shape_type}s"] <= 0:
+        if game_state["shapes_in_storage"][player_color][shape_type] <= 0:
             await self.notify_clients_of_new_log_callback(f"No {shape_type}s in storage")
             return
 
-        game_state["shapes"][player_color][f"number_of_{shape_type}s"] -= 1
+        game_state["shapes_in_storage"][player_color][shape_type] -= 1
 
         await tile.place_shape_at_index(game_state, slot_index, shape_type, player_color, self.notify_clients_of_new_log_callback)
 

@@ -7,8 +7,17 @@ class Carbon(Tile):
             name="Carbon",
             description=f"At the end of the round, per 2 circles you have here, receive a circle here. Anyone can use this tile to burn 3 of their circles here to produce a triangle\nRuling Criteria: most squares, minimum 3\nRuling Benefits: At the end of the game +10 points",
             number_of_slots=9,
-            has_use_action_for_all=True,
         )
+
+    def is_useable(self, game_state):
+        whose_turn_is_it = game_state["whose_turn_is_it"]
+        number_of_circles_current_player_has_here = 0
+        for slot in self.slots_for_shapes:
+            if slot and slot["shape"] == "circle" and slot["color"] == whose_turn_is_it:
+                number_of_circles_current_player_has_here += 1
+
+        return number_of_circles_current_player_has_here >= 3 
+
 
     def determine_ruler(self, game_state):
         red_count = 0

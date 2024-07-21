@@ -7,8 +7,17 @@ class Nitrogen(Tile):
             name="Nitrogen",
             description=f"At the end of the round, for each triangle you have here, gain a square and a circle here. Anyone can use this tile to burn a set here (1 circle, 1 square, 1 triangle) for 5 points\nRuling Criteria: most shapes\nRuling Benefits: At the end of the game +7 points",
             number_of_slots=11,
-            has_use_action_for_all=True,
         )
+
+    def is_useable(self, game_state):
+        whose_turn_is_it = game_state["whose_turn_is_it"]
+        
+        circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "circle" and slot["color"] == whose_turn_is_it)
+        square_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "square" and slot["color"] == whose_turn_is_it)
+        triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "triangle" and slot["color"] == whose_turn_is_it)
+        
+        return circle_count >= 1 and square_count >= 1 and triangle_count >= 1
+
 
     def determine_ruler(self, game_state):
         red_count = 0

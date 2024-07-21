@@ -5,7 +5,7 @@ class Plains(Tile):
     def __init__(self):
         super().__init__(
             name="Plains",
-            description=f"Ruling Criteria: most shapes, minimum 4\nRuling Benefits: When an adjacent tile produces shapes, Plains produces one more of the same type",
+            description=f"Ruling Criteria: most shapes, minimum 3\nRuling Benefits: When an adjacent tile produces shapes, Plains produces one more of the same type",
             number_of_slots=7,
         )
 
@@ -19,10 +19,10 @@ class Plains(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 4 and red_count > blue_count:
+        if red_count >= 3 and red_count > blue_count:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 4 and blue_count > red_count:
+        elif blue_count >= 3 and blue_count > red_count:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
