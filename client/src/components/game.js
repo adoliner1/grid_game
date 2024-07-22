@@ -7,11 +7,14 @@ import GameLog from './game_log'
 const Game = () => {
     const [gameState, setGameState] = useState(null)
     const [availableActions, setAvailableActions] = useState({}) 
+    const [currentPieceOfDataToFill, setcurrentPieceOfDataToFill] = useState("") 
     const [logs, setLogs] = useState([])
     
     const socket = useRef(null)
     const clientColor = useRef(null)
     const request = useRef({'conversions': []})
+    const clickSound = useRef(new Audio('/sounds/click.wav'));
+    //const yourTurnSound = useRef(new Audio('/sounds/your_turn.wav'));
 
     const resetConversions = useCallback(() => {
         request.current.conversions.forEach((conversion) => {
@@ -60,8 +63,9 @@ const Game = () => {
     }
 
     const handleShapeInStorageClick = (shape_type) => {
-        
+        clickSound.current.play();
         if (availableActions.hasOwnProperty('select_a_shape_in_storage') && availableActions['select_a_shape_in_storage'].includes(shape_type)) {
+            clickSound.current.play();
             request.current.action = 'select_a_shape_in_storage'
             request.current.selected_shape_type_in_storage = shape_type
             sendRequest()
@@ -69,7 +73,7 @@ const Game = () => {
     }
 
     const handleConversionArrowClick = (conversion, player_color) => {
-        
+        clickSound.current.play();
         switch (conversion) {
             case "circle to square":
                 if (gameState.shapes_in_storage[player_color].circle >= 3) {
@@ -145,10 +149,12 @@ const Game = () => {
     }
 
     const handlePassButtonClick = () => {
+        clickSound.current.play();
         request.current.action = "pass"
         sendRequest()
     }
     const handleTileClick = (tile_index) => {
+        clickSound.current.play();
         if (availableActions.hasOwnProperty('select_a_tile')) {
             request.current.action = "select_a_tile"
             request.current.tile_index = tile_index
@@ -157,6 +163,7 @@ const Game = () => {
     }
 
     const handleSlotClick = (tile_index, slot_index) => {
+        clickSound.current.play();
         if (availableActions.hasOwnProperty('select_a_slot')) {
             request.current.action = "select_a_slot"
             request.current.tile_index_of_selected_slot = tile_index
@@ -171,8 +178,8 @@ const Game = () => {
     }
     
     useEffect(() => {
-        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
-        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
+        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         socket.current.onopen = () => {
             console.log("WebSocket connection established")
         }
@@ -194,6 +201,7 @@ const Game = () => {
                     break
                 case "current_available_actions":
                     setAvailableActions(data.available_actions)
+                    setcurrentPieceOfDataToFill(data.current_piece_of_data_to_fill_in_current_action)
                     break
                 default:
                     addLog("Unknown action received")
@@ -227,6 +235,15 @@ const Game = () => {
         }
     }, [resetConversions]);
 
+    /*
+    useEffect(() => {
+        if (oldAvailableActions.current !== availableActions && gameState && gameState.whose_turn_is_it === clientColor.current) {
+            yourTurnSound.current.play();
+        }
+    }, [availableActions]);
+
+    */ 
+
     if (!gameState) {
         return <div>Loading...</div>
     }
@@ -237,6 +254,9 @@ const Game = () => {
                 <div className={clientColor.current === 'red' ? 'red-text' : 'blue-text'}> You are {clientColor.current} </div>
                 <div>
                     {gameState.round_bonuses.map((bonus, index) => (<p key={index} className={index === gameState.round ? 'current-round' : ''}> <b>Round {index}: </b> {bonus}</p>))}
+                </div>
+                <div>
+                    {currentPieceOfDataToFill}
                 </div>
                 <ShapesInStorage   
                     player_color="red"
@@ -275,6 +295,7 @@ const Game = () => {
                             key={tile_index}
                             name={tile.name}
                             description={tile.description}
+                            is_on_cooldown={tile.is_on_cooldown}
                             slots_for_shapes={tile.slots_for_shapes}
                             tile_index = {tile_index}
                             ruler = {gameState.tiles[tile_index].ruler}

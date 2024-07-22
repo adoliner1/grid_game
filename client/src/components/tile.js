@@ -5,6 +5,7 @@ import ShapesOnTile from './shapes_on_tile'
 const Tile = ({
     name,
     description,
+    is_on_cooldown,
     slots_for_shapes,
     tile_index,
     ruler,
@@ -14,7 +15,7 @@ const Tile = ({
 }) => {
 
     const isSelectable = () => {
-            return available_actions.hasOwnProperty('select_a_tile') && available_actions['select_a_tile'].includes(tile_index)
+            return available_actions.hasOwnProperty('select_a_tile') && available_actions['select_a_tile'].includes(tile_index) && !is_on_cooldown
     }
 
     const tileClickHandler = isSelectable() ? onTileClick : undefined
@@ -23,7 +24,7 @@ const Tile = ({
     const formattedDescription = description.replace(/\n/g, '<br><br>').replace(/Ruling Criteria:/g, '<strong>Ruling Criteria:</strong>').replace(/Ruling Benefits:/g, '<strong>Ruling Benefits:</strong>')
 
     return (
-        <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'} ${ruler ? `tile-${ruler}` : ''}`} onClick={tileClickHandler}>
+        <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'} ${ruler ? `tile-${ruler}` : ''} ${is_on_cooldown ? 'tile-on-cooldown' : ''}`} onClick={tileClickHandler}>
             <h3 className={ruler ? `tile-name-${ruler}` : ''}>{name}</h3>
             <p className="tile-description" dangerouslySetInnerHTML={{ __html: formattedDescription }}></p>
             <ShapesOnTile 

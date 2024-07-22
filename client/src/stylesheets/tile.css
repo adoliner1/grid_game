@@ -58,3 +58,7 @@
     border-color: gold;
     animation: flash 0.2s;
 }
+
+.tile-on-cooldown {
+    background-color: #d3d3d3; /* greyish background */
+}
