@@ -5,7 +5,7 @@ class Algebra(Tile):
     def __init__(self):
         super().__init__(
             name="Algebra",
-            description = f"Ruling Criteria: Most shapes, minimum 2\nRuling Benefits: At the start of the round, produce 1 circle. At the end of the game +2 points",
+            description = f"Ruling Criteria: 2 or more shapes\nRuling Benefits: At the start of the round, produce 1 circle. At the end of the game +2 points",
             number_of_slots=5,
         )
 

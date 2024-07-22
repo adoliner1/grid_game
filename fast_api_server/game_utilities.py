@@ -134,3 +134,18 @@ def get_adjacent_tile_indices(tile_index):
         adjacent_indices.append(tile_index + 1)
     
     return adjacent_indices
+
+
+def move_shape(game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
+    shape_to_move = game_state["tiles"][from_tile_index].slots_for_shapes[from_slot_index]
+    
+    if shape_to_move is None:
+        return False
+
+    if game_state["tiles"][to_tile_index].slots_for_shapes[to_slot_index] is not None:
+        return False
+
+    game_state["tiles"][from_tile_index].slots_for_shapes[from_slot_index] = None
+    game_state["tiles"][to_tile_index].slots_for_shapes[to_slot_index] = shape_to_move
+
+    return True

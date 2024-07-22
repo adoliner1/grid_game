@@ -1,13 +1,14 @@
 from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile
 
 class Tile:
-    def __init__(self, name, description, number_of_slots, data_needed_for_use=[]):
+    def __init__(self, name, description, number_of_slots, data_needed_for_use=[], is_on_cooldown=False):
         self.name = name
         self.description = description
         self.number_of_slots = number_of_slots
         self.slots_for_shapes = [None] * number_of_slots
         self.ruler = None
         self.data_needed_for_use = data_needed_for_use
+        self.is_on_cooldown=is_on_cooldown
 
     def determine_ruler(self, game_state):
         pass
@@ -45,6 +46,7 @@ class Tile:
             "description": self.description,
             "slots_for_shapes": self.slots_for_shapes,
             "ruler": self.ruler,
+            "is_on_cooldown": self.is_on_cooldown
         } 
     
     def set_available_actions(game_state, current_action, current_piece_of_data_to_fill_in_current_action, available_actions_with_details):

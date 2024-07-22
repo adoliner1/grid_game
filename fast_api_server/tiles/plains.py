@@ -5,7 +5,7 @@ class Plains(Tile):
     def __init__(self):
         super().__init__(
             name="Plains",
-            description=f"Ruling Criteria: most shapes, minimum 3\nRuling Benefits: When an adjacent tile produces shapes, Plains produces one more of the same type",
+            description=f"Ruling Criteria: 4 or more shapes\nRuling Benefits: When an adjacent tile produces shapes, Plains produces one more of the same type",
             number_of_slots=7,
         )
 

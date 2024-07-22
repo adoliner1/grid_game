@@ -104,6 +104,7 @@ class GameManager:
         game_state['player_has_passed']['blue'] = False
         for tile in game_state["tiles"]:
             await tile.start_of_round_effect(game_state, self.notify_clients_of_new_log_callback)
+            tile.is_on_cooldown = False
 
         #give base income
         await self.give_base_income_to_players(game_state)

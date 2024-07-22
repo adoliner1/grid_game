@@ -5,7 +5,7 @@ class Jester(Tile):
     def __init__(self):
         super().__init__(
             name="Jester",
-            description = f"At the end of the round, per triple you have here (one circle, square, and triangle) gain 7 points\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, the ruler loses 10 points",
+            description = f"At the end of the round, per set you have here (one circle, square, and triangle) gain 7 points\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, the ruler loses 10 points",
             number_of_slots=9,
         )
 

@@ -5,8 +5,8 @@ class Carbon(Tile):
     def __init__(self):
         super().__init__(
             name="Carbon",
-            description=f"At the end of the round, per 2 circles you have here, receive a circle here. Anyone can use this tile to burn 3 of their circles here to produce a triangle\nRuling Criteria: most squares, minimum 3\nRuling Benefits: At the end of the game +10 points",
-            number_of_slots=9,
+            description=f"At the end of the round, per pair of circles you have here, receive a circle here. Anyone can use this tile to burn 3 of their circles here to produce a triangle\nRuling Criteria: most squares\nRuling Benefits: At the end of the game +5 points",
+            number_of_slots=12,
         )
 
     def is_useable(self, game_state):
@@ -18,7 +18,6 @@ class Carbon(Tile):
 
         return number_of_circles_current_player_has_here >= 3 
 
-
     def determine_ruler(self, game_state):
         red_count = 0
         blue_count = 0
@@ -29,10 +28,10 @@ class Carbon(Tile):
                     red_count += 1
                 elif slot["color"] == "blue" and slot["shape"] == "square":
                     blue_count += 1
-        if red_count > blue_count and red_count >= 3:
+        if red_count > blue_count:
             self.ruler = 'red'
             return 'red'
-        elif blue_count > red_count and blue_count >= 3:
+        elif blue_count > red_count:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -71,18 +70,18 @@ class Carbon(Tile):
                 circles_burned += 1
                 if circles_burned == 3:
                     break
+
+        if circles_burned < 3:
+            await callback(f"Not enough circles to burn on {self.name}")
+            return False
         
         await callback(f"{self.name} is used")
         
-        if (player_color == 'red'):
-            await produce_shape_for_player(game_state, 'red', 1, 'triangle', self.name, callback)
-        elif (player_color == 'blue'):
-            await produce_shape_for_player(game_state, 'blue', 1, 'triangle', self.name, callback)
-
+        await produce_shape_for_player(game_state, player_color, 1, 'triangle', self.name, callback)
         return True
 
     async def end_of_game_effect(self, game_state, callback):
         ruler = self.determine_ruler(game_state)
-        if (ruler != None):
+        if ruler:
             await callback(f"{self.name} gives 5 points to {ruler}")
             game_state["points"][ruler] += 5

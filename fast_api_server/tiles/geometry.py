@@ -5,7 +5,7 @@ class Geometry(Tile):
     def __init__(self):
         super().__init__(
             name="Geometry",
-            description = f"Ruling Criteria: Most shapes, minimum 4\nRuling Benefits: At the start of the round, produce 1 triangle. At the end of the game +2 points",
+            description = f"Ruling Criteria: 4 or more shapes\nRuling Benefits: At the start of the round, produce 1 triangle. At the end of the game +2 points",
             number_of_slots=7,
         )
 
@@ -19,14 +19,14 @@ class Geometry(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count > blue_count and red_count >= 4:
+        if red_count >= 4:
             self.ruler = 'red'
-            return 'red'
-        elif blue_count < red_count and blue_count >= 4:
+        elif blue_count >= 4:
             self.ruler = 'blue'
-            return 'blue'
-        self.ruler = None
-        return None
+        else:
+            self.ruler = None
+        
+        return self.ruler
 
     async def start_of_round_effect(self, game_state, callback):
         ruler = self.determine_ruler(game_state)

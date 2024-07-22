@@ -5,7 +5,7 @@ class Jupiter(Tile):
     def __init__(self):
         super().__init__(
             name="Jupiter",
-            description = f"Ruling Criteria: Most shapes, minimum 3\nRuling Benefits: You may use this tile to burn one of your squares here to produce a triangle. At the end of the game +2 points",
+            description = f"Ruling Criteria: 3 or more shapes\nRuling Benefits: You may use this tile to burn one of your squares here to produce a triangle. At the end of the game +2 points",
             number_of_slots=5,
         )
 
@@ -17,7 +17,7 @@ class Jupiter(Tile):
             return False
         
         for slot in self.slots_for_shapes:
-            if slot["shape"] == "square" and slot["color"] == ruler:
+            if slot and slot["shape"] == "square" and slot["color"] == ruler:
                 return True
         
         return False

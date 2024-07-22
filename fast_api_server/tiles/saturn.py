@@ -5,7 +5,7 @@ class Saturn(Tile):
     def __init__(self):
         super().__init__(
             name="Saturn",
-            description = f"Ruling Criteria: Most shapes, minimum 3\nRuling Benefits: You may use this tile to burn one of your triangles here to produce 3 squares. At the end of the game +2 points",
+            description = f"Ruling Criteria: 3 or more shapes\nRuling Benefits: You may use this tile to burn one of your triangles here to produce 3 squares",
             number_of_slots=5,
         )
 
@@ -17,7 +17,7 @@ class Saturn(Tile):
             return False
         
         for slot in self.slots_for_shapes:
-            if slot["shape"] == "triangle" and slot["color"] == ruler:
+            if slot and slot["shape"] == "triangle" and slot["color"] == ruler:
                 return True
         
         return False
@@ -69,9 +69,3 @@ class Saturn(Tile):
             await produce_shape_for_player(game_state, 'blue', 3, 'square', self.name, callback)
 
         return True
-
-    async def end_of_game_effect(self, game_state, callback):
-        ruler = self.determine_ruler(game_state)
-        if (ruler != None):
-            await callback(f"{self.name} gives 2 points to {ruler}")
-            game_state["points"][ruler] += 2

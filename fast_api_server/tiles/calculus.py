@@ -5,7 +5,7 @@ class Calculus(Tile):
     def __init__(self):
         super().__init__(
             name="Calculus",
-            description = f"Ruling Criteria: Most shapes, minimum 3\nRuling Benefits: At the start of the round, produce 1 square. At the end of the game +2 points",
+            description = f"Ruling Criteria: 3 or more shapes\nRuling Benefits: At the start of the round, produce 1 square. At the end of the game +2 points",
             number_of_slots=5,
         )
 

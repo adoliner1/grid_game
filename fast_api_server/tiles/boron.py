@@ -5,7 +5,7 @@ class Boron(Tile):
     def __init__(self):
         super().__init__(
             name="Boron",
-            description = f"At the end of the round, if you have a square here, receive a circle here\nRuling Criteria: 6 or more circles \nRuling Benefits: At the end of round: produce 1 triangle. At the end of the game +2 points",
+            description = "At the end of the round, if you have a square here, receive a circle here. The player with more circles here produces 1 circle.\nRuling Criteria: most shapes \nRuling Benefits: At the end of the game, +5 points",
             number_of_slots=11,
         )
 
@@ -15,26 +15,18 @@ class Boron(Tile):
 
         for slot in self.slots_for_shapes:
             if slot:
-                if slot["color"] == "red" and slot["shape"] == "circle":
+                if slot["color"] == "red":
                     red_count += 1
-                elif slot["color"] == "blue" and slot["shape"] == "circle":
+                elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 7:
+        if red_count > blue_count:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 7:
+        elif blue_count > red_count:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
         return None
-
-    async def start_of_round_effect(self, game_state, callback):
-        ruler = self.determine_ruler(game_state)
-
-        if (ruler == 'red'):
-            await produce_shape_for_player(game_state, 'red', 1, 'triangle', callback)
-        elif (ruler == 'blue'):
-            await produce_shape_for_player(game_state, 'blue', 1, 'triangle', callback)
 
     async def end_of_round_effect(self, game_state, callback):
 
@@ -42,29 +34,32 @@ class Boron(Tile):
         blue_has_square = False
         
         for slot in self.slots_for_shapes:
-                
             if slot:
                 if slot["color"] == "red" and slot["shape"] == "square":
                     red_has_square = True
                 elif slot["color"] == "blue" and slot["shape"] == "square":
                     blue_has_square = True
 
-        if red_has_square and blue_has_square:
-            await callback(f"both players have a square on {self.name}")
-            first_player = game_state["first_player"]
-            second_player = 'red' if first_player == 'blue' else 'blue'
-            await player_receives_a_shape_on_tile(game_state, first_player, self, 'circle', callback)
-            await player_receives_a_shape_on_tile(game_state, second_player, self, 'circle', callback)
-        
-        elif red_has_square:
+        if red_has_square:
             await player_receives_a_shape_on_tile(game_state, 'red', self, 'circle', callback)
             await callback(f"red has a square on {self.name}")
-        elif blue_has_square:
-            await callback(f"blue has a square on {self.name}")
+        
+        if blue_has_square:
             await player_receives_a_shape_on_tile(game_state, 'blue', self, 'circle', callback)
+            await callback(f"blue has a square on {self.name}")
+
+        red_circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red" and slot["shape"] == "circle")
+        blue_circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue" and slot["shape"] == "circle")
+
+        if red_circle_count > blue_circle_count:
+            await produce_shape_for_player(game_state, 'red', 1, 'circle', self.name, callback)
+            await callback(f"red produces 1 circle for having more circles on {self.name}")
+        elif blue_circle_count > red_circle_count:
+            await produce_shape_for_player(game_state, 'blue', 1, 'circle', self.name, callback)
+            await callback(f"blue produces 1 circle for having more circles on {self.name}")
 
     async def end_of_game_effect(self, game_state, callback):
         ruler = self.determine_ruler(game_state)
         if (ruler != None):
-            await callback(f"Boron gives 2 points to {ruler}")
-            game_state["points"][ruler] += 2
+            await callback(f"{self.name} gives 5 points to {ruler}")
+            game_state["points"][ruler] += 5

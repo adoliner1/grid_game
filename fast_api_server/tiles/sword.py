@@ -5,7 +5,7 @@ class Sword(Tile):
     def __init__(self):
         super().__init__(
             name="Sword",
-            description = f"Ruling Criteria: Most shapes, minimum 4\nRuling Benefits: You may use this tile to burn one of your shapes here and a shape on an adjacent tile",
+            description = f"Ruling Criteria: 4 or more shapes\nRuling Benefits: You may use this tile to burn one of your shapes here and a shape on an adjacent tile",
             number_of_slots=7,
             data_needed_for_use=["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_burn_shape_at"]
         )

@@ -220,6 +220,8 @@ async def websocket_game_endpoint(websocket: WebSocket):
 
                     if not current_piece_of_data_to_fill_in_current_action:
                         await game_manager.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
+                        current_action = {}
+                        current_piece_of_data_to_fill_in_current_action = ""
 
                 #this selected shape in storage is initiating a "place shape on slot request" 
                 else:
@@ -234,6 +236,8 @@ async def websocket_game_endpoint(websocket: WebSocket):
 
                     if not current_piece_of_data_to_fill_in_current_action:
                         await game_manager.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
+                        current_action = {}
+                        current_piece_of_data_to_fill_in_current_action = ""
 
                 #this selected tile is initiating a use tile request 
                 else:
@@ -271,6 +275,8 @@ async def websocket_game_endpoint(websocket: WebSocket):
 
                     if not current_piece_of_data_to_fill_in_current_action:
                         await game_manager.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
+                        current_action = {}
+                        current_piece_of_data_to_fill_in_current_action = ""
 
             elif action == "pass":
                 await game_manager.player_passes(local_game_state, player_color)
@@ -295,12 +301,14 @@ async def send_available_actions_to_players(available_actions):
         if player["color"] == whose_turn_is_it:
             await player["websocket"].send_json({
                 "action": "current_available_actions",
-                "available_actions": available_actions
+                "available_actions": available_actions,
+                "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
             })
         else:
             await player["websocket"].send_json({
                 "action": "current_available_actions",
-                "available_actions": {}
+                "available_actions": {},
+                "current_piece_of_data_to_fill_in_current_action": ""
             })
 
 def get_next_piece_of_data_to_fill():
@@ -346,7 +354,7 @@ def create_initial_game_state():
         "round": 0,
         "shapes_in_storage": {
             "red": { "circle": 0, "square": 0, "triangle": 0 },
-            "blue": { "circle": 1, "square": 0, "triangle": 0 }
+            "blue": { "circle": 0, "square": 0, "triangle": 0 }
         },
         "points": {
             "red": 0,
