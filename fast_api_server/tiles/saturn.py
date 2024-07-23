@@ -5,7 +5,7 @@ class Saturn(Tile):
     def __init__(self):
         super().__init__(
             name="Saturn",
-            description = f"Ruling Criteria: 3 or more shapes\nRuling Benefits: You may use this tile to burn one of your triangles here to produce 3 squares",
+            description = f"Ruling Criteria: 3 or more shapes\nRuling Benefits: You may use this tile to burn one of your triangles here to produce 2 squares",
             number_of_slots=5,
         )
 
@@ -63,9 +63,6 @@ class Saturn(Tile):
             await callback(f"No triangle to burn on {self.name}")
             return False
         
-        if (ruler == 'red'):
-            await produce_shape_for_player(game_state, 'red', 3, 'square', self.name, callback)
-        elif (ruler == 'blue'):
-            await produce_shape_for_player(game_state, 'blue', 3, 'square', self.name, callback)
+        await produce_shape_for_player(game_state, ruler, 2, 'square', self.name, callback)
 
         return True
