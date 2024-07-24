@@ -1,18 +1,33 @@
-async def produce_shape_for_player(game_state, player_color, amount, shape_type, calling_tile_name, callback=None):
+import asyncio
+
+async def produce_shape_for_player(game_state, player_color, amount, shape_type, calling_entity_name, callback=None):
 
     game_state["shapes_in_storage"][player_color][shape_type] += amount
 
     for listener_name, listener_function in game_state["listeners"]["on_produce"].items():
-        await listener_function(game_state, callback, amount_produced=amount, producer=player_color, shape=shape_type, producing_tile_name=calling_tile_name)
+        await listener_function(game_state, callback, amount_produced=amount, producer=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
 
     if callback:
-        if calling_tile_name:
-            await callback(f" {calling_tile_name} produced {amount} {shape_type}(s) for {player_color}")
+        if calling_entity_name:
+            await callback(f" {calling_entity_name} produced {amount} {shape_type}(s) for {player_color}")
         else:
             await callback(f" {player_color} produced {amount} {shape_type}(s)")            
 
-async def player_receives_a_shape_on_tile(game_state, player_color, tile, shape_type, callback=None):
+#place the shape on the tile. if it overwrote another shape, ask the owning player where to place it. trigger on-place listeners.
+async def place_shape_on_tile(self, game_state, tile_index, slot_index, shape, color, callback):
+    tile_to_place_on = game_state["tiles"][tile_index]
 
+    old_shape = tile_to_place_on.slots_for_shapes[slot_index]  
+    tile_to_place_on.slots_for_shapes[slot_index] = {'shape': shape, 'color': color}
+    await callback(f"{color} placed a {shape} on {tile_to_place_on.name}")
+
+    for listener_name, listener_function in game_state["listeners"]["on_place"].items():
+        await listener_function(game_state, self.notify_clients_of_new_log_callback, placer=color, shape=shape, index_of_tile_placed_at=tile_index)  
+
+    if old_shape:
+        pass
+
+async def player_receives_a_shape_on_tile(game_state, player_color, tile, shape_type, callback=None):
     if None not in tile.slots_for_shapes:
         await callback(f"{player_color} cannot receive a {shape_type} on {tile.name}, no empty slots")
         return
@@ -134,7 +149,6 @@ def get_adjacent_tile_indices(tile_index):
         adjacent_indices.append(tile_index + 1)
     
     return adjacent_indices
-
 
 def move_shape(game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
     shape_to_move = game_state["tiles"][from_tile_index].slots_for_shapes[from_slot_index]
