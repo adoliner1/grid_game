@@ -7,3 +7,5 @@ shape_hierarchy = {'circle': 1,
 base_income  = [('circle', 2), ('square', 1), ('triangle', 1)]
 
 player_colors = ["red", "blue"]
+
+client_actions = ["pass", "select_a_shape_in_storage", "select_a_tile", "select_a_powerup"]

@@ -1,5 +1,5 @@
-from typing import List, Dict
-from game_action_container import GameActionContainer
+from typing import List, Dict, OrderedDict
+import game_action_container
 import round_bonuses
 import json
 import random
@@ -38,6 +38,31 @@ def get_all_round_bonuses():
     
     return round_bonus_classes
 
+#place the shape on the tile. 
+#if it overwrote another shape, create and push a game action container asking the owning player to place it on a powerup
+#call wait on the current game action container   
+async def place_shape_on_tile(game_state, game_action_container_stack, tile_index, slot_index, shape, color, send_clients_new_log_message):
+    tile_to_place_on = game_state["tiles"][tile_index]
+    slot_to_place_on = tile_to_place_on.slots_for_shapes[slot_index]
+    if slot_to_place_on:
+        old_slot = slot_to_place_on
+
+    slot_to_place_on = {'shape': shape, 'color': color}
+    await send_clients_new_log_message(f"{color} placed a {shape} on {tile_to_place_on.name}")
+
+    if old_slot:
+        reaction_container_to_place_trumped_shape_on_a_powerup = game_action_container.GameActionContainer(
+                                    event = asyncio.Event(),
+                                    game_action = "place_shape_on_a_powerup",
+                                    required_data_for_action = {"powerup_slot_to_place_on": {}, "shape_type_to_place": old_slot["shape"]},
+                                    whose_action = old_slot["color"])
+        
+        game_action_container_stack.append(reaction_container_to_place_trumped_shape_on_a_powerup)
+        await game_action_container_stack[-1].event.wait()
+
+    for listener_name, listener_function in game_state["listeners"]["on_place"].items():
+        await listener_function(game_state, send_clients_new_log_message, placer=color, shape=shape, index_of_tile_placed_at=tile_index)  
+
 def create_new_game_state():
     
     all_round_bonuses = get_all_round_bonuses()
@@ -62,16 +87,19 @@ def create_new_game_state():
         "tiles": [tile() for tile in chosen_tiles],
         "whose_turn_is_it": "red",
         "first_player": "red",
-        "powerups": chosen_powerups,
+        "powerups": {
+            "red": chosen_powerups, #need copy? 
+            "blue": chosen_powerups, #need copy? 
+        },
         "round_bonuses": chosen_round_bonuses,
     }
 
     return game_state
 
-def create_new_turn_game_action_container(whose_turn_is_it):
+def create_initial_decision_game_action_container(whose_turn_is_it):
     return GameActionContainer(
-            asyncio.Event(),
-            game_action="new_turn_choice",
-            required_data_for_action={"choice": None},
-            whose_action=whose_turn_is_it
+            event=asyncio.Event(),
+            game_action="initial_decision",
+            required_data_for_action={"initial_decision": None},
+            whose_action=whose_turn_is_it,
         )

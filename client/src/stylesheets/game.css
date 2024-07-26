@@ -128,3 +128,50 @@ svg.selectable {
 .blue-text {
   color: blue;
 }
+
+.tiles-and-powerups {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.powerups {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.red-powerups {
+  border: 2px solid red;
+  padding: 10px;
+  flex: 1;
+  margin-right: 10px;
+}
+
+.blue-powerups {
+  border: 2px solid blue;
+  padding: 10px;
+  flex: 1;
+  margin-left: 10px;
+}
+
+.powerup-container {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.powerup-description {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.selectable-powerup {
+  border: 2px solid gold;
+  cursor: pointer;
+}
+
+.selectable-powerup:hover {
+  border-color: black;
+}

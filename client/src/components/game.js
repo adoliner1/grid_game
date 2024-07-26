@@ -13,8 +13,10 @@ const Game = () => {
     const socket = useRef(null)
     const clientColor = useRef(null)
     const request = useRef({'conversions': []})
+    const userHasInteracted = useRef(false)
     const clickSound = useRef(new Audio('/sounds/click.wav'));
-    //const yourTurnSound = useRef(new Audio('/sounds/your_turn.wav'));
+    const oldWhoseTurnIsIt = useRef(null);
+    const yourTurnSound = useRef(new Audio('/sounds/your_turn.wav'));
 
     const resetConversions = useCallback(() => {
         request.current.conversions.forEach((conversion) => {
@@ -62,15 +64,20 @@ const Game = () => {
         setLogs((prevLogs) => [...prevLogs, message])
     }
 
-    const handleShapeInStorageClick = (shape_type) => {
-        clickSound.current.play();
-        if (availableActions.hasOwnProperty('select_a_shape_in_storage') && availableActions['select_a_shape_in_storage'].includes(shape_type)) {
-            clickSound.current.play();
-            request.current.action = 'select_a_shape_in_storage'
-            request.current.selected_shape_type_in_storage = shape_type
-            sendRequest()
-        }
-    }
+    //just used so we can play "your turn" sound for now - probably not necessary in future
+    useEffect(() => {
+        const handleUserInteraction = () => {
+            userHasInteracted.current = true;
+        };
+    
+        window.addEventListener('click', handleUserInteraction);
+        window.addEventListener('keypress', handleUserInteraction);
+    
+        return () => {
+            window.removeEventListener('click', handleUserInteraction);
+            window.removeEventListener('keypress', handleUserInteraction);
+        };
+    }, []);
 
     const handleConversionArrowClick = (conversion, player_color) => {
         clickSound.current.play();
@@ -150,36 +157,56 @@ const Game = () => {
 
     const handlePassButtonClick = () => {
         clickSound.current.play();
-        request.current.action = "pass"
+        request.current.client_action = "pass"
         sendRequest()
     }
+
+    const handleShapeInStorageClick = (shape_type) => {
+        clickSound.current.play();
+        if (availableActions.hasOwnProperty('select_a_shape_in_storage') && availableActions['select_a_shape_in_storage'].includes(shape_type)) {
+            clickSound.current.play();
+            request.current.client_action = 'select_a_shape_in_storage'
+            request.current.selected_shape_type_in_storage = shape_type
+            sendRequest()
+        }
+    }
+
     const handleTileClick = (tile_index) => {
         clickSound.current.play();
         if (availableActions.hasOwnProperty('select_a_tile')) {
-            request.current.action = "select_a_tile"
+            request.current.client_action = "select_a_tile"
             request.current.tile_index = tile_index
-            sendRequest()
+            sendRequest() 
         }
     }
 
     const handleSlotClick = (tile_index, slot_index) => {
         clickSound.current.play();
-        if (availableActions.hasOwnProperty('select_a_slot')) {
-            request.current.action = "select_a_slot"
+        if (availableActions.hasOwnProperty('select_a_slot_on_a_tile')) {
+            request.current.client_action = "select_a_slot_on_a_tile"
             request.current.tile_index_of_selected_slot = tile_index
             request.current.index_of_selected_slot = slot_index
             sendRequest()
         }
     }
 
+    const handlePowerupSlotClick = (powerup_index, slot_index) => {
+        clickSound.current.play();
+        if (availableActions.hasOwnProperty('select_a_slot_on_a_powerup')) {
+            request.current.client_action = "select_a_slot_on_a_powerup"
+            request.current.powerup_index_of_selected_slot = powerup_index
+            request.current.index_of_selected_slot = slot_index
+            sendRequest()
+        }
+    }
     const sendRequest = () => {
         socket.current.send(JSON.stringify(request.current))
         request.current = {'conversions': []}
     }
     
     useEffect(() => {
-        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
-        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
+        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         socket.current.onopen = () => {
             console.log("WebSocket connection established")
         }
@@ -197,6 +224,9 @@ const Game = () => {
                     clientColor.current = data.player_color 
                     break
                 case "update_game_state":
+                    if (gameState) {
+                        oldWhoseTurnIsIt.current = gameState.whose_turn_is_it
+                    }
                     setGameState(data.game_state)
                     break
                 case "current_available_actions":
@@ -224,7 +254,7 @@ const Game = () => {
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
                 resetConversions()
-                request.current.action = "reset_current_action"
+                request.current.client_action = "reset_current_action"
                 sendRequest()
             }
         }
@@ -235,14 +265,14 @@ const Game = () => {
         }
     }, [resetConversions]);
 
-    /*
+    
     useEffect(() => {
-        if (oldAvailableActions.current !== availableActions && gameState && gameState.whose_turn_is_it === clientColor.current) {
+        if (userHasInteracted.current && gameState && oldWhoseTurnIsIt.current !== gameState.whose_turn_is_it && gameState.whose_turn_is_it === clientColor.current) {
             yourTurnSound.current.play();
         }
-    }, [availableActions]);
+    }, [gameState]);
 
-    */ 
+    
 
     if (!gameState) {
         return <div>Loading...</div>
@@ -288,23 +318,57 @@ const Game = () => {
                 </button>
                 <GameLog logs={logs} />
             </div>
-            <div className="tiles">
-                {gameState.tiles.map((tile, tile_index) => {
-                    return (
-                        <Tile
-                            key={tile_index}
-                            name={tile.name}
-                            description={tile.description}
-                            is_on_cooldown={tile.is_on_cooldown}
-                            slots_for_shapes={tile.slots_for_shapes}
-                            tile_index = {tile_index}
-                            ruler = {gameState.tiles[tile_index].ruler}
-                            available_actions={availableActions}
-                            onTileClick={() => handleTileClick(tile_index)}
-                            onSlotClick={(slotIndex) => handleSlotClick(tile_index, slotIndex)}
-                        />
-                    )
-                })} 
+            <div className="tiles-and-powerups">
+                <div className="tiles">
+                    {gameState.tiles.map((tile, tile_index) => {
+                        return (
+                            <Tile
+                                key={tile_index}
+                                name={tile.name}
+                                description={tile.description}
+                                is_on_cooldown={tile.is_on_cooldown}
+                                slots_for_shapes={tile.slots_for_shapes}
+                                tile_index={tile_index}
+                                ruler={gameState.tiles[tile_index].ruler}
+                                available_actions={availableActions}
+                                onTileClick={() => handleTileClick(tile_index)}
+                                onSlotClick={(slotIndex) => handleSlotClick(tile_index, slotIndex)}
+                            />
+                        )
+                    })}
+                </div>
+                <div className="powerups">
+                    <div className="red-powerups">
+                        {gameState.powerups.red.map((powerup, powerup_index) => {
+                            return (
+                                <Powerup
+                                    key={powerup_index}
+                                    description={powerup.description}
+                                    powerup_index={powerup_index}
+                                    available_actions={availableActions}
+                                    onPowerupClick={() => handlePowerupClick(powerup_index)}
+                                    slots_for_shapes={powerup.slots_for_shapes}
+                                    onSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
+                                />
+                            )
+                        })}
+                    </div>
+                    <div className="blue-powerups">
+                        {gameState.powerups.blue.map((powerup, powerup_index) => {
+                            return (
+                                <Powerup
+                                    key={powerup_index}
+                                    description={powerup.description}
+                                    powerup_index={powerup_index}
+                                    available_actions={availableActions}
+                                    onPowerupClick={() => handlePowerupClick(powerup_index)}
+                                    slots_for_shapes={powerup.slots_for_shapes}
+                                    onSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
+                                />
+                            )
+                        })}
+                    </div>
+                </div>
             </div>
         </div>
     )   

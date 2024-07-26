@@ -132,48 +132,35 @@ async def disconnect_handler(connection: Dict):
 
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
-    
-    async def notify_clients(action: str, data: dict):   
-        for player in current_players:
-            message = {
-                "action": action,
-                **data
-            }
-            await player["websocket"].send_json(message)
-
-    async def notify_clients_of_new_log(message):
+             
+    async def send_clients_new_log_message(message):
         for player in current_players:
             await player["websocket"].send_json({
                 "action": "message", 
                 "message": message
             })
-    async def notify_clients_of_new_game_state():
+
+    async def send_clients_new_game_state(game_state):
         for player in current_players:
             await player["websocket"].send_json({
                 "action": "update_game_state",
-                "game_state": json.loads(serialize_game_state(local_game_state))
+                "game_state": json.loads(serialize_game_state(game_state))
             })
-    async def send_available_actions_to_players(available_actions):
-        whose_action_is_it = local_game_state["whose_action_is_it"]
+
+    async def send_available_actions_to_client(available_actions, current_piece_of_data_to_fill_in_current_action, player_color):
         for player in current_players:
-            if player["color"] == whose_action_is_it:
+            if player["color"] == player_color:
                 await player["websocket"].send_json({
                     "action": "current_available_actions",
                     "available_actions": available_actions,
                     "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
-                })
-            else:
-                await player["websocket"].send_json({
-                    "action": "current_available_actions",
-                    "available_actions": {},
-                    "current_piece_of_data_to_fill_in_current_action": ""
                 })
 
     global local_game_state
     global current_players
     global current_action
     global current_piece_of_data_to_fill_in_current_action
-    game_engine.set_notify_clients(notify_clients)
+    game_engine.set_websocket_callbacks(send_clients_new_log_message, send_clients_new_game_state, send_available_actions_to_client)
 
     #this will all be done in lobby
     await websocket.accept()
@@ -231,9 +218,9 @@ async def websocket_game_endpoint(websocket: WebSocket):
                 await websocket.send_json({"action": "error", "message": "Not your turn"})
                 continue
 
-            await game_engine.perform_conversions(local_game_state, player_color, data.get("conversions"))
+            game_engine.process_data_from_client(data, player_color)
 
-            action = data.get("action")
+            await game_engine.perform_conversions(local_game_state, player_color, data.get("conversions"))
 
             if action == 'select_a_shape_in_storage':
                 shape_type_to_place = data.get('selected_shape_type_in_storage')

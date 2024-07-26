@@ -1,0 +1,20 @@
+.powerup-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.powerup-description {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.selectable-powerup {
+    border: 2px solid gold;
+    cursor: pointer;
+}
+
+.selectable-powerup:hover {
+    border-color: black;
+}
