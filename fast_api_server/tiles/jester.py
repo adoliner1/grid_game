@@ -1,4 +1,5 @@
-from game_utilities import produce_shape_for_player
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Jester(Tile):
@@ -28,7 +29,7 @@ class Jester(Tile):
         self.ruler = None
         return None
 
-    async def end_of_round_effect(self, game_state, callback):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         shape_count = {
             'red': {
                 'circle': 0,
@@ -54,10 +55,10 @@ class Jester(Tile):
             game_state["points"][color] += points_earned
 
             if points_earned > 0:
-                await callback(f"{color} player earned {points_earned} points from triples on {self.name}")
+                await send_clients_log_message(f"{color} player earned {points_earned} points from triples on {self.name}")
 
-    async def end_of_game_effect(self, game_state, callback):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler is not None:
-            await callback(f"{self.name} makes {ruler} lose 10 points")
+            await send_clients_log_message(f"{self.name} makes {ruler} lose 10 points")
             game_state["points"][ruler] -= 10

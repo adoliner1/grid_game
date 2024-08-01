@@ -1,4 +1,5 @@
-from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Saturn(Tile):
@@ -41,28 +42,29 @@ class Saturn(Tile):
         self.ruler = None
         return None
 
-    async def use_tile(self, game_state, player_color, callback, **kwargs):
+    async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        game_action_container = game_action_container_stack[-1]
         ruler = self.determine_ruler(game_state)
         if not ruler:
-            await callback(f"No ruler determined for {self.name} cannot use")
+            await send_clients_log_message(f"No ruler determined for {self.name} cannot use")
             return False
         
-        if ruler != player_color:
-            await callback(f"Non-ruler tried to use {self.name}")
+        if ruler != game_action_container.whose_action:
+            await send_clients_log_message(f"Non-ruler tried to use {self.name}")
             return False
         
         triangle_found = False
         for i, slot in enumerate(self.slots_for_shapes):
             if slot and slot["shape"] == "triangle" and slot["color"] == ruler:
-                await callback(f"{self.name} is used")                
-                await self.burn_shape_at_index(game_state, i, callback)
+                await send_clients_log_message(f"{self.name} is used")                
+                await self.burn_shape_at_index(game_state, i, send_clients_log_message)
                 triangle_found = True
                 break
         
         if not triangle_found:
-            await callback(f"No triangle to burn on {self.name}")
+            await send_clients_log_message(f"No triangle to burn on {self.name}")
             return False
         
-        await produce_shape_for_player(game_state, ruler, 2, 'square', self.name, callback)
+        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 2, 'square', self.name)
 
         return True

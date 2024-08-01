@@ -1,4 +1,5 @@
-from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile, find_index_of_tile_by_name, determine_if_directly_adjacent
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Waterfalls(Tile):
@@ -28,13 +29,13 @@ class Waterfalls(Tile):
         self.ruler = None
         return None
 
-    async def end_of_round_effect(self, game_state, callback):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if not ruler:
-            await callback(f"No ruler determined for {self.name}, no points awarded")
+            await send_clients_log_message(f"No ruler determined for {self.name}, no points awarded")
             return
 
-        adjacent_tiles_indices = self.get_adjacent_tiles_indices(game_state)
+        adjacent_tiles_indices = game_utilities.get_adjacent_tiles_indices(game_utilities.find_index_of_tile_by_name(game_state, self.name))
         adjacent_tiles_ruled_count = 0
 
         for index in adjacent_tiles_indices:
@@ -45,19 +46,4 @@ class Waterfalls(Tile):
         points = {0: 0, 1: 1, 2: 3, 3: 7, 4: 13}
         points_awarded = points.get(adjacent_tiles_ruled_count, 0)
         game_state["points"][ruler] += points_awarded
-        await callback(f"{ruler} gains {points_awarded} points for ruling tiles adjacent to {self.name}")
-
-    def get_adjacent_tiles_indices(self, game_state):
-        tile_index = find_index_of_tile_by_name(game_state, self.name)
-        adjacent_indices = []
-
-        if tile_index % 3 != 0:  # Not in the first column
-            adjacent_indices.append(tile_index - 1)
-        if tile_index % 3 != 2:  # Not in the last column
-            adjacent_indices.append(tile_index + 1)
-        if tile_index // 3 != 0:  # Not in the first row
-            adjacent_indices.append(tile_index - 3)
-        if tile_index // 3 != 2:  # Not in the last row
-            adjacent_indices.append(tile_index + 3)
-
-        return adjacent_indices
+        await send_clients_log_message(f"{ruler} gains {points_awarded} points for ruling tiles adjacent to {self.name}")

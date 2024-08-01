@@ -23,13 +23,13 @@ class PointsPerCircle(RoundBonus):
             listener_type="on_place",
         )
 
-    async def run_effect(self, game_state, callback, **data):
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         placer = data.get('placer')
         shape = data.get('shape')
 
         if (shape == "circle"):
             game_state["points"][placer] += 1
-            await callback(f"{placer} gets 1 point for placing a circle (round bonus)")
+            await send_clients_log_message(f"{placer} gets 1 point for placing a circle (round bonus)")
 
 class PointsPerSquare(RoundBonus):
     def __init__(self):
@@ -39,13 +39,13 @@ class PointsPerSquare(RoundBonus):
             listener_type="on_place",
         )
 
-    async def run_effect(self, game_state, callback, **data):
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         placer = data.get('placer')
         shape = data.get('shape')
 
         if (shape == "square"):
             game_state["points"][placer] += 2
-            await callback(f"{placer} gets 2 points for placing a square (round bonus)")
+            await send_clients_log_message(f"{placer} gets 2 points for placing a square (round bonus)")
 
 class PointsPerTriangle(RoundBonus):
     def __init__(self):
@@ -55,13 +55,13 @@ class PointsPerTriangle(RoundBonus):
             listener_type="on_place",
         )
 
-    async def run_effect(self, game_state, callback, **data):
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         placer = data.get('placer')
         shape = data.get('shape')
 
         if (shape == "triangle"):
             game_state["points"][placer] += 3
-            await callback(f"{placer} gets 3 points for placing a triangle (round bonus)")
+            await send_clients_log_message(f"{placer} gets 3 points for placing a triangle (round bonus)")
 
 class PointsPerRow(RoundBonus):
     def __init__(self):
@@ -71,19 +71,19 @@ class PointsPerRow(RoundBonus):
             listener_type="end_of_round",
         )
 
-    async def run_effect(self, game_state, callback, **data):
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         red_complete_rows = determine_how_many_full_rows_player_rules(game_state, "red")
         blue_complete_rows = determine_how_many_full_rows_player_rules(game_state, "blue")
 
         if red_complete_rows > 0:
             points_to_gain = 10*red_complete_rows
             game_state["points"]["red"] += points_to_gain
-            await callback(f"red gets {points_to_gain} points for round bonus")
+            await send_clients_log_message(f"red gets {points_to_gain} points for round bonus")
 
         if blue_complete_rows > 0:
             points_to_gain = 10*blue_complete_rows
             game_state["points"]["blue"] += points_to_gain
-            await callback(f"blue gets {points_to_gain} points for round bonus") 
+            await send_clients_log_message(f"blue gets {points_to_gain} points for round bonus") 
 
 class PointsPerColumn(RoundBonus):
     def __init__(self):
@@ -93,19 +93,19 @@ class PointsPerColumn(RoundBonus):
             listener_type="end_of_round",
         )
 
-    async def run_effect(self, game_state, callback, **data):
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         red_complete_columns = determine_how_many_full_columns_player_rules(game_state, "red")
         blue_complete_columns = determine_how_many_full_columns_player_rules(game_state, "blue")
 
         if red_complete_columns > 0:
             points_to_gain = 10 * red_complete_columns
             game_state["points"]["red"] += points_to_gain
-            await callback(f"red gets {points_to_gain} points for round bonus")
+            await send_clients_log_message(f"red gets {points_to_gain} points for round bonus")
 
         if blue_complete_columns > 0:
             points_to_gain = 10 * blue_complete_columns
             game_state["points"]["blue"] += points_to_gain
-            await callback(f"blue gets {points_to_gain} points for round bonus")
+            await send_clients_log_message(f"blue gets {points_to_gain} points for round bonus")
 
 class PointsPerTileRuled(RoundBonus):
     def __init__(self):
@@ -115,16 +115,16 @@ class PointsPerTileRuled(RoundBonus):
             listener_type="end_of_round",
         )
 
-    async def run_effect(self, game_state, callback, **data):
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         red_tiles_ruled = sum(1 for tile in game_state["tiles"] if tile.ruler == "red")
         blue_tiles_ruled = sum(1 for tile in game_state["tiles"] if tile.ruler == "blue")
 
         if red_tiles_ruled > 0:
             points_to_gain = 2 * red_tiles_ruled
             game_state["points"]["red"] += points_to_gain
-            await callback(f"Red gets {points_to_gain} points for ruling {red_tiles_ruled} tile(s)")
+            await send_clients_log_message(f"Red gets {points_to_gain} points for ruling {red_tiles_ruled} tile(s)")
 
         if blue_tiles_ruled > 0:
             points_to_gain = 2 * blue_tiles_ruled
             game_state["points"]["blue"] += points_to_gain
-            await callback(f"Blue gets {points_to_gain} points for ruling {blue_tiles_ruled} tile(s)")
+            await send_clients_log_message(f"Blue gets {points_to_gain} points for ruling {blue_tiles_ruled} tile(s)")

@@ -26,9 +26,9 @@ const ShapesOnTile = ({ slots_for_shapes, tile_index, ruler, available_actions, 
     }
 
     const isSelectable = (index) => {
-        return available_actions.hasOwnProperty('select_a_slot') &&
-        available_actions['select_a_slot'].hasOwnProperty(tile_index) &&
-        available_actions['select_a_slot'][tile_index].includes(index)
+        return available_actions.hasOwnProperty('select_a_slot_on_a_tile') &&
+        available_actions['select_a_slot_on_a_tile'].hasOwnProperty(tile_index) &&
+        available_actions['select_a_slot_on_a_tile'][tile_index].includes(index)
     }
 
     return (

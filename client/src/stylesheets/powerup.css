@@ -1,5 +1,6 @@
 .powerup-container {
     display: flex;
+    border: 1px solid #000000;
     flex-direction: row;
     align-items: center;
     margin: 10px 0;

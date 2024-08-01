@@ -1,4 +1,5 @@
-from game_utilities import *
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Spear(Tile):
@@ -10,30 +11,32 @@ class Spear(Tile):
             data_needed_for_use=["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_burn_shape_at"]
         )
 
-    def set_available_actions(self, game_state, current_action, current_piece_of_data_to_fill_in_current_action, available_actions_with_details):
-        shape_hierarchy = {'circle': 1, 'square': 2, 'triangle': 3}
+    def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
+        current_piece_of_data_to_fill_in_current_action = game_action_container.get_next_piece_of_data_to_fill()
+
+        game_constants.shape_hierarchy = {'circle': 1, 'square': 2, 'triangle': 3}
 
         if current_piece_of_data_to_fill_in_current_action == "slot_and_tile_to_burn_shape_from":
-            slots_that_can_be_burned_from = get_slots_with_a_shape_of_player_color_at_tile_index(game_state, self.determine_ruler(game_state), current_action["index_of_tile_in_use"])
-            available_actions_with_details["select_a_slot"] = {current_action["index_of_tile_in_use"]: slots_that_can_be_burned_from}
+            slots_that_can_be_burned_from = game_utilities.get_slots_with_a_shape_of_player_color_at_tile_index(game_state, self.determine_ruler(game_state), game_action_container.required_data_for_action["index_of_tile_in_use"])
+            available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_that_can_be_burned_from}
         else:
-            tile_index_to_burn_from = current_action["slot_and_tile_to_burn_shape_from"]["tile_index"]
-            slot_to_burn_from = current_action["slot_and_tile_to_burn_shape_from"]["slot_index"]
+            tile_index_to_burn_from = game_action_container.required_data_for_action["slot_and_tile_to_burn_shape_from"]["tile_index"]
+            slot_to_burn_from = game_action_container.required_data_for_action["slot_and_tile_to_burn_shape_from"]["slot_index"]
             shape_being_burned = game_state["tiles"][tile_index_to_burn_from].slots_for_shapes[slot_to_burn_from]["shape"]
-            shape_being_burned_strength = shape_hierarchy.get(shape_being_burned)
+            shape_being_burned_strength = game_constants.shape_hierarchy.get(shape_being_burned)
             
             slots_with_a_burnable_shape = {}
-            indices_of_adjacent_tiles = get_adjacent_tile_indices(current_action["index_of_tile_in_use"])
+            indices_of_adjacent_tiles = game_utilities.get_adjacent_tile_indices(game_action_container.required_data_for_action["index_of_tile_in_use"])
             
             for index in indices_of_adjacent_tiles:
                 slots_with_shapes = []
                 for slot_index, slot in enumerate(game_state["tiles"][index].slots_for_shapes):
-                    if slot and shape_hierarchy.get(slot["shape"]) <= shape_being_burned_strength:
+                    if slot and game_constants.shape_hierarchy.get(slot["shape"]) <= shape_being_burned_strength:
                         slots_with_shapes.append(slot_index)
                 if slots_with_shapes:
                     slots_with_a_burnable_shape[index] = slots_with_shapes
                 
-            available_actions_with_details["select_a_slot"] = slots_with_a_burnable_shape
+            available_actions["select_a_slot_on_a_tile"] = slots_with_a_burnable_shape
 
     def is_useable(self, game_state):
         whose_turn_is_it = game_state["whose_turn_is_it"]
@@ -58,47 +61,47 @@ class Spear(Tile):
         self.ruler = None
         return None
 
-    async def use_tile(self, game_state, player_color, callback, **kwargs):
+    async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        game_action_container = game_action_container_stack[-1]
         self.determine_ruler(game_state)
         if not self.ruler:
-            await callback(f"No ruler determined for {self.name} cannot use")
+            await send_clients_log_message(f"No ruler determined for {self.name} cannot use")
             return False
 
-        if self.ruler != player_color:
-            await callback(f"Non-ruler tried to use {self.name}")
+        if self.ruler != game_action_container.whose_action:
+            await send_clients_log_message(f"Non-ruler tried to use {self.name}")
             return False
 
-        index_of_spear = find_index_of_tile_by_name(game_state, self.name)
-        slot_to_burn_shape_from_here = kwargs.get('slot_and_tile_to_burn_shape_from').get('slot_index')
-        slot_to_burn_shape_at = kwargs.get('slot_and_tile_to_burn_shape_at').get('slot_index')
-        index_of_tile_to_burn_shape_at = kwargs.get('slot_and_tile_to_burn_shape_at').get('tile_index')
+        index_of_spear = game_utilities.find_index_of_tile_by_name(game_state, self.name)
+        slot_index_to_burn_shape_from_here = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape_from']['slot_index']
+        slot_index_to_burn_shape_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape_at']['slot_index']
+        index_of_tile_to_burn_shape_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape_at']['tile_index']
 
-        if not determine_if_directly_adjacent(index_of_spear, index_of_tile_to_burn_shape_at):
-            await callback(f"Tried to use {self.name} but chose a non-adjacent tile")
+        if not game_utilities.determine_if_directly_adjacent(index_of_spear, index_of_tile_to_burn_shape_at):
+            await send_clients_log_message(f"Tried to use {self.name} but chose a non-adjacent tile")
             return False
 
-        if self.slots_for_shapes[slot_to_burn_shape_from_here] == None:
-            await callback(f"Tried to use {self.name} but chose a slot with no shape to burn at {self.name}")
+        if self.slots_for_shapes[slot_index_to_burn_shape_from_here] == None:
+            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no shape to burn at {self.name}")
             return False
 
-        if game_state["tiles"][index_of_tile_to_burn_shape_at].slots_for_shapes[slot_to_burn_shape_at] == None:
-            await callback(f"Tried to use {self.name} but chose a slot with no shape to burn at {game_state['tiles'][index_of_tile_to_burn_shape_at].name}")
+        if game_state["tiles"][index_of_tile_to_burn_shape_at].slots_for_shapes[slot_index_to_burn_shape_at] == None:
+            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no shape to burn at {game_state['tiles'][index_of_tile_to_burn_shape_at].name}")
             return False
 
-        if self.slots_for_shapes[slot_to_burn_shape_from_here]["color"] != self.ruler:
-            await callback(f"Tried to use {self.name} but chose a shape that didn't belong to them")
+        if self.slots_for_shapes[slot_index_to_burn_shape_from_here]["color"] != self.ruler:
+            await send_clients_log_message(f"Tried to use {self.name} but chose a shape that didn't belong to them")
             return False
 
-        shape_hierarchy = {'circle': 1, 'square': 2, 'triangle': 3}
-        shape_from_spear = self.slots_for_shapes[slot_to_burn_shape_from_here]["shape"]
-        shape_at_target = game_state["tiles"][index_of_tile_to_burn_shape_at].slots_for_shapes[slot_to_burn_shape_at]["shape"]
+        shape_from_spear = self.slots_for_shapes[slot_index_to_burn_shape_from_here]["shape"]
+        shape_at_target = game_state["tiles"][index_of_tile_to_burn_shape_at].slots_for_shapes[slot_index_to_burn_shape_at]["shape"]
 
-        if shape_hierarchy[shape_from_spear] < shape_hierarchy[shape_at_target]:
-            await callback(f"Tried to use {self.name} but chose a shape of higher value to burn at {game_state['tiles'][index_of_tile_to_burn_shape_at].name}")
+        if game_constants.shape_hierarchy[shape_from_spear] < game_constants.shape_hierarchy[shape_at_target]:
+            await send_clients_log_message(f"Tried to use {self.name} but chose a shape of higher value to burn at {game_state['tiles'][index_of_tile_to_burn_shape_at].name}")
             return False
 
-        await callback(f"Using {self.name}")
-        await self.burn_shape_at_index(game_state, slot_to_burn_shape_from_here, callback)
-        await game_state["tiles"][index_of_tile_to_burn_shape_at].burn_shape_at_index(game_state, slot_to_burn_shape_at, callback)
+        await send_clients_log_message(f"Using {self.name}")
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_spear, slot_index_to_burn_shape_from_here)
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_burn_shape_at, slot_index_to_burn_shape_at)
 
         return True

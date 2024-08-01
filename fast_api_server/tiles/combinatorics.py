@@ -1,4 +1,5 @@
-from game_utilities import produce_shape_for_player
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Combinatorics(Tile):
@@ -28,7 +29,7 @@ class Combinatorics(Tile):
         self.ruler = None
         return None
 
-    async def end_of_round_effect(self, game_state, callback):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler is None:
             return
@@ -42,4 +43,4 @@ class Combinatorics(Tile):
         for shape, count in pair_counts.items():
             pairs = count // 2
             if pairs > 0:
-                await produce_shape_for_player(game_state, ruler, pairs, shape, self.name, callback)
+                await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, pairs, shape, self.name)

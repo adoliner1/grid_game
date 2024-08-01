@@ -1,45 +1,17 @@
-from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List, Dict
-import inspect
 import models
 from database import get_db
-from tiles.tile import Tile
-from tiles.algebra import Algebra
-from tiles.boron import Boron
-from tiles.carbon import Carbon
-from tiles.waterfalls import Waterfalls
-from tiles.queen import Queen
-from tiles.king import King
-from tiles.plains import Plains
-from tiles.jupiter import Jupiter
-from tiles.saturn import Saturn
-from tiles.pluto import Pluto
-from tiles.duke import Duke
-from tiles.nitrogen import Nitrogen
-from tiles.sword import Sword
-from tiles.spear import Spear
-from tiles.jester import Jester
-from tiles.prince import Prince
-from tiles.caves import Caves
-from tiles.combinatorics import Combinatorics
-from tiles.geometry import Geometry
 from game_engine import GameEngine
 from round_bonuses import *
 import json
-import random
-import os
-import importlib
-import sys
-import asyncio
+import copy
 
 app = FastAPI()
 connected_clients: List[Dict] = []
-local_game_state = None
 current_players = []
-current_action = {}
-current_piece_of_data_to_fill_in_current_action = ""
-game_engine = GameEngine()
+game_engine = None
 
 @app.websocket("/ws/lobby/")
 async def websocket_endpoint(websocket: WebSocket):
@@ -132,41 +104,9 @@ async def disconnect_handler(connection: Dict):
 
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
-             
-    async def send_clients_new_log_message(message):
-        for player in current_players:
-            await player["websocket"].send_json({
-                "action": "message", 
-                "message": message
-            })
+    global game_engine, current_players
 
-    async def send_clients_new_game_state(game_state):
-        for player in current_players:
-            await player["websocket"].send_json({
-                "action": "update_game_state",
-                "game_state": json.loads(serialize_game_state(game_state))
-            })
-
-    async def send_available_actions_to_client(available_actions, current_piece_of_data_to_fill_in_current_action, player_color):
-        for player in current_players:
-            if player["color"] == player_color:
-                await player["websocket"].send_json({
-                    "action": "current_available_actions",
-                    "available_actions": available_actions,
-                    "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
-                })
-
-    global local_game_state
-    global current_players
-    global current_action
-    global current_piece_of_data_to_fill_in_current_action
-    game_engine.set_websocket_callbacks(send_clients_new_log_message, send_clients_new_game_state, send_available_actions_to_client)
-
-    #this will all be done in lobby
     await websocket.accept()
-    if not local_game_state:
-        local_game_state = create_initial_game_state()
-        setup_tile_listeners(local_game_state)
     if len(current_players) >= 2:
         await websocket.send_json({
             "action": "error",
@@ -174,325 +114,78 @@ async def websocket_game_endpoint(websocket: WebSocket):
         })
         await websocket.close()
         return
-    
-    if len(current_players) == 1:
-        existing_player_color = current_players[0]["color"]
-        player_color = "blue" if existing_player_color == "red" else "red"
-    else:
-        player_color = "red"
-    
+
+    player_color = "blue" if current_players else "red"
     current_players.append({"websocket": websocket, "color": player_color})
-    await websocket.send_json({
-        "action": "initialize",
-        "game_state": json.loads(serialize_game_state(local_game_state)),
-        "player_color": player_color
-    })
 
     if len(current_players) == 2:
-        await game_engine.start_round(local_game_state)
-        await notify_clients_of_new_game_state()
-
-        available_actions = game_engine.get_available_actions(local_game_state, current_action, current_piece_of_data_to_fill_in_current_action)
-        await send_available_actions_to_players(available_actions)
-
-    # ^^^ this will all be done in lobby ^^^
+        await send_player_colors_to_clients()
+        print("Making game engine")
+        game_engine = GameEngine()
+        game_engine.set_websocket_callbacks(send_clients_new_log_message, send_clients_new_game_state, send_available_actions_to_client)
+        asyncio.create_task(game_engine.start_game())
 
     try:
-        #take in an action request from the client and pass it to the game manager for handling
         while True:
-            data = await websocket.receive_text()
-            data = json.loads(data)
-            
-            #determine player color
-            player_color = None
-            for player in current_players:
-                if player["websocket"] == websocket:
-                    player_color = player["color"]
-                    break
-
-            if player_color is None:
-                await websocket.send_json({"action": "error", "message": "Player not found in game"})
-                continue
-
-            if player_color != local_game_state["whose_turn_is_it"]:
-                await websocket.send_json({"action": "error", "message": "Not your turn"})
-                continue
-
-            game_engine.process_data_from_client(data, player_color)
-
-            await game_engine.perform_conversions(local_game_state, player_color, data.get("conversions"))
-
-            if action == 'select_a_shape_in_storage':
-                shape_type_to_place = data.get('selected_shape_type_in_storage')
-                #this selected shape in storage is part of some ongoing request
-                if current_action:
-                    current_action[current_piece_of_data_to_fill_in_current_action] = shape_type_to_place
-                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
-
-                    if not current_piece_of_data_to_fill_in_current_action:
-                        if current_action["action"] == "use_tile":
-                            await game_engine.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
-                            current_action = {}
-                            current_piece_of_data_to_fill_in_current_action = ""
-                        #must be a use powerup action
-                        else: 
-                            await game_engine.player_takes_use_powerup_action(local_game_state, current_action["index_of_powerup_in_use"], player_color, **current_action)
-                            current_action = {}
-                            current_piece_of_data_to_fill_in_current_action = ""
-
-                #this selected shape in storage is initiating a "place shape on slot request" 
-                else:
-                    current_action["action"] = 'place_shape_on_slot'
-                    current_action["shape_type_to_place"] = shape_type_to_place
-               
-            elif action == 'select_a_tile':
-                selected_tile_index = data.get("tile_index")
-                #this selected tile is part of some ongoing request
-                if current_action:
-                    current_action[current_piece_of_data_to_fill_in_current_action] = selected_tile_index
-                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
-
-                    if not current_piece_of_data_to_fill_in_current_action:
-                        if current_action["action"] == "use_tile":
-                            await game_engine.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
-                            current_action = {}
-                            current_piece_of_data_to_fill_in_current_action = ""
-                        #must be a use powerup action
-                        else: 
-                            await game_engine.player_takes_use_powerup_action(local_game_state, current_action["index_of_powerup_in_use"], player_color, **current_action)
-                            current_action = {}
-                            current_piece_of_data_to_fill_in_current_action = ""
-
-                #this selected tile is initiating a use tile request 
-                else:
-                    current_action["action"] = 'use_tile'
-                    current_action["index_of_tile_in_use"] = selected_tile_index
-                    tile_in_use = local_game_state["tiles"][selected_tile_index]
-
-                    for piece_of_data_needed_for_tile_use in tile_in_use.data_needed_for_use:
-                        if 'slot' in piece_of_data_needed_for_tile_use:
-                            current_action[piece_of_data_needed_for_tile_use] = {}
-                        else:
-                            current_action[piece_of_data_needed_for_tile_use] = None
-
-                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
-
-                    if not current_piece_of_data_to_fill_in_current_action:
-                        await game_engine.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
-                        current_action = {}
-                        current_piece_of_data_to_fill_in_current_action = ""
-
-            elif action == 'select_a_powerup':
-                selected_powerup_index = data.get("powerup_index")
-                #this selected powerup is part of some ongoing request
-                if current_action:
-                    current_action[current_piece_of_data_to_fill_in_current_action] = selected_powerup_index
-                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
-
-                    if not current_piece_of_data_to_fill_in_current_action:
-                        if current_action["action"] == "use_tile":
-                            await game_engine.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
-                            current_action = {}
-                            current_piece_of_data_to_fill_in_current_action = ""
-                        #must be a use powerup action
-                        else: 
-                            await game_engine.player_takes_use_powerup_action(local_game_state, current_action["index_of_powerup_in_use"], player_color, **current_action)
-                            current_action = {}
-                            current_piece_of_data_to_fill_in_current_action = ""
-
-                #this selected powerup is initiating a use powerup request 
-                else:
-                    current_action["action"] = 'use_powerup'
-                    current_action["index_of_powerup_in_use"] = selected_powerup_index
-                    powerup_in_use = local_game_state["powerups"][player_color][selected_powerup_index]
-
-                    for piece_of_data_needed_for_powerup_use in powerup_in_use.data_needed_for_use:
-                        if 'slot' in piece_of_data_needed_for_tile_use:
-                            current_action[piece_of_data_needed_for_powerup_use] = {}
-                        else:
-                            current_action[piece_of_data_needed_for_powerup_use] = None
-
-                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
-
-                    if not current_piece_of_data_to_fill_in_current_action:
-                        await game_engine.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
-                        current_action = {}
-                        current_piece_of_data_to_fill_in_current_action = ""
-
-            elif action == 'select_a_slot_on_a_tile':
-                tile_index = data.get("tile_index_of_selected_slot")
-                slot_index = data.get("index_of_selected_slot")
-
-                #placing a shape on a tile with default place shape action
-                if current_action["action"] == 'place_shape_on_slot':
-                    shape_type = current_action["shape_type_to_place"]
-                    await game_engine.player_takes_place_on_slot_on_tile_action(local_game_state, player_color, slot_index, tile_index, shape_type)
-                    current_action = {}
-                    current_piece_of_data_to_fill_in_current_action = ""
-
-                #slot is selected as part of some use tile request
-                elif current_action["action"] == "use_tile":
-                    
-                    current_action[current_piece_of_data_to_fill_in_current_action]["slot_index"] = slot_index
-                    current_action[current_piece_of_data_to_fill_in_current_action]["tile_index"] = tile_index
-
-                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
-
-                    if not current_piece_of_data_to_fill_in_current_action:
-                        if current_action["action"] == "use_tile":
-                            await game_engine.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
-                            current_action = {}
-                            current_piece_of_data_to_fill_in_current_action = ""
-                        #must be a use powerup action
-                        else: 
-                            await game_engine.player_takes_use_powerup_action(local_game_state, current_action["index_of_powerup_in_use"], player_color, **current_action)
-                            current_action = {}
-                            current_piece_of_data_to_fill_in_current_action = ""
-
-                #slot is selected as part of some use powerup request
-                elif current_action["action"] == "use_powerup":
-                    
-                    current_action[current_piece_of_data_to_fill_in_current_action]["slot_index"] = slot_index
-                    current_action[current_piece_of_data_to_fill_in_current_action]["powerup_index"] = powerup_index
-
-                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
-
-                    if not current_piece_of_data_to_fill_in_current_action:
-                        await game_engine.player_takes_use_powerup_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
-                        current_action = {}
-                        current_piece_of_data_to_fill_in_current_action = ""
-
-            elif action == 'select_a_slot_on_a_powerup':
-                powerup_index = data.get("powerup_index_of_selected_slot")
-                slot_index = data.get("index_of_selected_slot")
-
-                #placing a shape on a powerup slot
-                if current_action["action"] == 'place_shape_on_powerup_slot':
-                    shape_type = current_action["shape_type_to_place"]
-                    await game_engine.player_takes_place_on_slot_on_powerup_action(local_game_state, player_color, slot_index, tile_index, shape_type)
-                    current_action = {}
-                    current_piece_of_data_to_fill_in_current_action = ""
-
-                #powerup slot selected as part of some use tile request
-                elif current_action["action"] == "use_tile":
-                    
-                    current_action[current_piece_of_data_to_fill_in_current_action]["slot_index"] = slot_index
-                    current_action[current_piece_of_data_to_fill_in_current_action]["powerup_index"] = powerup_index
-
-                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
-
-                    if not current_piece_of_data_to_fill_in_current_action:
-                        await game_engine.player_takes_use_tile_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
-                        current_action = {}
-                        current_piece_of_data_to_fill_in_current_action = ""
-
-                #powerup slot selected as part of a use powerup
-                elif current_action["action"] == "use_powerup":
-                    
-                    current_action[current_piece_of_data_to_fill_in_current_action]["slot_index"] = slot_index
-                    current_action[current_piece_of_data_to_fill_in_current_action]["powerup_index"] = powerup_index
-
-                    current_piece_of_data_to_fill_in_current_action = get_next_piece_of_data_to_fill()
-
-                    if not current_piece_of_data_to_fill_in_current_action:
-                        await game_engine.player_takes_use_powerup_action(local_game_state, current_action["index_of_tile_in_use"], player_color, **current_action)
-                        current_action = {}
-                        current_piece_of_data_to_fill_in_current_action = ""
-
-            elif action == "pass":
-                await game_engine.player_passes(local_game_state, player_color)
-
-            elif action == "reset_current_action":
-                current_action = {}
-                current_piece_of_data_to_fill_in_current_action = ""
-                
-            else:
-                await websocket.send_json({"action": "error", "message": "Unknown action"})   
-
-            available_actions = game_engine.get_available_actions(local_game_state, current_action, current_piece_of_data_to_fill_in_current_action)
-            await send_available_actions_to_players(available_actions)      
+            data = await websocket.receive_json()
+            await game_engine.process_data_from_client(data, player_color)
 
     except WebSocketDisconnect:
         current_players = [p for p in current_players if p["websocket"] != websocket]
-        if len(current_players) == 0:
-            local_game_state = None
         print(f"{player_color} player disconnected")
+        if not current_players:
+            game_engine = None
 
-def get_next_piece_of_data_to_fill():
-    for piece_of_data_to_fill, value in current_action.items():
-        if value is None or value == {}:
-            return piece_of_data_to_fill
-    return None
+async def send_clients_new_log_message(message):
+        for player in current_players:
+            await player["websocket"].send_json({
+                "action": "message", 
+                "message": message
+            })
 
-def import_all_tiles_from_folder(folder_name):
-    sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-    tile_classes = []
-    folder_path = os.path.join(os.path.dirname(__file__), folder_name)
-    module_names = [f[:-3] for f in os.listdir(folder_path) if f.endswith('.py') and f != '__init__.py']
-    
-    for module_name in module_names:
-        module = importlib.import_module(f'{folder_name}.{module_name}')
-        for attribute_name in dir(module):
-            attribute = getattr(module, attribute_name)
-            if isinstance(attribute, type) and issubclass(attribute, Tile) and attribute is not Tile:
-                tile_classes.append(attribute)
-    
-    return tile_classes
+async def send_player_colors_to_clients():
+    for player in current_players:
+        if player["color"] == "blue":
+            await player["websocket"].send_json({
+                "action": "initialize", 
+                "player_color": "blue"
+            })
+        else:
+            await player["websocket"].send_json({
+                "action": "initialize", 
+                "player_color": "red"
+            })
 
-def get_all_round_bonuses():
-    module_name = 'round_bonuses'
-    module = importlib.import_module(module_name)
-    
-    round_bonus_classes = []
-    
-    for name, obj in inspect.getmembers(module, inspect.isclass):
-        if issubclass(obj, RoundBonus) and obj is not RoundBonus:
-            round_bonus_classes.append(obj)
-    
-    return round_bonus_classes
+async def send_clients_new_game_state(game_state):
+    for player in current_players:
+        await player["websocket"].send_json({
+            "action": "update_game_state",
+            "game_state": json.loads(serialize_game_state(game_state))
+        })
 
-def create_initial_game_state():
-    all_round_bonuses = get_all_round_bonuses()
-    all_tiles = import_all_tiles_from_folder('tiles')
-    chosen_tiles = random.sample(all_tiles, 9)
-    chosen_round_bonuses = [random.choice(all_round_bonuses)() for _ in range(6)]
-    #todo
-    chosen_powerups = None
-    game_state = {
-        "round": 0,
-        "shapes_in_storage": {
-            "red": { "circle": 0, "square": 0, "triangle": 0 },
-            "blue": { "circle": 0, "square": 0, "triangle": 0 }
-        },
-        "points": {
-            "red": 0,
-            "blue": 0
-        },
-        "player_has_passed": {
-            "red": False,
-            "blue": False,
-        },
-        "tiles": [tile() for tile in chosen_tiles],
-        "whose_turn_is_it": "red",
-        "whose_action_is_it": "red",
-        "first_player": "red",
-        "powerups": chosen_powerups,
-        "round_bonuses": chosen_round_bonuses,
-        "listeners": {"on_place": {}, "start_of_round": {}, "end_of_round": {}, "on_produce": {}},
-        "reaction_events": List[asyncio.Event]
-    }
+async def send_available_actions_to_client(available_actions, current_piece_of_data_to_fill_in_current_action, player_color_to_send_to):
+    #print("sending available actions")
+    #print(available_actions)
+    for player in current_players:
+        if player["color"] == player_color_to_send_to:
+            await player["websocket"].send_json({
+                "action": "current_available_actions",
+                "available_actions": available_actions,
+                "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
+            })
 
-    return game_state
-
-def setup_tile_listeners(game_state):
-    for tile in game_state["tiles"]:
-        if hasattr(tile, 'setup_listener'):
-            tile.setup_listener(game_state)
+def print_running_tasks():
+    loop = asyncio.get_running_loop()
+    tasks = asyncio.all_tasks(loop)
+    print(f"Number of running tasks: {len(tasks)}")
+    for task in tasks:
+        print(f"Task: {task.get_name()}, Done: {task.done()}")
 
 def serialize_game_state(game_state):
-    serialized_game_state = game_state.copy()
+    serialized_game_state = copy.deepcopy(game_state)
     del serialized_game_state['listeners'] #delete listeners, it's a server only piece of game_state
-    del serialized_game_state['reaction_events'] #delete reaction_events, it's a server only piece of game_state
     serialized_game_state["tiles"] = [tile.serialize() for tile in game_state["tiles"]]
     serialized_game_state["round_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["round_bonuses"]]
+    serialized_game_state["powerups"]["red"] = [powerup.serialize() for powerup in game_state["powerups"]["red"]]
+    serialized_game_state["powerups"]["blue"] = [powerup.serialize() for powerup in game_state["powerups"]["blue"]]
     return json.dumps(serialized_game_state)

@@ -1,4 +1,5 @@
-from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile, find_index_of_tile_by_name, determine_if_directly_adjacent
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Caves(Tile):
@@ -31,21 +32,21 @@ class Caves(Tile):
     def setup_listener(self, game_state):
         game_state["listeners"]["on_place"][self.name] = self.on_place_effect
 
-    async def on_place_effect(self, game_state, callback, **data):
-            placer = data.get('placer')
-            shape = data.get('shape')
+    async def on_place_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        placer = data.get('placer')
+        shape = data.get('shape')
 
-            if shape == "circle":
-                return
-            
-            index_of_tile_placed_at = data.get('index_of_tile_placed_at')
-            index_of_caves = find_index_of_tile_by_name(game_state, self.name)
+        if shape == "circle":
+            return
+        
+        index_of_tile_placed_at = data.get('index_of_tile_placed_at')
+        index_of_caves = game_utilities.find_index_of_tile_by_name(game_state, self.name)
 
-            if not determine_if_directly_adjacent(index_of_caves, index_of_tile_placed_at):
-                return
+        if not game_utilities.determine_if_directly_adjacent(index_of_caves, index_of_tile_placed_at):
+            return
 
-            ruler = self.determine_ruler(game_state)
-            if ruler != placer:
-                return
+        ruler = self.determine_ruler(game_state)
+        if ruler != placer:
+            return
 
-            await produce_shape_for_player(game_state, placer, 1, "circle", self.name, callback)
+        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, placer, 1, "circle", self.name)

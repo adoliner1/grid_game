@@ -26,9 +26,9 @@ const ShapesOnPowerup = ({ slots_for_shapes, powerup_index, available_actions, o
     }
 
     const isSelectable = (index) => {
-        return available_actions.hasOwnProperty('select_a_powerup_slot') &&
-            available_actions['select_a_powerup_slot'].hasOwnProperty(powerup_index) &&
-            available_actions['select_a_powerup_slot'][powerup_index].includes(index)
+        return available_actions.hasOwnProperty('select_a_slot_on_a_powerup') &&
+            available_actions['select_a_slot_on_a_powerup'].hasOwnProperty(powerup_index) &&
+            available_actions['select_a_slot_on_a_powerup'][powerup_index].includes(index)
     }
 
     return (

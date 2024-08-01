@@ -1,4 +1,5 @@
-from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile, find_index_of_tile_by_name
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Carbon(Tile):
@@ -37,7 +38,7 @@ class Carbon(Tile):
         self.ruler = None
         return None
 
-    async def end_of_round_effect(self, game_state, callback):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         red_circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red" and slot["shape"] == "circle")
         blue_circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue" and slot["shape"] == "circle")
 
@@ -51,37 +52,38 @@ class Carbon(Tile):
         second_player_pairs = blue_pairs if first_player == 'red' else red_pairs
 
         for _ in range(first_player_pairs):
-            await player_receives_a_shape_on_tile(game_state, first_player, self, 'circle', callback)
+            await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, first_player, self, 'circle')
 
         for _ in range(second_player_pairs):
-            await player_receives_a_shape_on_tile(game_state, second_player, self, 'circle', callback)
+            await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, second_player, self, 'circle')
 
-    async def use_tile(self, game_state, player_color, callback, **kwargs):    
-        circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "circle" and slot["color"] == player_color)
+    async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        game_action_container = game_action_container_stack[-1]
+        circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "circle" and slot["color"] == game_action_container.whose_action)
         
         if circle_count < 3:
-            await callback(f"Not enough circles to burn on {self.name}")
+            await send_clients_log_message(f"Not enough circles to burn on {self.name}")
             return False
         
         circles_burned = 0
         for i, slot in enumerate(self.slots_for_shapes):
-            if slot and slot["shape"] == "circle" and slot["color"] == player_color:
-                await self.burn_shape_at_index(game_state, i, callback)
+            if slot and slot["shape"] == "circle" and slot["color"] == game_action_container.whose_action:
+                await self.burn_shape_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, i)
                 circles_burned += 1
                 if circles_burned == 3:
                     break
 
         if circles_burned < 3:
-            await callback(f"Not enough circles to burn on {self.name}")
+            await send_clients_log_message(f"Not enough circles to burn on {self.name}")
             return False
         
-        await callback(f"{self.name} is used")
+        await send_clients_log_message(f"{self.name} is used")
         
-        await produce_shape_for_player(game_state, player_color, 1, 'triangle', self.name, callback)
+        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, game_action_container.whose_action, 1, 'triangle', self.name)
         return True
 
-    async def end_of_game_effect(self, game_state, callback):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions):
         ruler = self.determine_ruler(game_state)
         if ruler:
-            await callback(f"{self.name} gives 5 points to {ruler}")
+            await send_clients_log_message(f"{self.name} gives 5 points to {ruler}")
             game_state["points"][ruler] += 5

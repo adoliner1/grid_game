@@ -1,4 +1,5 @@
-from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile, find_index_of_tile_by_name, determine_if_directly_adjacent
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Plains(Tile):
@@ -31,7 +32,7 @@ class Plains(Tile):
     def setup_listener(self, game_state):
         game_state["listeners"]["on_produce"][self.name] = self.on_produce_effect
 
-    async def on_produce_effect(self, game_state, callback, **data):
+    async def on_produce_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         producing_tile_name = data.get('producing_tile_name')
         shape = data.get('shape')
         ruler = self.determine_ruler(game_state)
@@ -39,23 +40,12 @@ class Plains(Tile):
         if not ruler:
             return
 
-        producing_tile_index = find_index_of_tile_by_name(game_state, producing_tile_name)
+        producing_tile_index = game_utilities.find_index_of_tile_by_name(game_state, producing_tile_name)
         adjacent_indices = self.get_adjacent_tiles_indices(game_state)
 
         if producing_tile_index in adjacent_indices:
-            await produce_shape_for_player(game_state, ruler, 1, shape, self.name, callback)
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 1, shape, self.name)
 
     def get_adjacent_tiles_indices(self, game_state):
-        tile_index = find_index_of_tile_by_name(game_state, self.name)
-        adjacent_indices = []
-
-        if tile_index % 3 != 0:  # Not in the first column
-            adjacent_indices.append(tile_index - 1)
-        if tile_index % 3 != 2:  # Not in the last column
-            adjacent_indices.append(tile_index + 1)
-        if tile_index // 3 != 0:  # Not in the first row
-            adjacent_indices.append(tile_index - 3)
-        if tile_index // 3 != 2:  # Not in the last row
-            adjacent_indices.append(tile_index + 3)
-
-        return adjacent_indices
+        tile_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
+        return game_utilities.get_adjacent_tile_indices(tile_index)

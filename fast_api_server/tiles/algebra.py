@@ -1,4 +1,5 @@
-from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Algebra(Tile):
@@ -28,16 +29,16 @@ class Algebra(Tile):
         self.ruler = None
         return None
 
-    async def start_of_round_effect(self, game_state, callback):
+    async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
 
         if (ruler == 'red'):
-            await produce_shape_for_player(game_state, 'red', 1, 'circle', self.name, callback)
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, 'red', 1, 'circle', self.name)
         elif (ruler == 'blue'):
-            await produce_shape_for_player(game_state, 'blue', 1, 'circle', self.name, callback)
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, 'blue', 1, 'circle', self.name)
 
-    async def end_of_game_effect(self, game_state, callback):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if (ruler != None):
-            await callback(f"{self.name} gives 2 points to {ruler}")
+            await send_clients_log_message(f"{self.name} gives 2 points to {ruler}")
             game_state["points"][ruler] += 2

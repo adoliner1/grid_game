@@ -1,4 +1,5 @@
-from game_utilities import produce_shape_for_player, player_receives_a_shape_on_tile
+import game_utilities
+import game_constants
 from tiles.tile import Tile
 
 class Boron(Tile):
@@ -28,7 +29,7 @@ class Boron(Tile):
         self.ruler = None
         return None
 
-    async def end_of_round_effect(self, game_state, callback):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
 
         red_has_square = False
         blue_has_square = False
@@ -41,25 +42,25 @@ class Boron(Tile):
                     blue_has_square = True
 
         if red_has_square:
-            await player_receives_a_shape_on_tile(game_state, 'red', self, 'circle', callback)
-            await callback(f"red has a square on {self.name}")
+            await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, 'red', self, 'circle')
+            await send_clients_log_message(f"red has a square on {self.name}")
         
         if blue_has_square:
-            await player_receives_a_shape_on_tile(game_state, 'blue', self, 'circle', callback)
-            await callback(f"blue has a square on {self.name}")
+            await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, 'blue', self, 'circle')
+            await send_clients_log_message(f"blue has a square on {self.name}")
 
         red_circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red" and slot["shape"] == "circle")
         blue_circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue" and slot["shape"] == "circle")
 
         if red_circle_count > blue_circle_count:
-            await produce_shape_for_player(game_state, 'red', 1, 'circle', self.name, callback)
-            await callback(f"red produces 1 circle for having more circles on {self.name}")
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, 'red', 1, 'circle', self.name)
+            await send_clients_log_message(f"red produces 1 circle for having more circles on {self.name}")
         elif blue_circle_count > red_circle_count:
-            await produce_shape_for_player(game_state, 'blue', 1, 'circle', self.name, callback)
-            await callback(f"blue produces 1 circle for having more circles on {self.name}")
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, 'blue', 1, 'circle', self.name)
+            await send_clients_log_message(f"blue produces 1 circle for having more circles on {self.name}")
 
-    async def end_of_game_effect(self, game_state, callback):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state,):
         ruler = self.determine_ruler(game_state)
         if (ruler != None):
-            await callback(f"{self.name} gives 5 points to {ruler}")
+            await send_clients_log_message(f"{self.name} gives 5 points to {ruler}")
             game_state["points"][ruler] += 5

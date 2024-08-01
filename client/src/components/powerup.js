@@ -20,7 +20,7 @@ const Powerup = ({ description, powerup_index, available_actions, onPowerupClick
                 slots_for_shapes={slots_for_shapes}
                 powerup_index={powerup_index}
                 available_actions={available_actions}
-                onSlotClick={onPowerupSlotClick}
+                onPowerupSlotClick={onPowerupSlotClick}
             />
         </div>
     )

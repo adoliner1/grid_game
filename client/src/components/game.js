@@ -3,6 +3,7 @@ import '../stylesheets/game.css'
 import Tile from './tile'
 import ShapesInStorage from './shapes_in_storage'
 import GameLog from './game_log'
+import Powerup from './powerup'
 
 const Game = () => {
     const [gameState, setGameState] = useState(null)
@@ -10,12 +11,12 @@ const Game = () => {
     const [currentPieceOfDataToFill, setcurrentPieceOfDataToFill] = useState("") 
     const [logs, setLogs] = useState([])
     
+    const oldAvailableActions = useRef({})
     const socket = useRef(null)
     const clientColor = useRef(null)
     const request = useRef({'conversions': []})
     const userHasInteracted = useRef(false)
     const clickSound = useRef(new Audio('/sounds/click.wav'));
-    const oldWhoseTurnIsIt = useRef(null);
     const yourTurnSound = useRef(new Audio('/sounds/your_turn.wav'));
 
     const resetConversions = useCallback(() => {
@@ -162,20 +163,19 @@ const Game = () => {
     }
 
     const handleShapeInStorageClick = (shape_type) => {
-        clickSound.current.play();
         if (availableActions.hasOwnProperty('select_a_shape_in_storage') && availableActions['select_a_shape_in_storage'].includes(shape_type)) {
             clickSound.current.play();
             request.current.client_action = 'select_a_shape_in_storage'
-            request.current.selected_shape_type_in_storage = shape_type
+            request.current[currentPieceOfDataToFill] = shape_type
             sendRequest()
         }
     }
 
     const handleTileClick = (tile_index) => {
-        clickSound.current.play();
         if (availableActions.hasOwnProperty('select_a_tile')) {
+            clickSound.current.play();
             request.current.client_action = "select_a_tile"
-            request.current.tile_index = tile_index
+            request.current[currentPieceOfDataToFill] = tile_index
             sendRequest() 
         }
     }
@@ -184,9 +184,19 @@ const Game = () => {
         clickSound.current.play();
         if (availableActions.hasOwnProperty('select_a_slot_on_a_tile')) {
             request.current.client_action = "select_a_slot_on_a_tile"
-            request.current.tile_index_of_selected_slot = tile_index
-            request.current.index_of_selected_slot = slot_index
+            request.current[currentPieceOfDataToFill] = {}
+            request.current[currentPieceOfDataToFill].slot_index = slot_index
+            request.current[currentPieceOfDataToFill].tile_index = tile_index
             sendRequest()
+        }
+    }
+
+    const handlePowerupClick = (powerup_index) => {
+        if (availableActions.hasOwnProperty('select_a_powerup')) {
+            clickSound.current.play();
+            request.current.client_action = "select_a_powerup"
+            request.current[currentPieceOfDataToFill] = powerup_index
+            sendRequest() 
         }
     }
 
@@ -194,8 +204,10 @@ const Game = () => {
         clickSound.current.play();
         if (availableActions.hasOwnProperty('select_a_slot_on_a_powerup')) {
             request.current.client_action = "select_a_slot_on_a_powerup"
-            request.current.powerup_index_of_selected_slot = powerup_index
-            request.current.index_of_selected_slot = slot_index
+            request.current[currentPieceOfDataToFill] = {}
+            request.current[currentPieceOfDataToFill].slot_index = slot_index
+            request.current[currentPieceOfDataToFill].powerup_index = powerup_index
+            console.log(request.current)
             sendRequest()
         }
     }
@@ -220,13 +232,9 @@ const Game = () => {
                     addLog(`${data.message}`)
                     break 
                 case "initialize":
-                    setGameState(data.game_state)
                     clientColor.current = data.player_color 
                     break
                 case "update_game_state":
-                    if (gameState) {
-                        oldWhoseTurnIsIt.current = gameState.whose_turn_is_it
-                    }
                     setGameState(data.game_state)
                     break
                 case "current_available_actions":
@@ -265,14 +273,15 @@ const Game = () => {
         }
     }, [resetConversions]);
 
-    
     useEffect(() => {
-        if (userHasInteracted.current && gameState && oldWhoseTurnIsIt.current !== gameState.whose_turn_is_it && gameState.whose_turn_is_it === clientColor.current) {
+        if (userHasInteracted.current && 
+            Object.keys(oldAvailableActions.current).length === 0 && 
+            Object.keys(availableActions).length !== 0) {
             yourTurnSound.current.play();
         }
-    }, [gameState]);
-
-    
+        oldAvailableActions.current = availableActions;
+        console.log(availableActions)
+    }, [availableActions]);
 
     if (!gameState) {
         return <div>Loading...</div>
@@ -348,7 +357,7 @@ const Game = () => {
                                     available_actions={availableActions}
                                     onPowerupClick={() => handlePowerupClick(powerup_index)}
                                     slots_for_shapes={powerup.slots_for_shapes}
-                                    onSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
+                                    onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
                                 />
                             )
                         })}
@@ -363,7 +372,7 @@ const Game = () => {
                                     available_actions={availableActions}
                                     onPowerupClick={() => handlePowerupClick(powerup_index)}
                                     slots_for_shapes={powerup.slots_for_shapes}
-                                    onSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
+                                    onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
                                 />
                             )
                         })}
