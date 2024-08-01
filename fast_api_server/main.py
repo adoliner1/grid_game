@@ -120,7 +120,6 @@ async def websocket_game_endpoint(websocket: WebSocket):
 
     if len(current_players) == 2:
         await send_player_colors_to_clients()
-        print("Making game engine")
         game_engine = GameEngine()
         game_engine.set_websocket_callbacks(send_clients_new_log_message, send_clients_new_game_state, send_available_actions_to_client)
         asyncio.create_task(game_engine.start_game())
@@ -178,8 +177,7 @@ def print_running_tasks():
     loop = asyncio.get_running_loop()
     tasks = asyncio.all_tasks(loop)
     print(f"Number of running tasks: {len(tasks)}")
-    for task in tasks:
-        print(f"Task: {task.get_name()}, Done: {task.done()}")
+
 
 def serialize_game_state(game_state):
     serialized_game_state = copy.deepcopy(game_state)

@@ -24,6 +24,8 @@ class GameEngine:
         self.game_action_container_stack: List[game_action_container.GameActionContainer] = []
         self.game_action_container_stack.append(self.create_initial_decision_game_action_container())
         self.round_just_ended = False
+        self.action_queue = asyncio.Queue()
+        self.processing_task = None
 
     def set_websocket_callbacks(self, send_clients_log_message, send_clients_game_state, send_clients_available_actions):
         self.send_clients_log_message = send_clients_log_message
@@ -32,6 +34,7 @@ class GameEngine:
 
     async def start_game(self):
         await self.start_round()
+        self.processing_task = asyncio.create_task(self.process_actions())
         await self.run_game_loop()
 
     #whenever we're in this loop, it means an initial (turn starting) decision needs to be made
@@ -105,7 +108,12 @@ class GameEngine:
             case _:
                 return None
 
-    def reset_resettable_values(data):
+    def print_running_tasks(self):
+        loop = asyncio.get_running_loop()
+        tasks = asyncio.all_tasks(loop)
+        print(f"Number of running tasks: {len(tasks)}")
+
+    def reset_resettable_values(self, data):
         for key, value in data.items():
             if "resettable" in key:
                 if isinstance(value, dict):
@@ -114,14 +122,18 @@ class GameEngine:
                     data[key] = None
         return data
 
-    #effectively creates a loop which takes data from the client, populates the data in the action
-    #at the top of the stack, executes the action if it's ready and sends new available actions otherwise
-    async def process_data_from_client(self, data, player_color):
+    async def process_actions(self):
+        while True:
+            action_data = await self.action_queue.get()
+            asyncio.create_task(self.process_action(action_data))
+            self.action_queue.task_done()
 
+    async def process_action(self, action_data):
+        data, player_color = action_data
         if self.game_action_container_stack[-1].whose_action != player_color:
-            await self.send_clients_log_message(f"{player_color} tried to take action but it's not their action to take")
-            return
-        
+                    await self.send_clients_log_message(f"{player_color} tried to take action but it's not their action to take")
+                    return
+                
         #TODO probably want a new data structure that describes when a piece of data is resettable and has a directive for it
         if data['client_action'] == "reset_current_action":
             #only have initial decision container - do nothing
@@ -139,7 +151,7 @@ class GameEngine:
                 self.game_action_container_stack.pop()
                 await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="red"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
                 await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
- 
+
         if self.game_action_container_stack[-1].game_action == "initial_decision":
             new_game_action_container = self.create_new_game_action_container_from_initial_decision(data)
             if new_game_action_container:
@@ -152,10 +164,6 @@ class GameEngine:
             data_key = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
             self.game_action_container_stack[-1].required_data_for_action[data_key] = data[data_key]
 
-        print("process data from client")
-        for sc in self.game_action_container_stack:
-            print ("stack_container")
-            print (sc)
         next_piece_of_data_to_fill = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
         #print (next_piece_of_data_to_fill)
         if not next_piece_of_data_to_fill:
@@ -170,7 +178,12 @@ class GameEngine:
 
         else:
             await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="red"), next_piece_of_data_to_fill, player_color_to_send_to="red")
-            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), next_piece_of_data_to_fill, player_color_to_send_to="blue")
+            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), next_piece_of_data_to_fill, player_color_to_send_to="blue")    
+        
+    #effectively creates a loop which takes data from the client, populates the data in the action
+    #at the top of the stack, executes the action if it's ready and sends new available actions otherwise
+    async def process_data_from_client(self, data, player_color):
+        await self.action_queue.put((data, player_color))
 
     def import_all_tiles_from_folder(self, folder_name):
         sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
