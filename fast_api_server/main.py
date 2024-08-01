@@ -127,7 +127,7 @@ async def websocket_game_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
-            await game_engine.process_data_from_client(data, player_color)
+            asyncio.create_task(game_engine.process_data_from_client(data, player_color))
 
     except WebSocketDisconnect:
         current_players = [p for p in current_players if p["websocket"] != websocket]

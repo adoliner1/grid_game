@@ -21,7 +21,7 @@ class Aqueduct(Tile):
 
         if current_piece_of_data_to_fill_in_current_action == "slot_and_tile_to_move_shapes_from":
             slots_with_a_shape = {}
-            indices_of_adjacent_tiles = game_utilities.get_adjacent_tile_indices(game_action_container.required_data["index_of_tile_in_use"])
+            indices_of_adjacent_tiles = game_utilities.get_adjacent_tile_indices(game_action_container.required_data_for_action["index_of_tile_in_use"])
             for index in indices_of_adjacent_tiles:
                 slots_with_shapes = []
                 for slot_index, slot in enumerate(game_state["tiles"][index].slots_for_shapes):

@@ -358,6 +358,7 @@ const Game = () => {
                                     onPowerupClick={() => handlePowerupClick(powerup_index)}
                                     slots_for_shapes={powerup.slots_for_shapes}
                                     onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
+                                    playerColorOfPowerups={"red"}
                                 />
                             )
                         })}
@@ -373,6 +374,7 @@ const Game = () => {
                                     onPowerupClick={() => handlePowerupClick(powerup_index)}
                                     slots_for_shapes={powerup.slots_for_shapes}
                                     onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
+                                    playerColorOfPowerups={"blue"}
                                 />
                             )
                         })}

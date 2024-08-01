@@ -10,7 +10,7 @@ const shapeHierarchy = {
     'triangle': 3
 }
 
-const ShapesOnPowerup = ({ slots_for_shapes, powerup_index, available_actions, onPowerupSlotClick }) => {
+const ShapesOnPowerup = ({ slots_for_shapes, powerup_index, available_actions, onPowerupSlotClick, playerColor }) => {
 
     const renderShape = (shape, color) => {
         switch (shape) {

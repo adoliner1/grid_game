@@ -6,7 +6,7 @@ class Wormhole(Tile):
     def __init__(self):
         super().__init__(
             name="Wormhole",
-            description=f"Anyone with a set on wormhole (1 circle, 1 square, and 1 triangle) can use Wormhole to swap the position of two tiles. This puts wormhole on cooldown. \nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, +3 points",
+            description=f"Once per round, anyone with a set on wormhole (1 circle, 1 square, and 1 triangle) can swap the position of two tiles. \nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, +3 points",
             number_of_slots=9,
             data_needed_for_use=["tile1", "tile2"]
         )

@@ -67,7 +67,7 @@ class Nitrogen(Tile):
             await send_clients_log_message(f"Not enough shapes to burn on {self.name}")
             return False
         
-        nitrogen_tile_index = game_utilities.find_index_of_tile_by_name(self.name)
+        nitrogen_tile_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         shapes_burned = {'circle': 0, 'square': 0, 'triangle': 0}
         for i, slot in enumerate(self.slots_for_shapes):
             if slot and slot["color"] == game_action_container.whose_action and shapes_burned[slot["shape"]] < 1:

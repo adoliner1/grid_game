@@ -1,7 +1,7 @@
 import game_utilities
 
 class Powerup:
-    def __init__(self, name, description, number_of_slots, owner, listener_type=None, data_needed_for_use=None, is_on_cooldown=False):
+    def __init__(self, name, description, number_of_slots, owner, listener_type=None, data_needed_for_use=[], is_on_cooldown=False):
         self.name = name
         self.description = description
         self.number_of_slots = number_of_slots
@@ -56,7 +56,7 @@ class ProduceCircleFor3Circles(Powerup):
                 if slot["shape"] == "circle":
                     circle_count += 1
         if circle_count == 3:
-            game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 1, "circle", self.name)
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 1, "circle", self.name)
 
 class BurnTwoCirclesProduceTriangle(Powerup):
     def __init__(self, owner):
@@ -103,4 +103,4 @@ class ProduceTriangleFor3Squares(Powerup):
                 if slot["shape"] == "square":
                     square_count += 1
         if square_count == 3:
-            game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 1, "square", self.name)
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 1, "square", self.name)

@@ -59,10 +59,9 @@ class Pluto(Tile):
             await send_clients_log_message(f"Not enough circles to burn on {self.name}")
             return False
         
-        for i in circles_to_burn[:2]:
-            await self.burn_shape_at_index(game_state, i, send_clients_log_message)
-
         await send_clients_log_message(f"{self.name} is used")
+        for i in circles_to_burn[:2]:
+            await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_utilities.find_index_of_tile_by_name(game_state, self.name), i)
         
         await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_action_container.whose_action, 1, 'square', self.name)
         return True

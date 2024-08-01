@@ -57,7 +57,7 @@ async def player_receives_a_shape_on_tile(game_state, game_action_container_stac
         await send_clients_log_message(f"{player_color} cannot receive a {shape_type} on {tile.name}, no empty slots")
         return
     
-    tile_index = find_index_of_tile_by_name(tile.name)
+    tile_index = find_index_of_tile_by_name(game_state, tile.name)
     next_empty_slot = tile.slots_for_shapes.index(None)
     tile.slots_for_shapes[next_empty_slot] = {"shape": shape_type, "color": player_color}
     await send_clients_log_message(f"{player_color} receives a {shape_type} on {tile.name}")

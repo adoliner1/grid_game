@@ -25,7 +25,6 @@ class GameEngine:
         self.game_action_container_stack.append(self.create_initial_decision_game_action_container())
         self.round_just_ended = False
         self.action_queue = asyncio.Queue()
-        self.processing_task = None
 
     def set_websocket_callbacks(self, send_clients_log_message, send_clients_game_state, send_clients_available_actions):
         self.send_clients_log_message = send_clients_log_message
@@ -34,7 +33,6 @@ class GameEngine:
 
     async def start_game(self):
         await self.start_round()
-        self.processing_task = asyncio.create_task(self.process_actions())
         await self.run_game_loop()
 
     #whenever we're in this loop, it means an initial (turn starting) decision needs to be made
@@ -121,15 +119,10 @@ class GameEngine:
                 else:
                     data[key] = None
         return data
-
-    async def process_actions(self):
-        while True:
-            action_data = await self.action_queue.get()
-            asyncio.create_task(self.process_action(action_data))
-            self.action_queue.task_done()
-
-    async def process_action(self, action_data):
-        data, player_color = action_data
+        
+    #effectively creates a loop which takes data from the client, populates the data in the action
+    #at the top of the stack, executes the action if it's ready and sends new available actions otherwise
+    async def process_data_from_client(self, data, player_color):
         if self.game_action_container_stack[-1].whose_action != player_color:
                     await self.send_clients_log_message(f"{player_color} tried to take action but it's not their action to take")
                     return
@@ -179,11 +172,6 @@ class GameEngine:
         else:
             await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="red"), next_piece_of_data_to_fill, player_color_to_send_to="red")
             await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), next_piece_of_data_to_fill, player_color_to_send_to="blue")    
-        
-    #effectively creates a loop which takes data from the client, populates the data in the action
-    #at the top of the stack, executes the action if it's ready and sends new available actions otherwise
-    async def process_data_from_client(self, data, player_color):
-        await self.action_queue.put((data, player_color))
 
     def import_all_tiles_from_folder(self, folder_name):
         sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -226,8 +214,15 @@ class GameEngine:
 
     def create_new_game_state(self):
         chosen_tiles = random.sample(self.import_all_tiles_from_folder('tiles'), 9)
-        chosen_round_bonuses = [random.choice(self.get_all_round_bonuses())() for _ in range(6)]
-        blue_chosen_powerups = [random.choice(self.get_all_powerups()) for _ in range(3)]
+
+        all_bonuses = self.get_all_round_bonuses()
+        num_bonuses = min(6, len(all_bonuses))
+        chosen_round_bonuses = random.sample(all_bonuses, num_bonuses)
+        chosen_round_bonuses = [bonus() for bonus in chosen_round_bonuses]
+
+        all_powerups = self.get_all_powerups()
+        num_powerups = 3
+        blue_chosen_powerups = random.sample(all_powerups, num_powerups)        
         red_chosen_powerups = blue_chosen_powerups.copy() 
         game_state = {
             "round": 0,
@@ -251,7 +246,7 @@ class GameEngine:
                 "blue": [powerup(owner="blue") for powerup in blue_chosen_powerups]
             },
             "round_bonuses": chosen_round_bonuses,
-            "listeners": {"on_place": {}, "on_powerup_place": {}, "start_of_round": {}, "end_of_round": {}, "on_produce": {}, "on_move": {}, "on_burn": {}},
+            "listeners": {"on_place": {}, "on_powerup_place": {}, "start_of_round": {}, "end_of_round": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
         }
 
         for tile in game_state["tiles"]:

@@ -88,8 +88,8 @@ class Road(Tile):
             return False
 
         await send_clients_log_message(f"Using {self.name}")
-        game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shape_from, slot_index_to_move_shape_from, index_of_tile_to_move_shape_to, slot_index_to_move_shape_to)
-        await send_clients_log_message(f"Moved {shape_to_move} from {game_state['tiles'][index_of_tile_to_move_shape_to].name} to {game_state['tiles'][index_of_tile_to_move_shape_to].name}")
+        await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shape_from, slot_index_to_move_shape_from, index_of_tile_to_move_shape_to, slot_index_to_move_shape_to)
+        await send_clients_log_message(f"Moved {shape_to_move} from {game_state['tiles'][index_of_tile_to_move_shape_from].name} to {game_state['tiles'][index_of_tile_to_move_shape_to].name}")
         self.is_on_cooldown = True
         return True
 

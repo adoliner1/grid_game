@@ -48,7 +48,7 @@ class Orbit(Tile):
             await send_clients_log_message(f"No ruler determined for {self.name} cannot use")
             return False
 
-        if self.ruler != game_action_container.whose_Action:
+        if self.ruler != game_action_container.whose_action:
             await send_clients_log_message(f"Non-ruler tried to use {self.name}")
             return False
 
