@@ -1,0 +1,20 @@
+TODO:
+
+Client:
+-tiles and powerups taking up too much space 
+-Theme/aesthetics in general
+
+
+Server:
+-More tiles
+    use reactions
+    negative ruling affects (like jester, or the ruler has fewer shapes etc)
+
+-some tiles will need to prompt a yes/no decision first upon reacting. i.e. "do you want to react/do this thing?" 
+data structure that describes when a piece of data is resettable and has a directive i.e. "Choose a slot on a tile to place on"
+-conversions
+
+
+Both:
+-host it/the way connecting works right now is jank
+

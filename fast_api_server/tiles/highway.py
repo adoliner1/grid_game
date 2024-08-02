@@ -19,17 +19,17 @@ class Highway(Tile):
         current_piece_of_data_to_fill_in_current_action = game_action_container.get_next_piece_of_data_to_fill()
         if current_piece_of_data_to_fill_in_current_action == "slot_index_to_burn_shape_from":
             slots_with_a_shape = game_utilities.get_slots_with_a_shape_of_player_color_at_tile_index(game_state, self.determine_ruler(game_state), game_action_container.required_data_for_action["index_of_tile_in_use"])
-            available_actions["select_a_slot"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_with_a_shape}
+            available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_with_a_shape}
         elif current_piece_of_data_to_fill_in_current_action == "slot_and_tile_to_move_shape_from":
             slots_with_a_shape = {}
             for index, tile in enumerate(game_state["tiles"]):
                 slots_with_shapes = []
                 for slot_index, slot in enumerate(tile.slots_for_shapes):
-                    if slot:
+                    if slot and slot_index != game_action_container.required_data_for_action["slot_index_to_burn_shape_from"]:
                         slots_with_shapes.append(slot_index)
                 if slots_with_shapes:
                     slots_with_a_shape[index] = slots_with_shapes
-            available_actions["select_a_slot"] = slots_with_a_shape
+            available_actions["select_a_slot_on_a_tile"] = slots_with_a_shape
         elif current_piece_of_data_to_fill_in_current_action == "slot_and_tile_to_move_shape_to":
             slots_without_a_shape = {}
             for index, tile in enumerate(game_state["tiles"]):
@@ -39,7 +39,7 @@ class Highway(Tile):
                         slots_without_shapes.append(slot_index)
                 if slots_without_shapes:
                     slots_without_a_shape[index] = slots_without_shapes
-            available_actions["select_a_slot"] = slots_without_a_shape
+            available_actions["select_a_slot_on_a_tile"] = slots_without_a_shape
 
     def determine_ruler(self, game_state):
         red_count = 0
@@ -100,7 +100,7 @@ class Highway(Tile):
             await send_clients_log_message(f"Tried to use {self.name} but chose a slot that is not empty to move to at {game_state['tiles'][index_of_tile_to_move_shape_to].name}")
             return False
         
-        if slot_index_to_burn_shape_from == slot_index_to_move_shape_from:
+        if slot_index_to_burn_shape_from == slot_index_to_move_shape_from and index_of_tile_to_move_shape_from == index_of_highway:
             await send_clients_log_message(f"{self.name} can't move the shape that was burned")
             return False            
 

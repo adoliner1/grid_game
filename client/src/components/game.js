@@ -163,7 +163,7 @@ const Game = () => {
     }
 
     const handleShapeInStorageClick = (shape_type) => {
-        if (availableActions.hasOwnProperty('select_a_shape_in_storage') && availableActions['select_a_shape_in_storage'].includes(shape_type)) {
+        if (availableActions.hasOwnProperty('select_a_shape_in_storage')) {
             clickSound.current.play();
             request.current.client_action = 'select_a_shape_in_storage'
             request.current[currentPieceOfDataToFill] = shape_type

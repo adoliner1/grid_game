@@ -58,6 +58,7 @@ class GameEngine:
                         self.game_action_container_stack[-1].whose_action = self.game_state["whose_turn_is_it"]
 
             initial_game_action = self.game_action_container_stack[-1]
+            await self.send_clients_game_state(self.game_state)
             await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, initial_game_action, player_color_to_get_actions_for="red"), initial_game_action.get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
             await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, initial_game_action, player_color_to_get_actions_for="blue"), initial_game_action.get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
             await initial_game_action.event.wait()
@@ -106,11 +107,6 @@ class GameEngine:
             case _:
                 return None
 
-    def print_running_tasks(self):
-        loop = asyncio.get_running_loop()
-        tasks = asyncio.all_tasks(loop)
-        print(f"Number of running tasks: {len(tasks)}")
-
     def reset_resettable_values(self, data):
         for key, value in data.items():
             if "resettable" in key:
@@ -126,25 +122,25 @@ class GameEngine:
         if self.game_action_container_stack[-1].whose_action != player_color:
                     await self.send_clients_log_message(f"{player_color} tried to take action but it's not their action to take")
                     return
-                
-        #TODO probably want a new data structure that describes when a piece of data is resettable and has a directive for it
+        await self.perform_conversions(player_color, data["conversions"])
+
         if data['client_action'] == "reset_current_action":
             #only have initial decision container - do nothing
             if len(self.game_action_container_stack) < 2:
                 return
             #can't remove a reaction - reset the resettable data in it. then resend available actions.
             elif self.game_action_container_stack[-1].is_a_reaction:
-                await self.send_clients_log_message(f"Restting current action")
+                await self.send_clients_log_message(f"Resetting current action")
                 self.reset_resettable_values(self.game_action_container_stack[-1].required_data_for_action)
                 await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="red"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
                 await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
             #game action pushed from an initial decision, we can just remove it entirely and then resend available actions for the initial decision
             else:
-                await self.send_clients_log_message(f"Restting current action")
+                await self.send_clients_log_message(f"Resetting current action")
                 self.game_action_container_stack.pop()
                 await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="red"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
                 await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
-
+            return
         if self.game_action_container_stack[-1].game_action == "initial_decision":
             new_game_action_container = self.create_new_game_action_container_from_initial_decision(data)
             if new_game_action_container:
@@ -158,12 +154,9 @@ class GameEngine:
             self.game_action_container_stack[-1].required_data_for_action[data_key] = data[data_key]
 
         next_piece_of_data_to_fill = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
-        #print (next_piece_of_data_to_fill)
         if not next_piece_of_data_to_fill:
             action_to_execute = self.game_action_container_stack[-1]
             await self.execute_game_action(action_to_execute)
-            #print ("stack after execute")
-            #print (self.game_action_container_stack)
             if action_to_execute.is_a_reaction:
                 action_to_execute.event.set()
             else:
@@ -362,40 +355,36 @@ class GameEngine:
         game_utilities.determine_rulers(self.game_state)
         return True
 
-    async def perform_conversions(self, local_game_state, player_color, conversions):
-        if local_game_state["whose_action_is_it"] != player_color:
-            await self.send_clients_log_message(f"It's not {player_color}'s action.")
-            return
-
+    async def perform_conversions(self, player_color, conversions):
         for conversion in conversions:
                 match conversion:
                     case "circle to square":
-                        if local_game_state["shapes_in_storage"][player_color]["circle"] >= 3:
-                            local_game_state["shapes_in_storage"][player_color]["circle"] -= 3
-                            local_game_state["shapes_in_storage"][player_color]["square"] += 1
+                        if self.game_state["shapes_in_storage"][player_color]["circle"] >= 3:
+                            self.game_state["shapes_in_storage"][player_color]["circle"] -= 3
+                            self.game_state["shapes_in_storage"][player_color]["square"] += 1
                             await self.send_clients_log_message(f"{player_color} converts 3 circles to a square")
                         else:
                             await self.send_clients_log_message(f"{player_color} tries to convert 3 circles to a square but doesn't have enough circles")
                     case "square to triangle":
-                        if local_game_state["shapes_in_storage"][player_color]["square"] >= 3:
-                            local_game_state["shapes_in_storage"][player_color]["square"] -= 3
-                            local_game_state["shapes_in_storage"][player_color]["triangle"] += 1
+                        if self.game_state["shapes_in_storage"][player_color]["square"] >= 3:
+                            self.game_state["shapes_in_storage"][player_color]["square"] -= 3
+                            self.game_state["shapes_in_storage"][player_color]["triangle"] += 1
                             await self.send_clients_log_message(f"{player_color} converts 3 squares to a triangle")
                         else:
                             await self.send_clients_log_message(f"{player_color} tries to convert 3 squares to a triangle but doesn't have enough squares")
 
                     case "triangle to square":
-                        if local_game_state["shapes_in_storage"][player_color]["triangle"] >= 1:
-                            local_game_state["shapes_in_storage"][player_color]["triangle"] -= 1
-                            local_game_state["shapes_in_storage"][player_color]["square"] += 1
+                        if self.game_state["shapes_in_storage"][player_color]["triangle"] >= 1:
+                            self.game_state["shapes_in_storage"][player_color]["triangle"] -= 1
+                            self.game_state["shapes_in_storage"][player_color]["square"] += 1
                             await self.send_clients_log_message(f"{player_color} converts 1 triangle to a square")
                         else:
                             await self.send_clients_log_message(f"{player_color} tries to convert a triangle to a square but doesn't have enough triangles")
 
                     case "square to circle":
-                        if local_game_state["shapes_in_storage"][player_color]["square"] >= 1:
-                            local_game_state["shapes_in_storage"][player_color]["square"] -= 1
-                            local_game_state["shapes_in_storage"][player_color]["circle"] += 1
+                        if self.game_state["shapes_in_storage"][player_color]["square"] >= 1:
+                            self.game_state["shapes_in_storage"][player_color]["square"] -= 1
+                            self.game_state["shapes_in_storage"][player_color]["circle"] += 1
                             await self.send_clients_log_message(f"{player_color} converts 1 square to 1 circle")
                         else:
                             await self.send_clients_log_message(f"{player_color} tries to convert a square to a circle but doesn't have enough squares")
@@ -471,18 +460,18 @@ class GameEngine:
         tiles_with_a_ruler = [tile for tile in self.game_state["tiles"] if tile.determine_ruler(self.game_state) is not None]
         if len(tiles_with_a_ruler) >= 7:
             await self.send_clients_log_message(f"7 or more tiles have a ruler, ending game")
-            await self.end_game(self.game_state)
+            await self.end_game()
             return True
         if (self.game_state["round"] == 5):
             await self.send_clients_log_message(f"Round 5, ending game")
-            await self.end_game(self.game_state)
+            await self.end_game()
             return True
         
         return False
 
     async def end_game(self):
         for tile in self.game_state["tiles"]:
-            await tile.end_of_game_effect(self.game_state, self.send_clients_log_message)
+            await tile.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
 
         for powerup in self.game_state["powerups"]["red"]:
                     await powerup.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
@@ -499,3 +488,5 @@ class GameEngine:
             await self.send_clients_log_message("Blue wins!")
         else:
             await self.send_clients_log_message("It's a tie!")
+
+        self.game_has_ended = True

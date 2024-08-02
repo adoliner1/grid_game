@@ -4,12 +4,6 @@ import Square from './shapes/square'
 import Triangle from './shapes/triangle'
 import '../stylesheets/shapes_on_tile.css'
 
-const shapeHierarchy = {
-    'circle': 1,
-    'square': 2,
-    'triangle': 3
-}
-
 const ShapesOnTile = ({ slots_for_shapes, tile_index, ruler, available_actions, onSlotClick}) => {
 
     const renderShape = (shape, color) => {

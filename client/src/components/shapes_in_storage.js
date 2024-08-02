@@ -8,9 +8,7 @@ import ConversionArrow from './conversion_arrow'
 const ShapesInStorage = ({player_color, whose_turn_is_it, has_passed, clients_color, shapes, points, available_actions, onShapeClick, onConversionArrowClick}) => {
     const isSelectable = (shape_type, available_actions) => {
         return (
-            available_actions.hasOwnProperty('select_a_shape_in_storage') &&
-            available_actions['select_a_shape_in_storage'].includes(shape_type) &&
-            clients_color === player_color && shapes[shape_type] > 0
+            available_actions.hasOwnProperty('select_a_shape_in_storage') && clients_color === player_color && shapes[shape_type] > 0
         )
     }
 

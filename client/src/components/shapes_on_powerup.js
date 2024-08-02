@@ -4,12 +4,6 @@ import Square from './shapes/square'
 import Triangle from './shapes/triangle'
 import '../stylesheets/shapes_on_powerup.css'
 
-const shapeHierarchy = {
-    'circle': 1,
-    'square': 2,
-    'triangle': 3
-}
-
 const ShapesOnPowerup = ({ slots_for_shapes, powerup_index, available_actions, onPowerupSlotClick, playerColor }) => {
 
     const renderShape = (shape, color) => {
@@ -27,8 +21,8 @@ const ShapesOnPowerup = ({ slots_for_shapes, powerup_index, available_actions, o
 
     const isSelectable = (index) => {
         return available_actions.hasOwnProperty('select_a_slot_on_a_powerup') &&
-            available_actions['select_a_slot_on_a_powerup'].hasOwnProperty(powerup_index) &&
-            available_actions['select_a_slot_on_a_powerup'][powerup_index].includes(index)
+            available_actions['select_a_slot_on_a_powerup'][playerColor].hasOwnProperty(powerup_index) &&
+            available_actions['select_a_slot_on_a_powerup'][playerColor][powerup_index].includes(index)
     }
 
     return (

@@ -32,7 +32,7 @@ class Aqueduct(Tile):
             available_actions["select_a_slot_on_a_tile"] = slots_with_a_shape
         elif current_piece_of_data_to_fill_in_current_action == "tile_to_move_shapes_to":
             all_tiles = [index for index, tile in enumerate(game_state["tiles"])]
-            available_actions["select_a_slot_on_a_tile"] = all_tiles
+            available_actions["select_a_tile"] = all_tiles
 
     def determine_ruler(self, game_state):
         red_count = 0
@@ -66,7 +66,7 @@ class Aqueduct(Tile):
         index_of_aqueduct = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         slot_index_to_move_shapes_from = game_action_container.required_data_for_action['slot_and_tile_to_move_shapes_from']['slot_index']
         index_of_tile_to_move_shapes_from = game_action_container.required_data_for_action['slot_and_tile_to_move_shapes_from']['tile_index']
-        index_of_tile_to_move_shapes_to = game_action_container.required_data_for_action['tile_to_move_shapes_to']['tile_index']
+        index_of_tile_to_move_shapes_to = game_action_container.required_data_for_action['tile_to_move_shapes_to']
         shape_to_move = game_state['tiles'][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from]["shape"]
         color_of_shape_to_move = game_state['tiles'][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from]["color"]
 
@@ -81,8 +81,9 @@ class Aqueduct(Tile):
         await send_clients_log_message(f"Using {self.name}")
 
         # Burn all shapes on Aqueduct
+        color_to_burn = self.ruler
         for i, slot in enumerate(self.slots_for_shapes):
-            if slot and slot["color"] == self.ruler:
+            if slot and slot["color"] == color_to_burn:
                 await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_aqueduct, i)
         
         # Move as many shapes as possible from the source tile to the destination tile
@@ -93,7 +94,7 @@ class Aqueduct(Tile):
         for _ in range(moves):
             slot_index_to_fill = slots_to_fill.pop(0)
             slot_index_to_move = shapes_to_move.pop(0)
-            game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shapes_from, slot_index_to_move, index_of_tile_to_move_shapes_to, slot_index_to_fill)
+            await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shapes_from, slot_index_to_move, index_of_tile_to_move_shapes_to, slot_index_to_fill)
         
         await send_clients_log_message(f"Moved {moves} {color_of_shape_to_move} {shape_to_move}(s) from {game_state['tiles'][index_of_tile_to_move_shapes_from].name} to {game_state['tiles'][index_of_tile_to_move_shapes_to].name}")
         return True

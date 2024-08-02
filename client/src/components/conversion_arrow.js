@@ -1,5 +1,7 @@
 const ConversionArrow = ({ player_color, clients_color, whose_turn_is_it, direction, conversion, onConversionArrowClick, numberOfShapeToConvertFrom}) => {
     const isSelectable = (conversion, numberOfShapeToConvertFrom) => {
+
+        console.log(whose_turn_is_it)
         if (player_color !== clients_color || whose_turn_is_it !== clients_color) {
             return false
         }

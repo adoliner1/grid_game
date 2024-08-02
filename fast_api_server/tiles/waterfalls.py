@@ -35,7 +35,7 @@ class Waterfalls(Tile):
             await send_clients_log_message(f"No ruler determined for {self.name}, no points awarded")
             return
 
-        adjacent_tiles_indices = game_utilities.get_adjacent_tiles_indices(game_utilities.find_index_of_tile_by_name(game_state, self.name))
+        adjacent_tiles_indices = game_utilities.get_adjacent_tile_indices(game_utilities.find_index_of_tile_by_name(game_state, self.name))
         adjacent_tiles_ruled_count = 0
 
         for index in adjacent_tiles_indices:
