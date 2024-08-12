@@ -162,6 +162,12 @@ const Game = () => {
         sendRequest()
     }
 
+    const handleChooseNotToReactClick = () => {
+        clickSound.current.play();
+        request.current.client_action = "do_not_react"
+        sendRequest()
+    }
+
     const handleShapeInStorageClick = (shape_type) => {
         if (availableActions.hasOwnProperty('select_a_shape_in_storage')) {
             clickSound.current.play();
@@ -324,6 +330,12 @@ const Game = () => {
                     disabled={!availableActions.hasOwnProperty('pass')}
                     className={availableActions.hasOwnProperty('pass') ? 'btn-enabled' : 'btn-disabled'} >
                     Pass
+                </button>
+                <button 
+                    onClick={handleChooseNotToReactClick} 
+                    disabled={!availableActions.hasOwnProperty('do_not_react')}
+                    className={availableActions.hasOwnProperty('do_not_react') ? 'btn-enabled' : 'btn-disabled'} >
+                    Don't Use Reaction
                 </button>
                 <GameLog logs={logs} />
             </div>

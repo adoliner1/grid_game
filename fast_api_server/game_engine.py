@@ -11,6 +11,8 @@ import asyncio
 import powerups
 import round_bonuses
 from tiles.tile import Tile
+from tiles.conductor import Conductor
+from tiles.nitrogen import Nitrogen
 
 class GameEngine:
 
@@ -120,9 +122,15 @@ class GameEngine:
     #at the top of the stack, executes the action if it's ready and sends new available actions otherwise
     async def process_data_from_client(self, data, player_color):
         if self.game_action_container_stack[-1].whose_action != player_color:
-                    await self.send_clients_log_message(f"{player_color} tried to take action but it's not their action to take")
-                    return
+            await self.send_clients_log_message(f"{player_color} tried to take action but it's not their action to take")
+            return
         await self.perform_conversions(player_color, data["conversions"])
+
+        if data['client_action'] == "do_not_react":     
+            if not self.game_action_container_stack[-1].is_a_reaction:
+                await self.send_clients_log_message(f"{player_color} chose not to react but it's not a reaction on top fo the stack")
+            else:
+                self.game_action_container_stack.pop().event.set()
 
         if data['client_action'] == "reset_current_action":
             #only have initial decision container - do nothing
@@ -207,7 +215,8 @@ class GameEngine:
 
     def create_new_game_state(self):
         chosen_tiles = random.sample(self.import_all_tiles_from_folder('tiles'), 9)
-
+        chosen_tiles[0] = Conductor
+        chosen_tiles[1] = Nitrogen
         all_bonuses = self.get_all_round_bonuses()
         num_bonuses = min(6, len(all_bonuses))
         chosen_round_bonuses = random.sample(all_bonuses, num_bonuses)
@@ -239,7 +248,7 @@ class GameEngine:
                 "blue": [powerup(owner="blue") for powerup in blue_chosen_powerups]
             },
             "round_bonuses": chosen_round_bonuses,
-            "listeners": {"on_place": {}, "on_powerup_place": {}, "start_of_round": {}, "end_of_round": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
+            "listeners": {"on_place": {}, "on_powerup_place": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
         }
 
         for tile in game_state["tiles"]:
@@ -278,19 +287,15 @@ class GameEngine:
                 if not await powerup.use_powerup(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state):
                     return False
             case 'place_shape_on_tile_slot':
-                tile_index = game_action_container.required_data_for_action["tile_slot_to_place_on"]["tile_index"]
-                slot_index = game_action_container.required_data_for_action["tile_slot_to_place_on"]["slot_index"]
-                if not await self.execute_place_shape_on_tile_slot_action(game_action_container, slot_index, tile_index, game_action_container.required_data_for_action["shape_type_to_place"]):
+                if not await self.execute_place_shape_on_tile_slot_action(game_action_container):
                     return False
             case 'place_shape_on_powerup_slot':
-                powerup_index = game_action_container.required_data_for_action["resettable_powerup_slot_to_place_on"]["powerup_index"]
-                slot_index = game_action_container.required_data_for_action["resettable_powerup_slot_to_place_on"]["slot_index"]
-                if not await self.execute_place_shape_on_powerup_action(game_action_container, slot_index, powerup_index, game_action_container.required_data_for_action["shape_type_to_place"]):
+                if not await self.execute_place_shape_on_powerup_action(game_action_container):
                     return False
             case 'react_with_tile':
-                tile = self.game_state["tiles"][game_action_container.required_data_for_action["index_of_tile_in_use"]]
-                # if use tile returns false, the action failed, so don't update the rest of the game state
-                if not await tile.react(self.game_state, game_action_container.whose_action, self.send_clients_log_message, **game_action_container.required_data_for_action):
+                tile = self.game_state["tiles"][game_action_container.required_data_for_action["index_of_tile_being_reacted_with"]]
+                # if react returns false, the action failed, so don't update the rest of the game state
+                if not await tile.react(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state):
                     return False
             case 'react_with_powerup':
                 powerup = self.game_state["powerups"][game_action_container.whose_action][game_action_container.required_data_for_action["index_of_powerup_in_use"]]
@@ -307,7 +312,10 @@ class GameEngine:
         await self.send_clients_game_state(self.game_state)
         return True
 
-    async def execute_place_shape_on_tile_slot_action(self, game_action_container, slot_index, tile_index, shape_type):
+    async def execute_place_shape_on_tile_slot_action(self, game_action_container):
+        tile_index = game_action_container.required_data_for_action["tile_slot_to_place_on"]["tile_index"]
+        slot_index = game_action_container.required_data_for_action["tile_slot_to_place_on"]["slot_index"]
+        shape_type = game_action_container.required_data_for_action["shape_type_to_place"]
         color_of_player_placing = game_action_container.whose_action
         if self.game_state["whose_turn_is_it"] != color_of_player_placing:
             await self.send_clients_log_message("Not your turn")
@@ -331,7 +339,10 @@ class GameEngine:
         game_utilities.determine_rulers(self.game_state)
         return True
     
-    async def execute_place_shape_on_powerup_action(self, game_action_container, slot_index, powerup_index, shape_type):
+    async def execute_place_shape_on_powerup_action(self, game_action_container):
+        powerup_index = game_action_container.required_data_for_action["resettable_powerup_slot_to_place_on"]["powerup_index"]
+        slot_index = game_action_container.required_data_for_action["resettable_powerup_slot_to_place_on"]["slot_index"]
+        shape_type = game_action_container.required_data_for_action["shape_type_to_place"]
         color_of_player_placing = game_action_container.whose_action
 
         powerup = self.game_state["powerups"][color_of_player_placing][powerup_index]
@@ -407,6 +418,9 @@ class GameEngine:
         for powerup in self.game_state["powerups"]["blue"]:
             await powerup.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)                    
 
+        for _, listener_function in self.game_state["listeners"]["start_of_round"].items():
+                await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  
+
         #give base income
         await self.give_base_income_to_players()
         game_utilities.determine_rulers(self.game_state)
@@ -441,10 +455,13 @@ class GameEngine:
             await tile.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
 
         for powerup in self.game_state["powerups"]["red"]:
-                    await powerup.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
+            await powerup.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
 
         for powerup in self.game_state["powerups"]["blue"]:
             await powerup.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)                    
+
+        for _, listener_function in self.game_state["listeners"]["end_of_round"].items():
+            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  
 
         game_utilities.determine_rulers(self.game_state)
 
@@ -458,8 +475,8 @@ class GameEngine:
     async def check_for_end_of_game(self):
         await self.send_clients_log_message(f"checking for end of game")
         tiles_with_a_ruler = [tile for tile in self.game_state["tiles"] if tile.determine_ruler(self.game_state) is not None]
-        if len(tiles_with_a_ruler) >= 7:
-            await self.send_clients_log_message(f"7 or more tiles have a ruler, ending game")
+        if len(tiles_with_a_ruler) == 9:
+            await self.send_clients_log_message(f"All tiles have a ruler, ending game")
             await self.end_game()
             return True
         if (self.game_state["round"] == 5):
@@ -479,7 +496,10 @@ class GameEngine:
         for powerup in self.game_state["powerups"]["blue"]:
             await powerup.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)                    
 
-        await self.send_clients_game_state()
+        for _, listener_function in self.game_state["listeners"]["end_game"].items():
+            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  
+
+        await self.send_clients_game_state(self.game_state)
         await self.send_clients_log_message(f"Final Score: Red: {self.game_state['points']['red']} Blue: {self.game_state['points']['blue']}")
 
         if self.game_state["points"]["red"] > self.game_state["points"]["blue"]:

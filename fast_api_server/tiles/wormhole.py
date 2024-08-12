@@ -6,7 +6,7 @@ class Wormhole(Tile):
     def __init__(self):
         super().__init__(
             name="Wormhole",
-            description=f"Once per round, anyone with a set on wormhole (1 circle, 1 square, and 1 triangle) can swap the position of two tiles. \nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, +3 points",
+            description=f"Once per round, anyone with a set on wormhole (1 circle, 1 square, and 1 triangle) can swap the position of two tiles.\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, +5 points",
             number_of_slots=9,
             data_needed_for_use=["tile1", "tile2"]
         )
@@ -88,5 +88,5 @@ class Wormhole(Tile):
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler:
-            await send_clients_log_message(f"{self.name} gives 3 points to {ruler}")
-            game_state["points"][ruler] += 3
+            await send_clients_log_message(f"{self.name} gives 5 points to {ruler}")
+            game_state["points"][ruler] += 5

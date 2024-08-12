@@ -6,7 +6,7 @@ class Jester(Tile):
     def __init__(self):
         super().__init__(
             name="Jester",
-            description = f"At the end of the round, per set you have here (one circle, square, and triangle) gain 7 points\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, -10 points",
+            description = f"At the end of the round, per unique type of pair you have here gain 5 points\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, -10 points",
             number_of_slots=9,
         )
 
@@ -30,32 +30,13 @@ class Jester(Tile):
         return None
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
-        shape_count = {
-            'red': {
-                'circle': 0,
-                'square': 0,
-                'triangle': 0
-            },
-            'blue': {
-                'circle': 0,
-                'square': 0,
-                'triangle': 0
-            }
-        }
-
-        for slot in self.slots_for_shapes:
-            if slot:
-                color = slot["color"]
-                shape = slot["shape"]
-                shape_count[color][shape] += 1
-
         for color in ['red', 'blue']:
-            triples = min(shape_count[color]['circle'], shape_count[color]['square'], shape_count[color]['triangle'])
-            points_earned = triples * 7
+            shapes = [slot["shape"] for slot in self.slots_for_shapes if slot and slot["color"] == color]
+            max_pairs = game_utilities.find_max_unique_pairs(shapes, set())
+            points_earned = max_pairs * 5
             game_state["points"][color] += points_earned
-
             if points_earned > 0:
-                await send_clients_log_message(f"{color} player earned {points_earned} points from triples on {self.name}")
+                await send_clients_log_message(f"{color} player earned {points_earned} points from unique pairs on {self.name}")
 
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)

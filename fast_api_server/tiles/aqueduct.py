@@ -6,7 +6,7 @@ class Aqueduct(Tile):
     def __init__(self):
         super().__init__(
             name="Aqueduct",
-            description=f"Ruling Criteria: 3 or more shapes\nRuling Benefits: Burn all your shapes here. Choose a shape at an adjacent tile. Move as many of that colored shape as possible to a tile anywhere.",
+            description=f"Ruling Criteria: 2 or more shapes\nRuling Benefits: Burn all your shapes here. Choose a shape at a tile. Move as many of that colored shape as possible to a tile anywhere.",
             number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_move_shapes_from", "tile_to_move_shapes_to"]
         )
@@ -44,10 +44,10 @@ class Aqueduct(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 3:
+        if red_count >= 2 and red_count > blue_count:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 3:
+        elif blue_count >= 2 and blue_count > red_count:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -69,10 +69,6 @@ class Aqueduct(Tile):
         index_of_tile_to_move_shapes_to = game_action_container.required_data_for_action['tile_to_move_shapes_to']
         shape_to_move = game_state['tiles'][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from]["shape"]
         color_of_shape_to_move = game_state['tiles'][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from]["color"]
-
-        if not game_utilities.determine_if_directly_adjacent(index_of_aqueduct, index_of_tile_to_move_shapes_from):
-            await send_clients_log_message(f"Tried to use {self.name} but chose a non-adjacent tile")
-            return False
 
         if game_state["tiles"][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from] is None:
             await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no shape to move from {game_state['tiles'][index_of_tile_to_move_shapes_from].name}")

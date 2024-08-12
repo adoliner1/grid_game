@@ -66,7 +66,7 @@ class Pluto(Tile):
         await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_action_container.whose_action, 1, 'square', self.name)
         return True
 
-    async def end_of_game_effect(self, game_state, send_clients_log_message):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler:
             await send_clients_log_message(f"{self.name} gives 3 points to {ruler}")

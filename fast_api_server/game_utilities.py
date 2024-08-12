@@ -65,7 +65,9 @@ async def player_receives_a_shape_on_tile(game_state, game_action_container_stac
     await send_clients_log_message(f"{player_color} receives a {shape_type} on {tile.name}")
 
     for _, listener_function in game_state["listeners"]["on_receive"].items():
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, receiver=player_color, shape=shape_type, index_of_tile_placed_at=tile_index)
+
+        await send_clients_game_state(game_state)
+        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, receiver=player_color, shape=shape_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
 
     determine_rulers(game_state)
 
@@ -110,7 +112,6 @@ async def burn_shape_at_powerup_at_index(game_state, game_action_container_stack
     await send_clients_game_state(game_state)
     #for _, listener_function in game_state["listeners"]["on_burn"].items():
     #    await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, burner=game_action_container_stack[-1].whose_action, shape=shape, index_of_tile_burned_at=powerup_index)
-
 #sync
 def get_available_client_actions(game_state, game_action_container, player_color_to_get_actions_for):
 
@@ -226,6 +227,28 @@ def determine_how_many_full_columns_player_rules(game_state, player):
             full_columns += 1
 
     return full_columns
+
+def find_max_unique_pairs(remaining_shapes, current_pairs):
+    if len(remaining_shapes) < 2:
+        return len(current_pairs)
+    
+    max_pairs = len(current_pairs)
+    
+    for i in range(len(remaining_shapes) - 1):
+        for j in range(i + 1, len(remaining_shapes)):
+            shape1, shape2 = remaining_shapes[i], remaining_shapes[j]
+            new_pair = tuple(sorted([shape1, shape2]))
+            
+            if new_pair not in current_pairs:
+                # Make a new pair
+                new_remaining = remaining_shapes[:i] + remaining_shapes[i+1:j] + remaining_shapes[j+1:]
+                new_current_pairs = current_pairs | {new_pair}
+                
+                # Recursive call
+                pairs_count = find_max_unique_pairs(new_remaining, new_current_pairs)
+                max_pairs = max(max_pairs, pairs_count)
+    
+        return max_pairs
 
 #returns a dict where the keys are tile indices and the associated list are the indices of the slots on that tile that can be placed on
 def get_tile_slots_that_can_be_placed_on(game_state, shape_type):

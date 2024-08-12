@@ -6,7 +6,7 @@ class Nitrogen(Tile):
     def __init__(self):
         super().__init__(
             name="Nitrogen",
-            description=f"At the end of the round, for each triangle you have here, gain a square and a circle here. Anyone can use this tile to burn a set here (1 circle, 1 square, 1 triangle) for 5 points\nRuling Criteria: most shapes\nRuling Benefits: At the end of the game +7 points",
+            description=f"At the end of the round, for each triangle you have here, receive a square and a circle here. Anyone can use this tile to burn a set here (1 circle, 1 square, 1 triangle) for 5 points\nRuling Criteria: most shapes\nRuling Benefits: At the end of the game +7 points",
             number_of_slots=11,
         )
 
@@ -83,7 +83,7 @@ class Nitrogen(Tile):
 
         return True
 
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler:
             await send_clients_log_message(f"{self.name} gives 7 points to {ruler}")

@@ -6,8 +6,8 @@ class King(Tile):
     def __init__(self):
         super().__init__(
             name="King",
-            description = f"Ruling Criteria: 6 or more shapes\nRuling Benefits: At the end of the game +20 points",
-            number_of_slots=11,
+            description = f"Ruling Criteria: 5 or more shapes\nRuling Benefits: At the end of the game +20 points",
+            number_of_slots=9,
         )
 
     def determine_ruler(self, game_state):
@@ -20,10 +20,10 @@ class King(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 6 and red_count > blue_count:
+        if red_count >= 5:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 6 and blue_count > red_count:
+        elif blue_count >= 5:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None

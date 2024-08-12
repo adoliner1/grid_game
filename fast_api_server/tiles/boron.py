@@ -6,7 +6,7 @@ class Boron(Tile):
     def __init__(self):
         super().__init__(
             name="Boron",
-            description = "At the end of the round, if you have a square here, receive a circle here. The player with more circles here produces 1 circle.\nRuling Criteria: most shapes \nRuling Benefits: At the end of the game, +5 points",
+            description = "At the end of the round, if you have a square here, receive a circle here. The player with more circles here produces 1 circle.\nRuling Criteria: most shapes \nRuling Benefits: At the end of the game, +1 point",
             number_of_slots=11,
         )
 
@@ -59,8 +59,8 @@ class Boron(Tile):
             await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, 'blue', 1, 'circle', self.name)
             await send_clients_log_message(f"blue produces 1 circle for having more circles on {self.name}")
 
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state,):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if (ruler != None):
-            await send_clients_log_message(f"{self.name} gives 5 points to {ruler}")
-            game_state["points"][ruler] += 5
+            await send_clients_log_message(f"{self.name} gives 1 point to {ruler}")
+            game_state["points"][ruler] += 1

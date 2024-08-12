@@ -68,7 +68,7 @@ class Carbon(Tile):
         circles_burned = 0
         for i, slot in enumerate(self.slots_for_shapes):
             if slot and slot["shape"] == "circle" and slot["color"] == game_action_container.whose_action:
-                await self.burn_shape_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, i)
+                await self.burn_shape_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, i)
                 circles_burned += 1
                 if circles_burned == 3:
                     break
@@ -79,10 +79,10 @@ class Carbon(Tile):
         
         await send_clients_log_message(f"{self.name} is used")
         
-        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, game_action_container.whose_action, 1, 'triangle', self.name)
+        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_action_container.whose_action, 1, 'triangle', self.name)
         return True
 
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler:
             await send_clients_log_message(f"{self.name} gives 5 points to {ruler}")

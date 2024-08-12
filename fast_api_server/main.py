@@ -163,8 +163,6 @@ async def send_clients_new_game_state(game_state):
         })
 
 async def send_available_actions_to_client(available_actions, current_piece_of_data_to_fill_in_current_action, player_color_to_send_to):
-    #print("sending available actions")
-    #print(available_actions)
     for player in current_players:
         if player["color"] == player_color_to_send_to:
             await player["websocket"].send_json({

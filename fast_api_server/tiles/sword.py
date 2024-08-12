@@ -6,8 +6,8 @@ class Sword(Tile):
     def __init__(self):
         super().__init__(
             name="Sword",
-            description = f"Ruling Criteria: 4 or more shapes\nRuling Benefits: You may use this tile to burn one of your shapes here and a shape on an adjacent tile",
-            number_of_slots=7,
+            description = f"Ruling Criteria: 3 or more shapes\nRuling Benefits: You may use this tile to burn one of your shapes here and a shape on an adjacent tile",
+            number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_burn_shape_at"]
         )
 
@@ -43,10 +43,10 @@ class Sword(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 4:
+        if red_count >= 3:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 4:
+        elif blue_count >= 3:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None

@@ -6,7 +6,7 @@ class Saturn(Tile):
     def __init__(self):
         super().__init__(
             name="Saturn",
-            description = f"Ruling Criteria: 3 or more shapes\nRuling Benefits: You may use this tile to burn one of your triangles here to produce 2 squares",
+            description = f"Ruling Criteria: 2 or more shapes\nRuling Benefits: Once per round, you may use this tile to burn one of your triangles here to produce 2 squares",
             number_of_slots=5,
         )
 
@@ -14,7 +14,7 @@ class Saturn(Tile):
         whose_turn_is_it = game_state["whose_turn_is_it"]
         ruler = self.determine_ruler(game_state)
 
-        if whose_turn_is_it != ruler:
+        if whose_turn_is_it != ruler or self.is_on_cooldown:
             return False
         
         for slot in self.slots_for_shapes:
@@ -33,10 +33,10 @@ class Saturn(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 3:
+        if red_count >= 2:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 3:
+        elif blue_count >= 2:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -67,4 +67,5 @@ class Saturn(Tile):
         
         await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 2, 'square', self.name)
 
+        self.is_on_cooldown = True
         return True

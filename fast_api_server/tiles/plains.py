@@ -6,26 +6,38 @@ class Plains(Tile):
     def __init__(self):
         super().__init__(
             name="Plains",
-            description=f"Ruling Criteria: 4 or more shapes\nRuling Benefits: When an adjacent tile produces shapes, Plains produces one more of the same type",
+            description=f"Ruling Criteria: supremacy in 2 or more shapes\nRuling Benefits: When an adjacent tile produces shapes, Plains produces one more of the same type",
             number_of_slots=7,
         )
 
     def determine_ruler(self, game_state):
-        red_count = 0
-        blue_count = 0
+        shape_counts = {
+            'red': {'circle': 0, 'square': 0, 'triangle': 0},
+            'blue': {'circle': 0, 'square': 0, 'triangle': 0}
+        }
 
         for slot in self.slots_for_shapes:
             if slot:
-                if slot["color"] == "red":
-                    red_count += 1
-                elif slot["color"] == "blue":
-                    blue_count += 1
-        if red_count >= 3 and red_count > blue_count:
+                color = slot["color"]
+                shape = slot["shape"]
+                if color in shape_counts and shape in shape_counts[color]:
+                    shape_counts[color][shape] += 1
+
+        supremacy_count = {'red': 0, 'blue': 0}
+
+        for shape in ['circle', 'square', 'triangle']:
+            if shape_counts['red'][shape] > shape_counts['blue'][shape]:
+                supremacy_count['red'] += 1
+            elif shape_counts['blue'][shape] > shape_counts['red'][shape]:
+                supremacy_count['blue'] += 1
+
+        if supremacy_count['red'] >= 2:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 3 and blue_count > red_count:
+        elif supremacy_count['blue'] >= 2:
             self.ruler = 'blue'
             return 'blue'
+
         self.ruler = None
         return None
 

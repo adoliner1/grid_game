@@ -6,7 +6,7 @@ class Waterfalls(Tile):
     def __init__(self):
         super().__init__(
             name="Waterfall",
-            description=f"\nRuling Criteria: most shapes, minimum 3\nRuling Benefits: At the end of the round, gain points based on the number of adjacent tiles you also rule. 0 or 1: 1, 2: 3, 3: 7, 4: 13",
+            description=f"\nRuling Criteria: most shapes\nRuling Benefits: At the end of the round, gain points based on the number of adjacent tiles you also rule. 0 or 1: 1, 2: 3, 3: 7, 4: 13",
             number_of_slots=5,
         )
 
@@ -20,10 +20,10 @@ class Waterfalls(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 3 and red_count > blue_count:
+        if red_count > blue_count:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 3 and blue_count > red_count:
+        elif blue_count > red_count:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None

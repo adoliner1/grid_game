@@ -40,12 +40,12 @@ class Powerup:
     def set_available_client_actions_for_reaction(game_state, current_action, current_piece_of_data_to_fill_in_current_action, available_actions_with_details):
         return available_actions_with_details
     
-class ProduceCircleFor3Circles(Powerup):
+class ProduceCircleFor4Circles(Powerup):
     def __init__(self, owner):
         super().__init__(
-            name = "Produce Circle For 3 Circles",
+            name = "Produce 2 Circles For 4 Circles",
             description = "If filled with circles, produce 1 circle at the start of the round",
-            number_of_slots=3,
+            number_of_slots=4,
             owner=owner
         )
 
@@ -55,13 +55,33 @@ class ProduceCircleFor3Circles(Powerup):
             if slot:
                 if slot["shape"] == "circle":
                     circle_count += 1
-        if circle_count == 3:
+        if circle_count == 4:
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 2, "circle", self.name)
+
+
+class ProduceCircleFor3Shapes(Powerup):
+    def __init__(self, owner):
+        super().__init__(
+            name = "Produce Circle For 3 Shapes",
+            description = "If filled, produce 1 circle at the start of the round",
+            number_of_slots=3,
+            owner=owner
+        )
+
+    async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        count = 0
+        for slot in self.slots_for_shapes:
+            if slot:
+                if slot:
+                    count += 1
+        if count == 3:
             await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 1, "circle", self.name)
+
 
 class BurnTwoCirclesProduceTriangle(Powerup):
     def __init__(self, owner):
         super().__init__(
-            name = "Burn Two Circles Place Square",
+            name = "Burn Two Circles Produce Triangle",
             description = "If filled with circles, you may burn 2 circles here to produce a triangle",
             number_of_slots=5,
             owner=owner

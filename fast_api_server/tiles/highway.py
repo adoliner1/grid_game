@@ -6,7 +6,7 @@ class Highway(Tile):
     def __init__(self):
         super().__init__(
             name="Highway",
-            description=f"Ruling Criteria: 3 or more shapes\nRuling Benefits: Once per turn, burn a shape here to move a shape on a tile to another tile.",
+            description=f"Ruling Criteria: at least 1 triangle, tiebreak: most shapes\nRuling Benefits: Once per turn, burn a shape here to move a shape on a tile to another tile.",
             number_of_slots=5,
             data_needed_for_use=["slot_index_to_burn_shape_from", "slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
         )
@@ -44,21 +44,36 @@ class Highway(Tile):
     def determine_ruler(self, game_state):
         red_count = 0
         blue_count = 0
-
+        red_has_triangle = False
+        blue_has_triangle = False
         for slot in self.slots_for_shapes:
             if slot:
                 if slot["color"] == "red":
                     red_count += 1
+                    if slot["shape"] == "triangle":
+                        red_has_triangle = True
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 3:
+                    if slot["shape"] == "triangle":
+                        blue_has_triangle = True
+
+
+        if red_has_triangle and not blue_has_triangle:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 3:
+        elif blue_has_triangle and not red_has_triangle:
             self.ruler = 'blue'
             return 'blue'
-        self.ruler = None
-        return None
+        elif red_has_triangle and blue_has_triangle:
+            if red_count > blue_count:
+                self.ruler = 'red'
+                return 'red'
+            elif blue_count > red_count:
+                self.ruler = 'blue'
+                return 'blue'
+        else:    
+            self.ruler = None
+            return None
 
     async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]

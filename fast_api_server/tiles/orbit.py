@@ -6,23 +6,13 @@ class Orbit(Tile):
     def __init__(self):
         super().__init__(
             name="Orbit",
-            description=f"If a player has supremacy in at least two different shapes, they can use Orbit to select a tile. Rotate the row that tile is in left by one\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, +5 points.",
-            number_of_slots=9,
+            description=f"\nRuling Criteria: Most circles\nRuling Benefits: Once per round, you may use Orbit to choose a tile. Rotate the row that tile is in left once. At the end of the game, +3 points.",
+            number_of_slots=5,
             data_needed_for_use=["tile_to_shift_row"]
         )
 
     def is_useable(self, game_state):
-        whose_turn_is_it = game_state["whose_turn_is_it"]
-        supremacy_count = 0
-
-        shapes = ["circle", "square", "triangle"]
-        for shape in shapes:
-            player_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == whose_turn_is_it and slot["shape"] == shape)
-            opponent_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] != whose_turn_is_it and slot["shape"] == shape)
-            if player_count > opponent_count:
-                supremacy_count += 1
-
-        return supremacy_count >= 2
+        return self.determine_ruler(game_state) == game_state["whose_turn_is_it"] and not self.is_on_cooldown
 
     def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
         current_piece_of_data_to_fill_in_current_action = game_action_container.get_next_piece_of_data_to_fill()
@@ -30,15 +20,21 @@ class Orbit(Tile):
             available_actions["select_a_tile"] = list(range(len(game_state["tiles"])))
 
     def determine_ruler(self, game_state):
-        red_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
-        blue_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
+        circle_counts = {'red': 0, 'blue': 0}
 
-        if red_count > blue_count:
+        for slot in self.slots_for_shapes:
+            if slot and slot["shape"] == "circle":
+                color = slot["color"]
+                if color in circle_counts:
+                    circle_counts[color] += 1
+
+        if circle_counts['red'] > circle_counts['blue']:
             self.ruler = 'red'
             return 'red'
-        elif blue_count > red_count:
+        elif circle_counts['blue'] > circle_counts['red']:
             self.ruler = 'blue'
             return 'blue'
+        
         self.ruler = None
         return None
 

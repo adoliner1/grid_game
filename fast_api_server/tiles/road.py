@@ -6,7 +6,7 @@ class Road(Tile):
     def __init__(self):
         super().__init__(
             name="Road",
-            description=f"Ruling Criteria: 3 or more shapes\nRuling Benefits: Once per round, choose a shape at an adjacent tile. Move it to an empty slot anywhere.",
+            description=f"Ruling Criteria: most shapes\nRuling Benefits: Once per round, choose a shape at an adjacent tile. Move it to an empty slot anywhere.",
             number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
         )
@@ -29,15 +29,15 @@ class Road(Tile):
                     slots_with_a_shape[index] = slots_with_shapes
             available_actions["select_a_slot_on_a_tile"] = slots_with_a_shape
         elif current_piece_of_data_to_fill_in_current_action == "slot_and_tile_to_move_shape_to":
-            slots_without_a_shape = {}
+            slots_without_a_shape_per_tile = {}
             for index, tile in enumerate(game_state["tiles"]):
                 slots_without_shapes = []
                 for slot_index, slot in enumerate(tile.slots_for_shapes):
                     if not slot:
                         slots_without_shapes.append(slot_index)
                 if slots_without_shapes:
-                    slots_without_a_shape[index] = slots_without_shapes
-            available_actions["select_a_slot_on_a_tile"] = slots_without_a_shape
+                    slots_without_a_shape_per_tile[index] = slots_without_shapes
+            available_actions["select_a_slot_on_a_tile"] = slots_without_a_shape_per_tile
 
     def determine_ruler(self, game_state):
         red_count = 0
@@ -49,10 +49,10 @@ class Road(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 3:
+        if red_count > blue_count:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 3:
+        elif blue_count > red_count:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -89,7 +89,6 @@ class Road(Tile):
 
         await send_clients_log_message(f"Using {self.name}")
         await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shape_from, slot_index_to_move_shape_from, index_of_tile_to_move_shape_to, slot_index_to_move_shape_to)
-        await send_clients_log_message(f"Moved {shape_to_move} from {game_state['tiles'][index_of_tile_to_move_shape_from].name} to {game_state['tiles'][index_of_tile_to_move_shape_to].name}")
         self.is_on_cooldown = True
         return True
 

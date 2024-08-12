@@ -6,7 +6,7 @@ class TeleportingCabinet(Tile):
     def __init__(self):
         super().__init__(
             name="Teleporting Cabinet",
-            description=f"Ruling Criteria: 3 or more shapes\nRuling Benefits: Once per turn, choose a shape at an adjacent tile and swap it with a shape anywhere.",
+            description=f"Ruling Criteria: most shapes\nRuling Benefits: Once per turn, choose a shape at an adjacent tile and swap it with a shape anywhere.",
             number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_swap_shape_from", "slot_and_tile_to_swap_shape_to"]
         )
@@ -49,10 +49,10 @@ class TeleportingCabinet(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 3:
+        if red_count > blue_count:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 3:
+        elif blue_count > red_count:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
