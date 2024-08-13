@@ -17,7 +17,7 @@ class Carbon(Tile):
             if slot and slot["shape"] == "circle" and slot["color"] == whose_turn_is_it:
                 number_of_circles_current_player_has_here += 1
 
-        return number_of_circles_current_player_has_here >= 3 
+        return number_of_circles_current_player_has_here >= 3
 
     def determine_ruler(self, game_state):
         red_count = 0

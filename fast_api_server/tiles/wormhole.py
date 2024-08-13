@@ -6,8 +6,8 @@ class Wormhole(Tile):
     def __init__(self):
         super().__init__(
             name="Wormhole",
-            description=f"Once per round, anyone with a set on wormhole (1 circle, 1 square, and 1 triangle) can swap the position of two tiles.\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, +5 points",
-            number_of_slots=9,
+            description=f"Once per round, anyone with at least 2 different shapes here can swap the position of two tiles.\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, +5 points",
+            number_of_slots=5,
             data_needed_for_use=["tile1", "tile2"]
         )
 
@@ -15,10 +15,8 @@ class Wormhole(Tile):
         if self.is_on_cooldown:
             return False
         player_color = game_state["whose_turn_is_it"]
-        circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == player_color and slot["shape"] == "circle")
-        square_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == player_color and slot["shape"] == "square")
-        triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == player_color and slot["shape"] == "triangle")
-        return circle_count > 0 and square_count > 0 and triangle_count > 0
+        shapes = set(slot["shape"] for slot in self.slots_for_shapes if slot and slot["color"] == player_color)
+        return len(shapes) >= 2
 
     def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
         current_piece_of_data_to_fill_in_current_action = game_action_container.get_next_piece_of_data_to_fill()
