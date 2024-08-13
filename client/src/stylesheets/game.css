@@ -75,8 +75,9 @@ svg.selectable {
     border-radius: 5px;
     overflow-y: scroll;
     font-size: 0.9em;
-    max-height: 150px;
+    max-height: 250px;
     min-height: 150px;
+    scroll-behavior: smooth;
 }
 
 .game-log p {

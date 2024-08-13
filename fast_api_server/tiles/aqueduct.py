@@ -6,7 +6,7 @@ class Aqueduct(Tile):
     def __init__(self):
         super().__init__(
             name="Aqueduct",
-            description=f"Ruling Criteria: 2 or more shapes\nRuling Benefits: Burn all your shapes here. Choose a shape at a tile. Move as many of that colored shape as possible to a tile anywhere.",
+            description=f"Ruling Criteria: most shapes, minimum 2\nRuling Benefits: Burn all your shapes here. Choose a shape at a tile. Move as many of that colored shape as possible to a tile anywhere.",
             number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_move_shapes_from", "tile_to_move_shapes_to"]
         )

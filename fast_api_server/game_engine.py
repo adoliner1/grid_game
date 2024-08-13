@@ -11,8 +11,6 @@ import asyncio
 import powerups
 import round_bonuses
 from tiles.tile import Tile
-from tiles.conductor import Conductor
-from tiles.nitrogen import Nitrogen
 
 class GameEngine:
 
@@ -128,9 +126,11 @@ class GameEngine:
 
         if data['client_action'] == "do_not_react":     
             if not self.game_action_container_stack[-1].is_a_reaction:
-                await self.send_clients_log_message(f"{player_color} chose not to react but it's not a reaction on top fo the stack")
+                await self.send_clients_log_message(f"{player_color} chose not to react but it's not a reaction on top of the stack")
             else:
+                await self.send_clients_log_message(f"{player_color} chooses not to react")
                 self.game_action_container_stack.pop().event.set()
+                return
 
         if data['client_action'] == "reset_current_action":
             #only have initial decision container - do nothing
@@ -215,8 +215,6 @@ class GameEngine:
 
     def create_new_game_state(self):
         chosen_tiles = random.sample(self.import_all_tiles_from_folder('tiles'), 9)
-        chosen_tiles[0] = Conductor
-        chosen_tiles[1] = Nitrogen
         all_bonuses = self.get_all_round_bonuses()
         num_bonuses = min(6, len(all_bonuses))
         chosen_round_bonuses = random.sample(all_bonuses, num_bonuses)

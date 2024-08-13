@@ -40,11 +40,11 @@ class Powerup:
     def set_available_client_actions_for_reaction(game_state, current_action, current_piece_of_data_to_fill_in_current_action, available_actions_with_details):
         return available_actions_with_details
     
-class ProduceCircleFor4Circles(Powerup):
+class ProduceCirclesFor4Circles(Powerup):
     def __init__(self, owner):
         super().__init__(
             name = "Produce 2 Circles For 4 Circles",
-            description = "If filled with circles, produce 1 circle at the start of the round",
+            description = "If filled with circles, produce 2 circles at the start of the round",
             number_of_slots=4,
             owner=owner
         )
@@ -124,3 +124,39 @@ class ProduceTriangleFor3Squares(Powerup):
                     square_count += 1
         if square_count == 3:
             await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 1, "square", self.name)
+
+class BurnFor3Or2Circles(Powerup):
+    def __init__(self, owner):
+        super().__init__(
+            name = "Burn For 3 or 1 Circles",
+            description = "Burn all your shapes here. If you burned at least 2, produce 1 circle. If you burned 5, produce 2 more and gain 2 points",
+            number_of_slots=5,
+            owner=owner
+        )
+
+    def is_useable(self, game_state):
+        shape_count = 0
+        for slot in self.slots_for_shapes:
+            if slot:
+                shape_count += 1
+        return shape_count > 0
+    
+    async def use_powerup(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):    
+        if not self.is_useable(game_state):
+            await send_clients_log_message(f"Need at least one shape on {self.name} to use it")
+            return False
+        
+        await send_clients_log_message(f"{self.name} is used")
+        shapes_burned = 0
+        for index, slot in enumerate(self.slots_for_shapes):
+            if slot:
+                shapes_burned += 1
+                await game_utilities.burn_shape_at_powerup_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, game_utilities.find_index_of_powerup_by_name(game_state, self.name), index)
+        
+        if shapes_burned == 5:
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 3, 'circle', self.name)
+            await send_clients_log_message(f"{self.owner} gains 2 points from {self.name}")
+            game_state["points"][self.owner] += 2
+        elif shapes_burned >= 2:
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 1, 'circle', self.name)
+        return True

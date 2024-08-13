@@ -27,6 +27,7 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
     await send_clients_game_state(game_state)
     #add a reaction to the stack so that the owner can place it on a powerup, send out available actions to the clients, then wait for the reaction to resolve
     if old_shape:
+        await send_clients_log_message(f"this trumped a {old_shape['color']} {old_shape['shape']} on {tile_to_place_on.name}")
         new_container = game_action_container.GameActionContainer(
                         event=asyncio.Event(),
                         game_action="place_shape_on_powerup_slot",
@@ -34,12 +35,11 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
                         whose_action=old_shape["color"],
                         is_a_reaction=True,
                     )
-        #if no available actions, don't add reaction
-        if not get_available_client_actions(game_state, new_container, old_shape["color"]) == {}:
-            game_action_container_stack.append(new_container)
-            await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-            await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
-            await game_action_container_stack[-1].event.wait()
+
+        game_action_container_stack.append(new_container)
+        await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
+        await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+        await game_action_container_stack[-1].event.wait()
 
     for _, listener_function in game_state["listeners"]["on_place"].items():
         await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, placer=color, shape=shape, index_of_tile_placed_at=tile_index)  
@@ -129,6 +129,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
         shape_type_to_place = game_action_container.required_data_for_action["shape_type_to_place"]
         slots_that_can_be_placed_on = get_powerup_slots_that_can_be_placed_on(game_state, game_action_container.whose_action, shape_type_to_place)
         available_client_actions["select_a_slot_on_a_powerup"] = slots_that_can_be_placed_on
+        available_client_actions["do_not_react"] = None
 
     elif game_action_container.game_action == 'use_tile':
         index_of_tile_in_use = game_action_container.required_data_for_action["index_of_tile_in_use"]

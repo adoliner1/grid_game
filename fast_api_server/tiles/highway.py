@@ -6,7 +6,7 @@ class Highway(Tile):
     def __init__(self):
         super().__init__(
             name="Highway",
-            description=f"Ruling Criteria: at least 1 triangle, tiebreak: most shapes\nRuling Benefits: Once per turn, burn a shape here to move a shape on a tile to another tile.",
+            description=f"Ruling Criteria: at least 1 triangle, tiebreak: most shapes\nRuling Benefits: Once per round, burn one of your shapes here to move a shape on a tile to another tile.",
             number_of_slots=5,
             data_needed_for_use=["slot_index_to_burn_shape_from", "slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
         )
