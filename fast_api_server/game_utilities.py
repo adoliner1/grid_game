@@ -311,4 +311,4 @@ def get_adjacent_tile_indices(tile_index):
     if col < 2:  # Not in the last column, can have a tile to the right
         adjacent_indices.append(tile_index + 1)
     
-    return adjacent_indices 
+    return adjacent_indices
