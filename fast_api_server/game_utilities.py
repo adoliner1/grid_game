@@ -27,7 +27,7 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
     await send_clients_game_state(game_state)
     #add a reaction to the stack so that the owner can place it on a powerup, send out available actions to the clients, then wait for the reaction to resolve
     if old_shape:
-        await send_clients_log_message(f"this trumped a {old_shape['color']} {old_shape['shape']} on {tile_to_place_on.name}")
+        await send_clients_log_message(f"this trumped a {old_shape['color']} {old_shape['shape']} on {tile_to_place_on.name}. {old_shape['color']} must decide where/if to place it in powerups")
         new_container = game_action_container.GameActionContainer(
                         event=asyncio.Event(),
                         game_action="place_shape_on_powerup_slot",

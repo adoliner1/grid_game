@@ -9,10 +9,11 @@ Each player receives: 2 circles, 1 square, and 1 triangle.
 ## During a round
 On a player's turn they may take one of these actions:
 
-1. **Place a shape from storage onto a slot on a tile.** There is a shape hierarchy. Circles < Squares < Triangles. Circles can only be placed in empty slots. Squares can be placed in empty slots, and on top of circles. Triangles can be placed on everything except other triangles. Trumped shapes (the shape that was placed on) go to the powerups section. See **Trumping and the Powerups**.
+1. **Place a shape from storage onto a slot on a tile.** There is a shape hierarchy. Circles < Squares < Triangles. Stronger shapes can be placed on weaker shapes. Trumped shapes (the shape that was placed on) may be placed by the owner in their Powerups section
+
 2. **Use a tile**.
 3. **Use a powerup.**
-4. **Pass**. After passing, you won't be able to take any more actions that round (you can still take reactions). If you're the first player to pass in a round, you become first player for the next round.
+4. **Pass**. After passing, you won't be able to take any more actions that round (you can still react). If you're the first player to pass in a round, you become first player for the next round.
 
 A round ends when both players have passed. 
 
@@ -29,9 +30,6 @@ At any time on a player's turn, they may perform conversions with their shapes i
 - 3 squares to 1 triangle
 - 1 square to 1 circle
 - 1 triangle to 1 square
-
-## Trumping and the Powerups
-When a shape is placed on (trumped) it may be placed by the owning player in their powerups section.
 
 ## Miscellaneous
 
