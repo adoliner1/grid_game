@@ -35,9 +35,11 @@ At any time on a player's turn, they may perform conversions with their shapes i
 
 When multiple tiles are resolving effects at the same time, they happen in this order:
 
+```
 0 1 2 
 3 4 5 
 6 7 8
+```
 
 When both players are due to resolve some effect at the same time, the first player resolves them first. 
 
