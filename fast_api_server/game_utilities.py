@@ -100,7 +100,7 @@ async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, s
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
     for _, listener_function in game_state["listeners"]["on_burn"].items():
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, burner=game_action_container_stack[-1].whose_action, shape=shape, index_of_tile_burned_at=tile_index)
+        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, burner=game_action_container_stack[-1].whose_action, shape=shape, color=color, index_of_tile_burned_at=tile_index)
 
 async def burn_shape_at_powerup_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, powerup_color, powerup_index, slot_index):
     powerup = game_state["powerups"][powerup_color][powerup_index]

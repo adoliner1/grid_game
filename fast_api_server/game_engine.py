@@ -10,12 +10,11 @@ import game_action_container
 import asyncio
 import powerups
 import round_bonuses
-from tiles.captain import Captain
-from tiles.evolution import Evolution
-from tiles.nitrogen import Nitrogen
-from tiles.red_dwarf import RedDwarf
+from tiles.ash import Ash
+from tiles.ember import Ember
+from tiles.spear import Spear
 from tiles.tile import Tile
-from tiles.maestro import Maestro
+
 
 class GameEngine:
 
@@ -253,7 +252,6 @@ class GameEngine:
             "round_bonuses": chosen_round_bonuses,
             "listeners": {"on_place": {}, "on_powerup_place": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
         }
-        game_state["tiles"][0] = Evolution()
 
         for tile in game_state["tiles"]:
             if hasattr(tile, 'setup_listener'):
