@@ -160,3 +160,103 @@ class BurnFor3Or2Circles(Powerup):
         elif shapes_burned >= 2:
             await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, self.owner, 1, 'circle', self.name)
         return True
+
+class BurnForPoints(Powerup):
+    def __init__(self, owner):
+        super().__init__(
+            name="Burn for Points",
+            description="When filled, once per round, you may use this to burn one your shapes on a tile. If you did, +2 points",
+            number_of_slots=3,
+            owner=owner,
+            data_needed_for_use=["slot_and_tile_to_burn_shape_from"]
+        )
+
+    def is_useable(self, game_state):
+        return len([slot for slot in self.slots_for_shapes if slot]) == 3 and not self.is_on_cooldown
+
+    def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
+        current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
+
+        if current_piece_of_data_to_fill == "slot_and_tile_to_burn_shape_from":
+            slots_with_a_burnable_shape = {}
+            for tile_index, tile in enumerate(game_state["tiles"]):
+                slots_with_shapes = []
+                for slot_index, slot in enumerate(tile.slots_for_shapes):
+                    if slot and slot["color"] == self.owner:
+                        slots_with_shapes.append(slot_index)
+                if slots_with_shapes:
+                    slots_with_a_burnable_shape[tile_index] = slots_with_shapes
+            available_actions["select_a_slot_on_a_tile"] = slots_with_a_burnable_shape
+
+    async def use_powerup(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        game_action_container = game_action_container_stack[-1]
+        
+        if not self.is_useable(game_state):
+            await send_clients_log_message(f"Cannot use {self.name} it's on cooldown or doesn't have enough shapes")
+            return False
+
+        slot_and_tile_to_burn_shape_from = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape_from']
+        tile_index = slot_and_tile_to_burn_shape_from['tile_index']
+        slot_index = slot_and_tile_to_burn_shape_from['slot_index']
+        tile = game_state["tiles"][tile_index]
+        if not tile.slots_for_shapes[slot_index] or tile.slots_for_shapes[slot_index]["color"] != self.owner:
+            await send_clients_log_message(f"Cannot burn shape that doesn't belong to {self.owner}")
+            return False
+
+        await send_clients_log_message(f"Using {self.name}")
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index)
+        game_state["points"][self.owner] += 2
+        await send_clients_log_message(f"{self.owner} gains 2 points from using {self.name}")
+        self.is_on_cooldown = True
+        return True
+    
+
+class SwapPositionOfTileWithAdjacentTile(Powerup):
+    def __init__(self, owner):
+        super().__init__(
+            name="Swap Position Of Tile With Adjacent Tile",
+            description="When filled with squares, once per round, you may use this to swap the position of a tile with an adjacent tile",
+            number_of_slots=3,
+            owner=owner,
+            data_needed_for_use=["first_tile", "adjacent_tile_to_first_tile"]
+        )
+
+    def is_useable(self, game_state):
+        return len([slot["shape"] == "square" for slot in self.slots_for_shapes if slot]) == 3 and not self.is_on_cooldown
+
+    def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
+        current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
+
+        if current_piece_of_data_to_fill == "first_tile":
+            available_actions["select_a_tile"] = list(range(len(game_state["tiles"])))
+        else:
+            game_utilities.get_adjacent_tile_indices(game_action_container.required_data_for_action["first_tile"])
+            available_actions["select_a_tile"] = game_utilities.get_adjacent_tile_indices(game_action_container.required_data_for_action["first_tile"])
+
+    async def use_powerup(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        game_action_container = game_action_container_stack[-1]
+
+        if not self.is_useable:
+            await send_clients_log_message(f"Tried to use {self.name} but don't have the squares or it's on cooldown")   
+
+        tile1_index = game_action_container.required_data_for_action['first_tile']
+        tile2_index = game_action_container.required_data_for_action['adjacent_tile_to_first_tile']
+
+        if tile1_index is None or tile2_index is None:
+            await send_clients_log_message(f"Invalid tiles selected while using {self.name}")
+            return False
+
+        if tile1_index not in game_utilities.get_adjacent_tile_indices(tile2_index):
+            await send_clients_log_message(f"Chose non-adjacent tiles while using {self.name}")
+            return False            
+
+        if tile1_index == tile2_index:
+            await send_clients_log_message(f"Cannot select the same tile twice for {self.name}")
+            return False
+
+        await send_clients_log_message(f"Using {self.name} to swap tiles at indices {tile1_index} and {tile2_index}")
+
+        # Swap the tiles
+        game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
+        self.is_on_cooldown = True
+        return True

@@ -10,7 +10,10 @@ import game_action_container
 import asyncio
 import powerups
 import round_bonuses
+from tiles.captain import Captain
+from tiles.nitrogen import Nitrogen
 from tiles.tile import Tile
+from tiles.maestro import Maestro
 
 class GameEngine:
 
@@ -249,6 +252,9 @@ class GameEngine:
             "listeners": {"on_place": {}, "on_powerup_place": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
         }
 
+        game_state["tiles"][0] = Captain()
+        game_state["tiles"][1] = Nitrogen()
+
         for tile in game_state["tiles"]:
             if hasattr(tile, 'setup_listener'):
                 tile.setup_listener(game_state)
@@ -412,9 +418,11 @@ class GameEngine:
 
         for powerup in self.game_state["powerups"]["red"]:
             await powerup.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
+            powerup.is_on_cooldown = False
 
         for powerup in self.game_state["powerups"]["blue"]:
             await powerup.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)                    
+            powerup.is_on_cooldown = False
 
         for _, listener_function in self.game_state["listeners"]["start_of_round"].items():
                 await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  

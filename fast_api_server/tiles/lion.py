@@ -54,10 +54,13 @@ class Lion(Tile):
         index_of_tile_to_receive_shapes_on = game_action_container.required_data_for_action['tile_to_receive_shapes_at']
         tile_to_receive_shapes_on = game_state['tiles'][index_of_tile_to_receive_shapes_on]
 
-        if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_shapes_on, game_utilities.find_index_of_tile_by_name(self.name)):
+
+        if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_shapes_on, game_utilities.find_index_of_tile_by_name(game_state, self.name)):
             await send_clients_log_message(f"Chose non-adjacent tile while using {self.name}")
             return False
 
+        await send_clients_log_message(f"{self.name} is used")
+        self.is_on_cooldown = True
         for _ in range(2):
             await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_action_container.whose_action, tile_to_receive_shapes_on, 'circle')
 

@@ -66,12 +66,8 @@ class Wormhole(Tile):
             await send_clients_log_message(f"Cannot select the same tile twice for {self.name}")
             return False
 
-        circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == game_action_container.whose_action and slot["shape"] == "circle")
-        square_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == game_action_container.whose_action and slot["shape"] == "square")
-        triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == game_action_container.whose_action and slot["shape"] == "triangle")
-
-        if not (circle_count > 0 and square_count > 0 and triangle_count > 0):
-            await send_clients_log_message(f"Player does not have a complete set on {self.name} to use it")
+        if not self.is_useable(game_state):
+            await send_clients_log_message(f"Player does not have at least 2 different shapes or {self.name} is on cooldown")
             return False
 
         await send_clients_log_message(f"Using {self.name} to swap tiles at indices {tile1_index} and {tile2_index}")

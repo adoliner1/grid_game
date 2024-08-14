@@ -49,11 +49,12 @@ class Chicken(Tile):
 
         index_of_tile_to_receive_shapes_on = game_action_container.required_data_for_action['tile_to_receive_shapes_at']
         tile_to_receive_shapes_on = game_state['tiles'][index_of_tile_to_receive_shapes_on]
-        if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_shapes_on, game_utilities.find_index_of_tile_by_name(self.name)):
+        if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_shapes_on, game_utilities.find_index_of_tile_by_name(game_state, self.name)):
             await send_clients_log_message(f"Chose non-adjacent tile while using {self.name}")
             return False
 
-        # Gain 1 point
+        await send_clients_log_message(f"{self.name} is used")
+        self.is_on_cooldown = True
         player_color = game_action_container.whose_action
         game_state["points"][player_color] += 1
         await send_clients_log_message(f"{player_color} gained 1 point from using {self.name}")

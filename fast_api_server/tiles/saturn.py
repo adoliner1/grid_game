@@ -6,7 +6,7 @@ class Saturn(Tile):
     def __init__(self):
         super().__init__(
             name="Saturn",
-            description = f"Ruling Criteria: 2 or more shapes\nRuling Benefits: Once per round, you may use this tile to burn one of your triangles here to produce 2 squares",
+            description = f"Ruling Criteria: most shapes, minimum 3\nRuling Benefits: Once per round, you may use this tile to burn one of your triangles here to produce 2 squares",
             number_of_slots=5,
         )
 
@@ -33,10 +33,10 @@ class Saturn(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count >= 2:
+        if red_count >= 3:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 2:
+        elif blue_count >= 3:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None

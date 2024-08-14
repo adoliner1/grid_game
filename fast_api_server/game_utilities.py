@@ -138,7 +138,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
 
     elif game_action_container.game_action == "use_powerup":
         index_of_powerup_in_use = game_action_container.required_data_for_action["index_of_powerup_in_use"]
-        powerup_in_use = game_state["powerups"][game_state.whose_turn_is_it][index_of_powerup_in_use]
+        powerup_in_use = game_state["powerups"][game_action_container.whose_action][index_of_powerup_in_use]
         powerup_in_use.set_available_actions_for_use(game_state, game_action_container, available_client_actions)        
 
     elif game_action_container.game_action == 'react_with_tile':
@@ -148,7 +148,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
 
     elif game_action_container.game_action == "react_with_powerup":
         index_of_powerup_being_reacted_with = game_action_container.required_data_for_action["index_of_powerup_being_reacted_with"]
-        powerup_being_reacted_with = game_state["powerups"][game_state.whose_turn_is_it][index_of_powerup_being_reacted_with]
+        powerup_being_reacted_with = game_state["powerups"][game_action_container.whose_action][index_of_powerup_being_reacted_with]
         powerup_being_reacted_with.set_available_actions_for_reaction(game_state, game_action_container, available_client_actions)
 
     #must be an initial_decision

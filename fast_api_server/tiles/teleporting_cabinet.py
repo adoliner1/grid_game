@@ -97,6 +97,7 @@ class TeleportingCabinet(Tile):
         game_state["tiles"][index_of_tile_to_swap_shape_from].slots_for_shapes[slot_index_to_swap_shape_from] = slot_data_to_swap_to
         game_state["tiles"][index_of_tile_to_swap_shape_to].slots_for_shapes[slot_index_to_swap_shape_to] = slot_data_to_swap_from
 
+        game_utilities.determine_rulers(game_state)
         await send_clients_log_message(f"Swapped {slot_data_to_swap_from['shape']} from {game_state['tiles'][index_of_tile_to_swap_shape_from].name} with {slot_data_to_swap_to['shape']} at {game_state['tiles'][index_of_tile_to_swap_shape_to].name}")
         self.is_on_cooldown = True
         return True

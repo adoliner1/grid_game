@@ -364,7 +364,9 @@ const Game = () => {
                             return (
                                 <Powerup
                                     key={powerup_index}
+                                    clients_color={clientColor.current}
                                     description={powerup.description}
+                                    is_on_cooldown={powerup.is_on_cooldown}
                                     powerup_index={powerup_index}
                                     available_actions={availableActions}
                                     onPowerupClick={() => handlePowerupClick(powerup_index)}
@@ -380,7 +382,9 @@ const Game = () => {
                             return (
                                 <Powerup
                                     key={powerup_index}
+                                    clients_color={clientColor.current}
                                     description={powerup.description}
+                                    is_on_cooldown={powerup.is_on_cooldown}
                                     powerup_index={powerup_index}
                                     available_actions={availableActions}
                                     onPowerupClick={() => handlePowerupClick(powerup_index)}

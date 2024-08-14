@@ -2,17 +2,17 @@ import React from 'react'
 import '../stylesheets/powerup.css'
 import ShapesOnPowerup from './shapes_on_powerup'
 
-const Powerup = ({ description, powerup_index, available_actions, onPowerupClick, slots_for_shapes, onPowerupSlotClick, playerColorOfPowerups }) => {
+const Powerup = ({ description, clients_color, powerup_index, is_on_cooldown, available_actions, onPowerupClick, slots_for_shapes, onPowerupSlotClick, playerColorOfPowerups }) => {
 
     const isSelectable = () => {
         return available_actions.hasOwnProperty('select_a_powerup') &&
-            available_actions['select_a_powerup'].includes(powerup_index)
+            available_actions['select_a_powerup'].includes(powerup_index) && clients_color === playerColorOfPowerups
     }
 
     const powerupClickHandler = isSelectable() ? onPowerupClick : undefined
 
     return (
-        <div className={`powerup-container ${isSelectable() ? 'selectable-powerup' : ''}`} onClick={powerupClickHandler}>
+        <div className={`powerup-container ${isSelectable() ? 'selectable-powerup' : ''} ${is_on_cooldown ? 'powerup-on-cooldown' : ''}`} onClick={powerupClickHandler}>
             <div className="powerup-description">
                 {description}
             </div>

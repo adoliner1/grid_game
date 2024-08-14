@@ -6,7 +6,7 @@ class Geometry(Tile):
     def __init__(self):
         super().__init__(
             name="Geometry",
-            description = f"Ruling Criteria: Most shapes, at least 2 squares\nRuling Benefits: At the start of the round, produce 1 triangle. At the end of the game +3 points",
+            description = f"Ruling Criteria: At least 2 squares, tiebreaker: most shapes\nRuling Benefits: At the start of the round, produce 1 triangle. At the end of the game +3 points",
             number_of_slots=7,
         )
 
@@ -27,10 +27,17 @@ class Geometry(Tile):
                     if slot["shape"] == "square":
                         blue_square_count += 1
 
-        if red_square_count >= 2 and red_count > blue_count:
+        if red_square_count >= 2 and blue_square_count >= 2:
+            if red_count > blue_count:
+                self.ruler = 'red'
+                return 'red'
+            elif blue_count > red_count:
+                self.ruler = 'blue'
+                return 'blue'
+        elif red_square_count >= 2:
             self.ruler = 'red'
             return 'red'
-        elif blue_square_count >= 2 and blue_count > red_count:
+        elif blue_square_count >= 2:
             self.ruler = 'blue'
             return 'blue'
         

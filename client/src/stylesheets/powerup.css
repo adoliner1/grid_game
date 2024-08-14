@@ -19,3 +19,7 @@
 .selectable-powerup:hover {
     border-color: black;
 }
+
+.powerup-on-cooldown {
+    background-color: #d3d3d3; /* greyish background */
+}
