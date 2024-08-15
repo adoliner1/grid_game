@@ -20,10 +20,10 @@ class Caves(Tile):
                     red_count += 1
                 elif slot["color"] == "blue":
                     blue_count += 1
-        if red_count > blue_count and red_count >= 3:
+        if red_count > blue_count and red_count >= 2:
             self.ruler = 'red'
             return 'red'
-        elif blue_count > red_count and blue_count >= 3:
+        elif blue_count > red_count and blue_count >= 2:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
