@@ -1,15 +1,29 @@
 import React from 'react';
-import Lobby from './components/lobby'
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Lobby from './components/lobby';
 import Game from './components/game';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <Game gameId="1" />
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <nav>
+          <ul>
+            <li>
+              <Link to="/">Lobby</Link>
+            </li>
+            <li>
+              <Link to="/game/1">Game</Link>
+            </li>
+          </ul>
+        </nav>
+
+        <Routes>
+          <Route path="/" element={<Lobby />} />
+          <Route path="/game/:gameId" element={<Game />} />
+        </Routes>
+      </div>
+    </Router>
   );
 };
 

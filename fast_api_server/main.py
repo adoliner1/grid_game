@@ -176,7 +176,6 @@ def print_running_tasks():
     tasks = asyncio.all_tasks(loop)
     print(f"Number of running tasks: {len(tasks)}")
 
-
 def serialize_game_state(game_state):
     serialized_game_state = copy.deepcopy(game_state)
     del serialized_game_state['listeners'] #delete listeners, it's a server only piece of game_state

@@ -1,5 +1,9 @@
 # Shapes And Tiles
 
+## Overview
+
+The game is made up of 9 tiles and 3 powerups. These tiles and powerups have slots where shapes are placed. Player's compete to control tiles to gain more resources and points.
+
 ## Objective
 Have the most points at the end of the game. The game ends when all tiles have a ruler at the end of a round or at the end of the 6th round.
 
