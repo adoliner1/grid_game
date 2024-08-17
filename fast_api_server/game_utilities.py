@@ -37,8 +37,8 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
                     )
 
         game_action_container_stack.append(new_container)
-        await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-        await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+        await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), "red")
+        await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), "blue")
         await game_action_container_stack[-1].event.wait()
 
     for _, listener_function in game_state["listeners"]["on_place"].items():

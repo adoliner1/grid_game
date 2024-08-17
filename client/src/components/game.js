@@ -223,11 +223,27 @@ const Game = () => {
     }
     
     useEffect(() => {
-        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
+
+        const game_id = localStorage.getItem('game_id');
+        const player_token = localStorage.getItem('player_token');
+    
+        if (!game_id || !player_token) {
+            console.error('Game ID or player token not found');
+            return;
+        }
+
+
+        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/${game_id`)
         socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         socket.current.onopen = () => {
-            console.log("WebSocket connection established")
-        }
+            console.log("WebSocket connection established");
+            // Send the player token for authentication
+            socket.current.send(JSON.stringify({
+                action: "authenticate",
+                player_token: player_token,
+                game_id: game_id
+            }));
+        };
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data)
             switch (data.action) {
