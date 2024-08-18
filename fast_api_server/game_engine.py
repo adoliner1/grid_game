@@ -238,6 +238,10 @@ class GameEngine:
                 "red": 0,
                 "blue": 0
             },
+            "presence": {
+                "red": 0,
+                "blue": 0
+            },
             "player_has_passed": {
                 "red": False,
                 "blue": False

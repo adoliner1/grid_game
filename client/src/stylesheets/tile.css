@@ -62,3 +62,12 @@
 .tile-on-cooldown {
     background-color: #d3d3d3; /* greyish background */
 }
+
+.red-power{
+    color: rgb(255, 41, 41);
+}
+
+.blue-power{
+    color: rgb(52, 52, 255);
+
+}

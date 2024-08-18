@@ -18,6 +18,11 @@
     justify-content: center;
 }
 
+.presence-row {
+    display: flex;
+    justify-content: center;
+}
+
 .arrows-row {
     display: flex;
     justify-content: center;

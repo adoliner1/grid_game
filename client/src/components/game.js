@@ -223,8 +223,8 @@ const Game = () => {
     }
     
     useEffect(() => {
-        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
-        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
+        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         socket.current.onopen = () => {
             console.log("WebSocket connection established")
         }
@@ -310,6 +310,7 @@ const Game = () => {
                     clients_color={clientColor.current}
                     shapes={gameState.shapes_in_storage.red}
                     points={gameState.points.red}
+                    presence={gameState.presence.red}
                     available_actions={availableActions}
                     onShapeClick={handleShapeInStorageClick}
                     onConversionArrowClick={handleConversionArrowClick}
@@ -321,6 +322,7 @@ const Game = () => {
                     clients_color={clientColor.current}
                     shapes={gameState.shapes_in_storage.blue}
                     points={gameState.points.blue}
+                    presence={gameState.presence.blue}
                     available_actions={availableActions}
                     onShapeClick={handleShapeInStorageClick}
                     onConversionArrowClick={handleConversionArrowClick}
@@ -346,6 +348,8 @@ const Game = () => {
                             <Tile
                                 key={tile_index}
                                 name={tile.name}
+                                red_power={tile.red_power}
+                                blue_power={tile.blue_power}
                                 description={tile.description}
                                 is_on_cooldown={tile.is_on_cooldown}
                                 slots_for_shapes={tile.slots_for_shapes}

@@ -5,7 +5,7 @@ import Square from './shapes/square'
 import Triangle from './shapes/triangle'
 import ConversionArrow from './conversion_arrow'
 
-const ShapesInStorage = ({player_color, whose_turn_is_it, has_passed, clients_color, shapes, points, available_actions, onShapeClick, onConversionArrowClick}) => {
+const ShapesInStorage = ({player_color, whose_turn_is_it, has_passed, clients_color, shapes, points, presence, available_actions, onShapeClick, onConversionArrowClick}) => {
     const isSelectable = (shape_type, available_actions) => {
         return (
             available_actions.hasOwnProperty('select_a_shape_in_storage') && clients_color === player_color && shapes[shape_type] > 0
@@ -34,7 +34,10 @@ const ShapesInStorage = ({player_color, whose_turn_is_it, has_passed, clients_co
                 </div>
                 <div className="points-row">
                     <div> <b>Points:</b> {points}</div>
-                </div>                 
+                </div>
+                <div className="presence-row">
+                    <div> <b>Presence:</b> {presence}</div>
+                </div>                  
                 <div className="arrows-row">
                     <div className="arrow-container">
                         <ConversionArrow whose_turn_is_it={whose_turn_is_it}

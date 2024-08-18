@@ -5,6 +5,8 @@ import ShapesOnTile from './shapes_on_tile'
 const Tile = ({
     name,
     description,
+    red_power,
+    blue_power,
     is_on_cooldown,
     slots_for_shapes,
     tile_index,
@@ -27,6 +29,8 @@ const Tile = ({
         <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'} ${ruler ? `tile-${ruler}` : ''} ${is_on_cooldown ? 'tile-on-cooldown' : ''}`} onClick={tileClickHandler}>
             <h3 className={ruler ? `tile-name-${ruler}` : ''}>{name}</h3>
             <p className="tile-description" dangerouslySetInnerHTML={{ __html: formattedDescription }}></p>
+            <p className='red-power'> Red Power: {red_power} </p>
+            <p className='blue-power'> Blue Power: {blue_power} </p>
             <ShapesOnTile 
                 slots_for_shapes={slots_for_shapes} 
                 tile_index={tile_index}

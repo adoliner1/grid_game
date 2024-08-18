@@ -10,6 +10,8 @@ class Tile:
         self.ruler = None
         self.data_needed_for_use = data_needed_for_use
         self.is_on_cooldown=is_on_cooldown
+        self.red_power = 0
+        self.blue_power = 0
 
     def determine_ruler(self, game_state):
         pass
@@ -39,6 +41,8 @@ class Tile:
         return {
             "name": self.name,
             "description": self.description,
+            "red_power": self.red_power,
+            "blue_power": self.blue_power,
             "slots_for_shapes": self.slots_for_shapes,
             "ruler": self.ruler,
             "is_on_cooldown": self.is_on_cooldown
