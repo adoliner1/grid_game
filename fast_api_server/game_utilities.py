@@ -8,9 +8,9 @@ async def produce_shape_for_player(game_state, game_action_container_stack, send
     game_state["shapes_in_storage"][player_color][shape_type] += amount
 
     if calling_entity_name:
-        await send_clients_log_message(f" {calling_entity_name} produced {amount} {shape_type}(s) for {player_color}")
+        await send_clients_log_message(f" {calling_entity_name} produced {amount} {player_color}_{shape_type} for {player_color}")
     else:
-        await send_clients_log_message(f" {player_color} produced {amount} {shape_type}(s)")
+        await send_clients_log_message(f" {player_color} produced {amount} {player_color}_{shape_type}")
 
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
