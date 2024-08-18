@@ -1,12 +1,11 @@
 import React from 'react';
 
-const Square = ({ playerColor, selectable, onClick }) => {
-
+const Square = ({ playerColor, selectable, onClick, size = 24 }) => {
     const className = `owner-${playerColor} ${selectable ? 'selectable' : ''}`;
 
     return (
-        <svg width='24' height='24' viewBox="0 0 24 24" className={ className } onClick={onClick}>
-            <rect x="4" y="4" width="16" height="16" />
+        <svg width={ `${size}` } height={ `${size}` } viewBox={ `0 0 ${size} ${size}` } className={ className } onClick={onClick}>
+            <rect x={ `${size/6}` } y={ `${size/6}` } width={ `${2*size/3}` } height={ `${2*size/3}` } />
         </svg>
     );
 };

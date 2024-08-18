@@ -25,7 +25,7 @@ const GameLog = ({ logs }) => {
             if (syms) {
                 const [, color, shape] = syms;
                 const Component = shapeSymbols[shape];
-                return <Component playerColor={ color } />;
+                return <Component playerColor={ color } size={18} />;
             } else {
                 return w;
             }
