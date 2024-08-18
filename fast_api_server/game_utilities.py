@@ -22,12 +22,12 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
     tile_to_place_on = game_state["tiles"][tile_index]
     old_shape = tile_to_place_on.slots_for_shapes[slot_index]  
     tile_to_place_on.slots_for_shapes[slot_index] = {'shape': shape, 'color': color}
-    await send_clients_log_message(f"{color} placed a {shape} on {tile_to_place_on.name}")
+    await send_clients_log_message(f"{color} placed a {color}_{shape} on {tile_to_place_on.name}")
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
     #add a reaction to the stack so that the owner can place it on a powerup, send out available actions to the clients, then wait for the reaction to resolve
     if old_shape:
-        await send_clients_log_message(f"this trumped a {old_shape['color']} {old_shape['shape']} on {tile_to_place_on.name}. {old_shape['color']} must decide where/if to place it in powerups")
+        await send_clients_log_message(f"this trumped a {old_shape['color']}_{old_shape['shape']} on {tile_to_place_on.name}. {old_shape['color']} must decide where/if to place it in powerups")
         new_container = game_action_container.GameActionContainer(
                         event=asyncio.Event(),
                         game_action="place_shape_on_powerup_slot",
@@ -47,7 +47,7 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
 async def place_shape_on_powerup(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, powerup_index, slot_index, shape, color):
     game_state["powerups"][color][powerup_index].slots_for_shapes[slot_index] = {'shape': shape, 'color': color}   
 
-    await send_clients_log_message(f"{color} placed a {shape} on {game_state['powerups'][color][powerup_index].name}")
+    await send_clients_log_message(f"{color} placed a {color}_{shape} on {game_state['powerups'][color][powerup_index].name}")
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
  
@@ -96,7 +96,7 @@ async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, s
     shape = tile.slots_for_shapes[slot_index]["shape"]
     color = tile.slots_for_shapes[slot_index]["color"]
     tile.slots_for_shapes[slot_index] = None
-    await send_clients_log_message(f"burning a {color} {shape} at {tile.name}")
+    await send_clients_log_message(f"burning a {color}_{shape} at {tile.name}")
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
     for _, listener_function in game_state["listeners"]["on_burn"].items():
@@ -107,7 +107,7 @@ async def burn_shape_at_powerup_at_index(game_state, game_action_container_stack
     shape = powerup.slots_for_shapes[slot_index]["shape"]
     color = powerup.slots_for_shapes[slot_index]["color"]
     powerup.slots_for_shapes[slot_index] = None
-    await send_clients_log_message(f"burning a {color} {shape} at {powerup.name}")
+    await send_clients_log_message(f"burning a {color}_{shape} at {powerup.name}")
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
     #for _, listener_function in game_state["listeners"]["on_burn"].items():
