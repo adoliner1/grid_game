@@ -6,7 +6,8 @@ class Evolution(Tile):
     def __init__(self):
         super().__init__(
             name="Evolution",
-            description=f"Anyone can burn 3 of their triangles here to produce 4 circles and 8 points. At the end of each round, burn each shape here and receive the next most powerful shape. Triangles become circles. \nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, -4 points",
+            type="Producer/Giver/Scorer",
+            description=f"Action: Burn 3 of your triangles here to produce 4 circles and 8 points. At the end of a round, burn each shape here and receive the next most powerful shape. Triangles become circles\nRuler: Most Shapes. At the end of the game, -6 points",
             number_of_slots=7,
         )
 
@@ -75,4 +76,4 @@ class Evolution(Tile):
         ruler = self.determine_ruler(game_state)
         if ruler:
             await send_clients_log_message(f"{self.name} deducts 4 points from {ruler}")
-            game_state["points"][ruler] -= 4
+            game_state["points"][ruler] -= 6

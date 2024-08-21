@@ -6,7 +6,8 @@ class Wolf(Tile):
     def __init__(self):
         super().__init__(
             name="Wolf",
-            description="Once per round, the player with the most shapes here may use this to receive 2 squares at an adjacent tile\nRuling Criteria: Fewest shapes\nRuling Benefits: At the start of the round, produce 1 triangle",
+            type="Producer/Giver",
+            description="Most Shapes: Action: Once per round, receive 2 squares at an adjacent tile\nRuler: Fewest shapes, at the start of a round, produce 1 Triangle",
             number_of_slots=5,
             data_needed_for_use=["tile_to_receive_shapes_at"]
         )

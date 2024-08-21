@@ -12,17 +12,23 @@ async def produce_shape_for_player(game_state, game_action_container_stack, send
     else:
         await send_clients_log_message(f" {player_color} produced {amount} {shape_type}(s)")
 
-    determine_rulers(game_state)
-    await send_clients_game_state(game_state)
+    if calling_entity_name == 'Produce Circles for 2 Presence' or 'Produce Circles for 2 Peak-Power':
+        return
 
     for _, listener_function in game_state["listeners"]["on_produce"].items():
         await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, amount_produced=amount, producer=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
-        
+        determine_power_levels(game_state)
+        update_presence(game_state)
+        determine_rulers(game_state)
+        await send_clients_game_state(game_state)
+
 async def place_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
     tile_to_place_on = game_state["tiles"][tile_index]
     old_shape = tile_to_place_on.slots_for_shapes[slot_index]  
     tile_to_place_on.slots_for_shapes[slot_index] = {'shape': shape, 'color': color}
     await send_clients_log_message(f"{color} placed a {shape} on {tile_to_place_on.name}")
+    determine_power_levels(game_state)
+    update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
     #add a reaction to the stack so that the owner can place it on a powerup, send out available actions to the clients, then wait for the reaction to resolve
@@ -42,17 +48,27 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
         await game_action_container_stack[-1].event.wait()
 
     for _, listener_function in game_state["listeners"]["on_place"].items():
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, placer=color, shape=shape, index_of_tile_placed_at=tile_index)  
+        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, placer=color, shape=shape, index_of_tile_placed_at=tile_index, slot_index_placed_at=slot_index)
+        determine_power_levels(game_state)
+        update_presence(game_state)
+        determine_rulers(game_state)
+        await send_clients_game_state(game_state)
 
 async def place_shape_on_powerup(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, powerup_index, slot_index, shape, color):
     game_state["powerups"][color][powerup_index].slots_for_shapes[slot_index] = {'shape': shape, 'color': color}   
 
     await send_clients_log_message(f"{color} placed a {shape} on {game_state['powerups'][color][powerup_index].name}")
+    determine_power_levels(game_state)
+    update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
  
     for _, listener_function in game_state["listeners"]["on_powerup_place"].items():
         await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, placer=color, shape=shape, index_of_powerup_placed_at=powerup_index)
+        determine_power_levels(game_state)
+        update_presence(game_state)
+        determine_rulers(game_state)
+        await send_clients_game_state(game_state)
 
 async def player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, tile, shape_type):
     if None not in tile.slots_for_shapes:
@@ -63,13 +79,16 @@ async def player_receives_a_shape_on_tile(game_state, game_action_container_stac
     next_empty_slot = tile.slots_for_shapes.index(None)
     tile.slots_for_shapes[next_empty_slot] = {"shape": shape_type, "color": player_color}
     await send_clients_log_message(f"{player_color} receives a {shape_type} on {tile.name}")
-
-    for _, listener_function in game_state["listeners"]["on_receive"].items():
-
-        await send_clients_game_state(game_state)
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, receiver=player_color, shape=shape_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
-
+    determine_power_levels(game_state)
+    update_presence(game_state)
     determine_rulers(game_state)
+    await send_clients_game_state(game_state)
+    for _, listener_function in game_state["listeners"]["on_receive"].items():
+        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, receiver=player_color, shape=shape_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
+        determine_power_levels(game_state)
+        update_presence(game_state)
+        determine_rulers(game_state)
+        await send_clients_game_state(game_state)
 
 async def move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
     shape_to_move = game_state["tiles"][from_tile_index].slots_for_shapes[from_slot_index]
@@ -84,12 +103,48 @@ async def move_shape_between_tiles(game_state, game_action_container_stack, send
     game_state["tiles"][to_tile_index].slots_for_shapes[to_slot_index] = shape_to_move
 
     await send_clients_log_message(f"moved a {shape_to_move['color']} {shape_to_move['shape']} from {game_state['tiles'][from_tile_index].name} to {game_state['tiles'][to_tile_index].name}")
+    determine_power_levels(game_state)
+    update_presence(game_state)
     determine_rulers(game_state)
+    await send_clients_game_state(game_state)
     await send_clients_game_state(game_state)
     for _, listener_function in game_state["listeners"]["on_move"].items():
         await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, shape=shape_to_move["shape"], from_tile_index=from_tile_index, to_tile_index=to_tile_index)
+        determine_power_levels(game_state)
+        update_presence(game_state)
+        determine_rulers(game_state)
+        await send_clients_game_state(game_state)
 
     return True
+
+def has_presence(tile, color):
+    """
+    Check if a player has at least one shape on a given tile.
+    
+    :param tile: The tile to check
+    :param color: The color of the player ("red" or "blue")
+    :return: True if the player has at least one shape on the tile, False otherwise
+    """
+    return any(
+        slot is not None and slot["color"] == color
+        for slot in tile.slots_for_shapes
+    )
+
+def update_presence(game_state):
+    """
+    Update the presence for both players in the game state.
+    
+    :param game_state: The current game state
+    """
+    presence = {"red": 0, "blue": 0}
+
+    for tile in game_state["tiles"]:
+        for color in ["red", "blue"]:
+            if has_presence(tile, color):
+                presence[color] += 1
+
+    # Update the game state with the calculated presence
+    game_state["presence"] = presence
 
 async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index):
     tile = game_state["tiles"][tile_index]
@@ -97,10 +152,16 @@ async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, s
     color = tile.slots_for_shapes[slot_index]["color"]
     tile.slots_for_shapes[slot_index] = None
     await send_clients_log_message(f"burning a {color} {shape} at {tile.name}")
+    determine_power_levels(game_state)
+    update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
     for _, listener_function in game_state["listeners"]["on_burn"].items():
         await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, burner=game_action_container_stack[-1].whose_action, shape=shape, color=color, index_of_tile_burned_at=tile_index)
+        determine_power_levels(game_state)
+        update_presence(game_state)
+        determine_rulers(game_state)
+        await send_clients_game_state(game_state)
 
 async def burn_shape_at_powerup_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, powerup_color, powerup_index, slot_index):
     powerup = game_state["powerups"][powerup_color][powerup_index]
@@ -108,6 +169,8 @@ async def burn_shape_at_powerup_at_index(game_state, game_action_container_stack
     color = powerup.slots_for_shapes[slot_index]["color"]
     powerup.slots_for_shapes[slot_index] = None
     await send_clients_log_message(f"burning a {color} {shape} at {powerup.name}")
+    determine_power_levels(game_state)
+    update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
     #for _, listener_function in game_state["listeners"]["on_burn"].items():
@@ -178,6 +241,65 @@ def get_other_player_color(player_color):
 def determine_rulers(game_state):
     for tile in game_state["tiles"]:
         tile.determine_ruler(game_state)
+
+def determine_power_levels(game_state):
+    game_state['peak_power']['red'] = 0
+    game_state['peak_power']['blue'] = 0
+    for tile in game_state["tiles"]:
+        tile.determine_power()
+        game_state['peak_power']['red'] = max(tile.power_per_player['red'], game_state['peak_power']['red'])
+        game_state['peak_power']['blue'] = max(tile.power_per_player['blue'], game_state['peak_power']['blue'])
+
+def set_peak_power(game_state):
+    """
+    Determine and set the peak power for both players in the game state.
+    Peak power is the highest power a player has on any single tile.
+
+    :param game_state: The current game state
+    """
+    peak_power = {
+        "red": 0,
+        "blue": 0
+    }
+
+    for tile in game_state["tiles"]:
+        # Ensure the tile's power is up to date
+        tile.determine_power()
+
+        # Update peak power for red player
+        if tile.red_power > peak_power["red"]:
+            peak_power["red"] = tile.red_power
+
+        # Update peak power for blue player
+        if tile.blue_power > peak_power["blue"]:
+            peak_power["blue"] = tile.blue_power
+
+    # Set the calculated peak power in the game state
+    game_state["peak_power"] = peak_power
+
+
+def count_sets_on_tile_for_color(tile, color,):
+    shape_counts = {"circle": 0, "square": 0, "triangle": 0}
+    for slot in tile.slots_for_shapes:
+        if slot and slot["color"] == color:
+            shape_counts[slot["shape"]] += 1
+    return min(shape_counts.values())
+
+def get_tile_indices_where_player_has_presence(game_state, player):
+    """
+    Return a list of tile indices where the specified player has presence.
+
+    :param game_state: The current game state
+    :param player: The player color ('red' or 'blue')
+    :return: A list of tile indices where the player has presence
+    """
+    tile_indices = []
+
+    for index, tile in enumerate(game_state["tiles"]):
+        if has_presence(tile, player):
+            tile_indices.append(index)
+
+    return tile_indices
 
 def find_index_of_tile_by_name(game_state, name):
     for index, tile in enumerate(game_state["tiles"]):

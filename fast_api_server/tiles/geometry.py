@@ -6,54 +6,45 @@ class Geometry(Tile):
     def __init__(self):
         super().__init__(
             name="Geometry",
-            description = f"Ruling Criteria: At least 2 squares, tiebreaker: most shapes\nRuling Benefits: At the start of the round, produce 1 triangle. At the end of the game +3 points",
+            type="Producer",
+            description="7 power: At the start of a round, produce 1 triangle\nRuler: Most Power, minimum 10. Produce another one",
             number_of_slots=7,
         )
 
     def determine_ruler(self, game_state):
-        red_count = 0
-        blue_count = 0
-        red_square_count = 0
-        blue_square_count = 0
-
-        for slot in self.slots_for_shapes:
-            if slot:
-                if slot["color"] == "red":
-                    red_count += 1
-                    if slot["shape"] == "square":
-                        red_square_count += 1
-                elif slot["color"] == "blue":
-                    blue_count += 1
-                    if slot["shape"] == "square":
-                        blue_square_count += 1
-
-        if red_square_count >= 2 and blue_square_count >= 2:
-            if red_count > blue_count:
-                self.ruler = 'red'
-                return 'red'
-            elif blue_count > red_count:
-                self.ruler = 'blue'
-                return 'blue'
-        elif red_square_count >= 2:
+        self.determine_power()
+        if self.power_per_player["red"] > self.power_per_player["blue"] and self.power_per_player["red"] >= 10:
             self.ruler = 'red'
             return 'red'
-        elif blue_square_count >= 2:
+        elif self.power_per_player["blue"] > self.power_per_player["red"] and self.power_per_player["blue"] >= 10:
             self.ruler = 'blue'
             return 'blue'
-        
         self.ruler = None
         return None
 
     async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        self.determine_power()
         ruler = self.determine_ruler(game_state)
 
-        if (ruler == 'red'):
-            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, 'red', 1, 'triangle', self.name)
-        elif (ruler == 'blue'):
-            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, 'blue', 1, 'triangle', self.name)
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
 
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
-        ruler = self.determine_ruler(game_state)
-        if (ruler != None):
-            await send_clients_log_message(f"{self.name} gives 3 points to {ruler}")
-            game_state["points"][ruler] += 3
+        for player in [first_player, second_player]:
+            triangles_to_produce = 0
+            if self.power_per_player[player] >= 7:
+                triangles_to_produce += 1
+                if player == ruler:
+                    triangles_to_produce += 1
+
+            for _ in range(triangles_to_produce):
+                await game_utilities.produce_shape_for_player(
+                    game_state, 
+                    game_action_container_stack, 
+                    send_clients_log_message, 
+                    send_clients_available_actions, 
+                    send_clients_game_state, 
+                    player, 
+                    1,
+                    'triangle', 
+                    self.name
+                )

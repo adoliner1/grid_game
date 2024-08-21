@@ -6,7 +6,8 @@ class Orbit(Tile):
     def __init__(self):
         super().__init__(
             name="Orbit",
-            description=f"\nRuling Criteria: Most circles\nRuling Benefits: Once per round, you may use Orbit to choose a tile. Rotate the row that tile is in left once. At the end of the game, +3 points.",
+            type="Tile-Mover",
+            description=f"Ruler: Most shapes, Action: Once per round, choose a tile. Rotate the row that tile is in left once",
             number_of_slots=5,
             data_needed_for_use=["tile_to_shift_row"]
         )
@@ -20,21 +21,21 @@ class Orbit(Tile):
             available_actions["select_a_tile"] = list(range(len(game_state["tiles"])))
 
     def determine_ruler(self, game_state):
-        circle_counts = {'red': 0, 'blue': 0}
+        red_count = 0
+        blue_count = 0
 
         for slot in self.slots_for_shapes:
-            if slot and slot["shape"] == "circle":
-                color = slot["color"]
-                if color in circle_counts:
-                    circle_counts[color] += 1
-
-        if circle_counts['red'] > circle_counts['blue']:
+            if slot:
+                if slot["color"] == "red":
+                    red_count += 1
+                elif slot["color"] == "blue":
+                    blue_count += 1
+        if red_count > blue_count:
             self.ruler = 'red'
             return 'red'
-        elif circle_counts['blue'] > circle_counts['red']:
+        elif blue_count > red_count:
             self.ruler = 'blue'
             return 'blue'
-        
         self.ruler = None
         return None
 
@@ -72,9 +73,3 @@ class Orbit(Tile):
         self.is_on_cooldown = True
 
         return True
-
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
-        ruler = self.determine_ruler(game_state)
-        if ruler:
-            await send_clients_log_message(f"{self.name} gives 5 points to {ruler}")
-            game_state["points"][ruler] += 5

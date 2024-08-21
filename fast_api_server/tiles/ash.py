@@ -6,23 +6,17 @@ class Ash(Tile):
     def __init__(self):
         super().__init__(
             name="Ash",
-            description=f"Ruling Criteria: Most shapes, minimum 2\nRuling Benefits: When a shape is burned on an adjacent tile, +2 points.",
-            number_of_slots=3,
+            type="Scorer",
+            description="2 Power: When a shape is burned on a tile you're present at, +2 points\nRuler: Most power, minimum 6. +5 points instead",
+            number_of_slots=5,
         )
 
     def determine_ruler(self, game_state):
-        red_count = 0
-        blue_count = 0
-        for slot in self.slots_for_shapes:
-            if slot:
-                if slot["color"] == "red":
-                    red_count += 1
-                elif slot["color"] == "blue":
-                    blue_count += 1
-        if red_count > blue_count and red_count >= 2:
+        self.determine_power()
+        if self.power_per_player["red"] > self.power_per_player["blue"] and self.power_per_player["red"] >= 6:
             self.ruler = 'red'
             return 'red'
-        elif blue_count > red_count and blue_count >= 2:
+        elif self.power_per_player["blue"] > self.power_per_player["red"] and self.power_per_player["blue"] >= 6:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -33,14 +27,13 @@ class Ash(Tile):
 
     async def on_burn_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         index_of_tile_burned_at = data.get('index_of_tile_burned_at')
-        index_of_ash = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        
-        if not game_utilities.determine_if_directly_adjacent(index_of_ash, index_of_tile_burned_at):
-            return
-        
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
         ruler = self.determine_ruler(game_state)
-        if not ruler:
-            return
-        
-        game_state["points"][ruler] += 2
-        await send_clients_log_message(f"{ruler} gains 2 points from {self.name} due to a shape being burned on an adjacent tile")
+       
+        for player in [first_player, second_player]:
+            player_power = self.power_per_player[player]
+            if player_power >= 2 and game_utilities.has_presence(game_state["tiles"][index_of_tile_burned_at], player):
+                points_gained = 5 if player == ruler else 2
+                game_state["points"][player] += points_gained
+                await send_clients_log_message(f"{player} gains {points_gained} points from {self.name} due to a shape being burned on {game_state['tiles'][index_of_tile_burned_at].name}")

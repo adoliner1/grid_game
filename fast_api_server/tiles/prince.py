@@ -6,7 +6,8 @@ class Prince(Tile):
     def __init__(self):
         super().__init__(
             name="Prince",
-            description = f"At end of round: Per same-shape pairs you have here (e.g. 2 circles), +2 points\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game +5 points",
+            type="Scorer",
+            description = f"At the end of a round: For each same-shape pair you have here, +2 points\nRuler: Most Shapes. At the end of the game +3 points",
             number_of_slots=7,
         )
 
@@ -61,5 +62,5 @@ class Prince(Tile):
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if (ruler != None):
-            await send_clients_log_message(f"{self.name} gives 5 points to {ruler}")
-            game_state["points"][ruler] += 5
+            await send_clients_log_message(f"{self.name} gives 3 points to {ruler}")
+            game_state["points"][ruler] += 3

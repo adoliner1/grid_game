@@ -6,24 +6,19 @@ class Queen(Tile):
     def __init__(self):
         super().__init__(
             name="Queen",
-            description = f"When you place a shape on this tile, +1 point\nRuling Criteria: Most squares\nRuling Benefits: At the end of the game, +5 points",
+            type="Scorer",
+            description="Ruler: Most shapes, minimum 3. Whenever a shape is placed here by the non-ruler, +1 point. At the end of the game, +6 points",
             number_of_slots=7,
         )
 
     def determine_ruler(self, game_state):
-        red_square_count = 0
-        blue_square_count = 0
-
-        for slot in self.slots_for_shapes:
-            if slot and slot["shape"] == "square":
-                if slot["color"] == "red":
-                    red_square_count += 1
-                elif slot["color"] == "blue":
-                    blue_square_count += 1
-        if red_square_count > blue_square_count:
+        red_shape_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
+        blue_shape_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
+        
+        if red_shape_count > blue_shape_count and red_shape_count >= 3:
             self.ruler = 'red'
             return 'red'
-        elif blue_square_count > red_square_count:
+        elif blue_shape_count > red_shape_count and blue_shape_count >= 3:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -35,15 +30,16 @@ class Queen(Tile):
     async def on_place_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         placer = data.get('placer')
         tile_index = data.get('index_of_tile_placed_at')
-
         if tile_index != game_utilities.find_index_of_tile_by_name(game_state, self.name):
             return
-
-        game_state["points"][placer] += 1
-        await send_clients_log_message(f"{placer} earned 1 point for placing a shape on {self.name}")
+        
+        ruler = self.determine_ruler(game_state)
+        if ruler and placer != ruler:
+            game_state["points"][ruler] += 1
+            await send_clients_log_message(f"{ruler} earned 1 point as the ruler of {self.name} for a shape placement by {placer}")
 
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler is not None:
-            await send_clients_log_message(f"{self.name} gives 5 points to {ruler}")
-            game_state["points"][ruler] += 5
+            await send_clients_log_message(f"{self.name} gives 6 points to {ruler}")
+            game_state["points"][ruler] += 6

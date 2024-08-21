@@ -6,7 +6,8 @@ class Jester(Tile):
     def __init__(self):
         super().__init__(
             name="Jester",
-            description = f"At the end of the round, per unique type of pair you have here gain 5 points\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, -10 points",
+            type="Scorer",
+            description = f"At the end of a round, per unique type of pair you have here, +5 points\nRuler: Most Shapes. At the end of the game, -10 points",
             number_of_slots=9,
         )
 

@@ -7,6 +7,7 @@ from game_engine import GameEngine
 from round_bonuses import *
 import json
 import copy
+import asyncio
 
 app = FastAPI()
 connected_clients: List[Dict] = []

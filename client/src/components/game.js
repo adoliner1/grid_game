@@ -223,8 +223,8 @@ const Game = () => {
     }
     
     useEffect(() => {
-        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
-        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
+        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         socket.current.onopen = () => {
             console.log("WebSocket connection established")
         }
@@ -311,6 +311,7 @@ const Game = () => {
                     shapes={gameState.shapes_in_storage.red}
                     points={gameState.points.red}
                     presence={gameState.presence.red}
+                    peak_power={gameState.peak_power.red}
                     available_actions={availableActions}
                     onShapeClick={handleShapeInStorageClick}
                     onConversionArrowClick={handleConversionArrowClick}
@@ -323,6 +324,7 @@ const Game = () => {
                     shapes={gameState.shapes_in_storage.blue}
                     points={gameState.points.blue}
                     presence={gameState.presence.blue}
+                    peak_power={gameState.peak_power.blue}
                     available_actions={availableActions}
                     onShapeClick={handleShapeInStorageClick}
                     onConversionArrowClick={handleConversionArrowClick}
@@ -348,8 +350,9 @@ const Game = () => {
                             <Tile
                                 key={tile_index}
                                 name={tile.name}
-                                red_power={tile.red_power}
-                                blue_power={tile.blue_power}
+                                type={tile.type}
+                                red_power={tile.power_per_player.red}
+                                blue_power={tile.power_per_player.blue}
                                 description={tile.description}
                                 is_on_cooldown={tile.is_on_cooldown}
                                 slots_for_shapes={tile.slots_for_shapes}

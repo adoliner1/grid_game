@@ -6,7 +6,8 @@ class Chicken(Tile):
     def __init__(self):
         super().__init__(
             name="Chicken",
-            description="Once per round, the player with the most shapes here may use this to gain 1 point and receive 1 circle at an adjacent tile\nRuling Criteria: Fewest shapes\nRuling Benefits: At the start of the round, produce 1 circle",
+            type="Producer/Giver",
+            description="Most Shapes, Action: Once per round, +1 point and receive 1 circle at an adjacent tile\nRuler: Fewest Shapes. At the start of a round, produce 1 circle",
             number_of_slots=3,
             data_needed_for_use=["tile_to_receive_shapes_at"]
         )

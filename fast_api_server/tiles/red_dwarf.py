@@ -6,13 +6,14 @@ class RedDwarf(Tile):
     def __init__(self):
         super().__init__(
             name="Red Dwarf",
-            description=f"Once per round, anyone can burn one of their shapes here to swap the position of a tile with an adjacent tile.\nRuling Criteria: Most shapes, minimum 2\nRuling Benefits: At the end of the game, +3 points",
+            type="Tile-Mover/Scorer",
+            description=f"Action: Burn one of your shapes here to swap the position of a tile with an adjacent tile\nRuler: Most Shapes",
             number_of_slots=3,
             data_needed_for_use=["slot_to_burn_from_on_red_dwarf", "first_tile", "adjacent_tile_to_first_tile"]
         )
 
     def is_useable(self, game_state):
-        return not self.is_on_cooldown and any(slot for slot in self.slots_for_shapes if slot and slot["color"] == game_state["whose_turn_is_it"])
+        return any(slot for slot in self.slots_for_shapes if slot and slot["color"] == game_state["whose_turn_is_it"])
 
     def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
@@ -31,10 +32,10 @@ class RedDwarf(Tile):
         red_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
         blue_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
 
-        if red_count >= 2:
+        if red_count > blue_count:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 2:
+        elif blue_count > red_count:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -71,12 +72,4 @@ class RedDwarf(Tile):
         await send_clients_log_message(f"Using {self.name} to swap tiles at indices {tile1_index} and {tile2_index}")
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
 
-        self.is_on_cooldown = True
-
         return True
-
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
-        ruler = self.determine_ruler(game_state)
-        if ruler:
-            await send_clients_log_message(f"{self.name} gives 3 points to {ruler}")
-            game_state["points"][ruler] += 3

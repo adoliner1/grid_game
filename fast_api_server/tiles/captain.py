@@ -8,16 +8,17 @@ class Captain(Tile):
     def __init__(self):
         super().__init__(
             name="Captain",
-            description=f"Ruling Criteria: at least 2 shapes total, at least 1 square, tiebreaker most shapes \nRuling Benefits: Once per round, when you receive a shape at an adjacent tile, you may burn a shape anywhere",
+            type="Attacker",
+            description="Ruler: Most Power, Reaction: Once per round, after you receive a shape at a tile, if you have 3 power there, you may burn a shape at a tile adjacent to Captain",
             number_of_slots=5,
         )
 
     def set_available_actions_for_reaction(self, game_state, game_action_container, available_actions):
         available_actions["do_not_react"] = None
         slots_with_a_burnable_shape = {}
-        for tile_index, tile in enumerate(game_state["tiles"]):
+        for tile_index in game_utilities.get_adjacent_tile_indices(game_utilities.find_index_of_tile_by_name(self.name)):
             slots_with_shapes = []
-            for slot_index, slot in enumerate(tile.slots_for_shapes):
+            for slot_index, slot in enumerate(game_state["tiles"][tile_index].slots_for_shapes):
                 if slot:
                     slots_with_shapes.append(slot_index)
             if slots_with_shapes:
@@ -25,15 +26,12 @@ class Captain(Tile):
         available_actions["select_a_slot_on_a_tile"] = slots_with_a_burnable_shape
 
     def determine_ruler(self, game_state):
-        red_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
-        blue_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
-        red_square_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red" and slot["shape"] == "square")
-        blue_square_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue" and slot["shape"] == "square")
+        self.determine_power()
 
-        if red_count >= 2 and red_square_count >= 1 and red_count > blue_count:
+        if self.power_per_player["red"] > self.power_per_player["blue"]:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 2 and blue_square_count >= 1 and blue_count > red_count:
+        elif self.power_per_player["blue"] > self.power_per_player["red"]:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -41,6 +39,7 @@ class Captain(Tile):
 
     async def react(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
+        index_of_captain = game_utilities.find_index_of_tile_by_name(self.name)
         if not self.ruler:
             await send_clients_log_message(f"No ruler determined for {self.name} cannot react")
             return False
@@ -55,6 +54,10 @@ class Captain(Tile):
 
         slot_index_to_burn_shape = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape']['slot_index']
         index_of_tile_to_burn_shape = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape']['tile_index']
+
+        if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_burn_shape, index_of_captain):
+            await send_clients_log_message(f"Tried to react with {self.name} but chose a non-adjacent tile to burn at")
+            return False            
 
         if game_state["tiles"][index_of_tile_to_burn_shape].slots_for_shapes[slot_index_to_burn_shape] == None:
             await send_clients_log_message(f"Tried to react with {self.name} but there is no shape to burn at {game_state['tiles'][index_of_tile_to_burn_shape].name} at slot {slot_index_to_burn_shape}")
@@ -74,14 +77,14 @@ class Captain(Tile):
         index_of_tile_received_at = data.get('index_of_tile_received_at')
         index_of_captain = game_utilities.find_index_of_tile_by_name(game_state, self.name)
 
-        if not game_utilities.determine_if_directly_adjacent(index_of_captain, index_of_tile_received_at):
-            return
-
         ruler = self.determine_ruler(game_state)
         if ruler != receiver:
             return
 
         if self.is_on_cooldown:
+            return
+        
+        if game_state["tiles"][index_of_tile_received_at].power_per_player[ruler] < 3:
             return
         
         await send_clients_log_message(f"{self.ruler} may react with {self.name}")

@@ -6,7 +6,8 @@ class Nitrogen(Tile):
     def __init__(self):
         super().__init__(
             name="Nitrogen",
-            description=f"At the end of the round, for each triangle you have here, receive a square and a circle here. Anyone can use this tile to burn a set here (1 circle, 1 square, 1 triangle) for 5 points\nRuling Criteria: most shapes\nRuling Benefits: At the end of the game +7 points",
+            type="Giver/Scorer",
+            description=f"At the end of a round, for each triangle you have here, receive a square and a circle here\nAction: burn a set here for +5 points\nRuler: Most Shapes. At the end of the game +7 points",
             number_of_slots=11,
         )
 
@@ -18,7 +19,6 @@ class Nitrogen(Tile):
         triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "triangle" and slot["color"] == whose_turn_is_it)
         
         return circle_count >= 1 and square_count >= 1 and triangle_count >= 1
-
 
     def determine_ruler(self, game_state):
         red_count = 0

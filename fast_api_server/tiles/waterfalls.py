@@ -5,45 +5,37 @@ from tiles.tile import Tile
 class Waterfalls(Tile):
     def __init__(self):
         super().__init__(
-            name="Waterfall",
-            description=f"\nRuling Criteria: most shapes\nRuling Benefits: At the end of the round, gain points based on the number of adjacent tiles you also rule. 0 or 1: 1, 2: 3, 3: 7, 4: 13",
+            name="Waterfalls",
+            type="Scorer",
+            description="3 Power: At the end of a round, +1 point per tile you're present at\n6 Power: +2 points instead\nRuler: Most Power",
             number_of_slots=5,
         )
 
     def determine_ruler(self, game_state):
-        red_count = 0
-        blue_count = 0
-
-        for slot in self.slots_for_shapes:
-            if slot:
-                if slot["color"] == "red":
-                    red_count += 1
-                elif slot["color"] == "blue":
-                    blue_count += 1
-        if red_count > blue_count:
+        self.determine_power()
+        if self.power_per_player["red"] > self.power_per_player["blue"]:
             self.ruler = 'red'
             return 'red'
-        elif blue_count > red_count:
+        elif self.power_per_player["blue"] > self.power_per_player["red"]:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
         return None
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
-        ruler = self.determine_ruler(game_state)
-        if not ruler:
-            await send_clients_log_message(f"No ruler determined for {self.name}, no points awarded")
-            return
+        first_player = game_state["first_player"]
+        second_player = game_utilities.get_other_player_color(first_player)
 
-        adjacent_tiles_indices = game_utilities.get_adjacent_tile_indices(game_utilities.find_index_of_tile_by_name(game_state, self.name))
-        adjacent_tiles_ruled_count = 0
+        for player in [first_player, second_player]:
+            player_power = self.power_per_player[player]
+            if player_power >= 3:
+                tiles_present_at = 0
+                for tile in game_state["tiles"]:
+                    if game_utilities.has_presence(tile, player):
+                        tiles_present_at += 1
 
-        for index in adjacent_tiles_indices:
-            tile = game_state["tiles"][index]
-            if tile.determine_ruler(game_state) == ruler:
-                adjacent_tiles_ruled_count += 1
+                points_per_tile = 2 if player_power >= 6 else 1
+                points_awarded = tiles_present_at * points_per_tile
 
-        points = {0: 0, 1: 1, 2: 3, 3: 7, 4: 13}
-        points_awarded = points.get(adjacent_tiles_ruled_count, 0)
-        game_state["points"][ruler] += points_awarded
-        await send_clients_log_message(f"{ruler} gains {points_awarded} points for ruling tiles adjacent to {self.name}")
+                game_state["points"][player] += points_awarded
+                await send_clients_log_message(f"{player} gains {points_awarded} points from {self.name} for being present at {tiles_present_at} tiles with {player_power} power")

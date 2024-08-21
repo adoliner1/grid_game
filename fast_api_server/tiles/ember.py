@@ -6,7 +6,8 @@ class Ember(Tile):
     def __init__(self):
         super().__init__(
             name="Ember",
-            description=f"-5 points when you place here. When a shape is burned from a tile anywhere, Ember receives a copy of it. At the end of each round, if Ember is full, remove all the shapes. +10 points to whichever player had more. Ruling Criteria: Most shapes\nRuling Benefits: none",
+            type="Scorer",
+            description=f"-5 points when you place here. When a shape is burned, the owner receives a copy of it on Ember. At the end of each round, if Ember is full, remove all the shapes. +6 points to whichever player had more\nRuler: most shapes",
             number_of_slots=11,
         )
 
@@ -61,7 +62,7 @@ class Ember(Tile):
             elif blue_count > red_count:
                 winner = "blue"
 
-            game_state["points"][winner] += 10
-            await send_clients_log_message(f"{winner} gains 10 points from {self.name} for having more shapes at the end of the round. {self.name} is emptied")
+            game_state["points"][winner] += 6
+            await send_clients_log_message(f"Red had {red_count} on ember, blue had {blue_count}. {winner} gains 6 points. {self.name} is emptied")
 
             self.slots_for_shapes = [None] * self.number_of_slots

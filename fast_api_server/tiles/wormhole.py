@@ -6,8 +6,9 @@ class Wormhole(Tile):
     def __init__(self):
         super().__init__(
             name="Wormhole",
-            description=f"Once per round, anyone with at least 2 different shapes here can swap the position of two tiles.\nRuling Criteria: Most shapes\nRuling Benefits: At the end of the game, +5 points",
-            number_of_slots=5,
+            type="Tile-Mover",
+            description=f"At Least Two Different Shape Types: Action: Once per round, swap the position of two tiles\nRuler: Most Shapes",
+            number_of_slots=3,
             data_needed_for_use=["tile1", "tile2"]
         )
 
@@ -46,14 +47,6 @@ class Wormhole(Tile):
 
     async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
-        self.determine_ruler(game_state)
-        if not self.ruler:
-            await send_clients_log_message(f"No ruler determined for {self.name} cannot use")
-            return False
-        
-        if self.ruler != game_action_container.whose_action:
-            await send_clients_log_message(f"Non-ruler tried to use {self.name}")
-            return False
 
         tile1_index = game_action_container.required_data_for_action['tile1']
         tile2_index = game_action_container.required_data_for_action['tile2']
@@ -76,11 +69,5 @@ class Wormhole(Tile):
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
 
         self.is_on_cooldown = True
-
         return True
 
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
-        ruler = self.determine_ruler(game_state)
-        if ruler:
-            await send_clients_log_message(f"{self.name} gives 5 points to {ruler}")
-            game_state["points"][ruler] += 5

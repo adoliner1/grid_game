@@ -6,7 +6,8 @@ class TeleportingCabinet(Tile):
     def __init__(self):
         super().__init__(
             name="Teleporting Cabinet",
-            description=f"Ruling Criteria: most shapes\nRuling Benefits: Once per turn, choose a shape at an adjacent tile and swap it with a shape anywhere.",
+            type="Mover",
+            description=f"Ruler: Most Shapes, Action: Once per turn, choose a shape at an adjacent tile and swap it with a shape anywhere",
             number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_swap_shape_from", "slot_and_tile_to_swap_shape_to"]
         )

@@ -1,4 +1,7 @@
-from game_utilities import *
+import game_utilities
+import game_constants
+import math
+
 
 class RoundBonus:
     def __init__(self, name, description, listener_type):
@@ -72,8 +75,8 @@ class PointsPerRow(RoundBonus):
         )
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
-        red_complete_rows = determine_how_many_full_rows_player_rules(game_state, "red")
-        blue_complete_rows = determine_how_many_full_rows_player_rules(game_state, "blue")
+        red_complete_rows = game_utilities.determine_how_many_full_rows_player_rules(game_state, "red")
+        blue_complete_rows = game_utilities.determine_how_many_full_rows_player_rules(game_state, "blue")
 
         if red_complete_rows > 0:
             points_to_gain = 10*red_complete_rows
@@ -94,8 +97,8 @@ class PointsPerColumn(RoundBonus):
         )
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
-        red_complete_columns = determine_how_many_full_columns_player_rules(game_state, "red")
-        blue_complete_columns = determine_how_many_full_columns_player_rules(game_state, "blue")
+        red_complete_columns = game_utilities.determine_how_many_full_columns_player_rules(game_state, "red")
+        blue_complete_columns = game_utilities.determine_how_many_full_columns_player_rules(game_state, "blue")
 
         if red_complete_columns > 0:
             points_to_gain = 10 * red_complete_columns
@@ -128,3 +131,100 @@ class PointsPerTileRuled(RoundBonus):
             points_to_gain = 2 * blue_tiles_ruled
             game_state["points"]["blue"] += points_to_gain
             await send_clients_log_message(f"Blue gets {points_to_gain} points for ruling {blue_tiles_ruled} tile(s)")
+
+class CirclesPerPresence(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Produce Circles for 2 Presence",
+            description="At the end of the round, produce circles equal to your presence/2 (round down)",
+            listener_type="end_of_round",
+        )
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        game_utilities.update_presence(game_state)
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+
+        for player in [first_player, second_player]:
+            presence = game_state["presence"][player]
+            
+            for _ in range (math.floor(presence / 2)):
+                await game_utilities.produce_shape_for_player(
+                    game_state,
+                    game_action_container_stack,
+                    send_clients_log_message,
+                    send_clients_available_actions,
+                    send_clients_game_state,
+                    player,
+                    1,
+                    "circle",
+                    self.name
+                )
+
+class CirclesPerPeakPower(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Produce Circles for 2 Peak-Power",
+            description="At the end of the round, produce circles equal to your peak power/2 (round down)",
+            listener_type="end_of_round",
+        )
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        game_utilities.determine_power_levels(game_state)
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+
+        for player in [first_player, second_player]:
+            peak_power = game_state["peak_power"][player]
+            for _ in range (math.floor(peak_power / 2)):
+                await game_utilities.produce_shape_for_player(
+                    game_state,
+                    game_action_container_stack,
+                    send_clients_log_message,
+                    send_clients_available_actions,
+                    send_clients_game_state,
+                    player,
+                    1,
+                    "circle",
+                    self.name
+                )
+
+class PointsPerPresence(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Points for Presence",
+            description="At the end of the round, gain points equal to your presence",
+            listener_type="end_of_round",
+        )
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        game_utilities.update_presence(game_state)
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+        
+        for player in [first_player, second_player]:
+            presence = game_state["presence"][player]
+            points_to_award = presence
+            
+            game_state["points"][player] += points_to_award
+            await send_clients_log_message(f"{player} gains {points_to_award} points from {self.name} (presence: {presence})")
+
+class PointsPerPeakPower(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Points for Peak Power",
+            description="At the end of the round, gain points equal to your peak power",
+            listener_type="end_of_round",
+        )
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        game_utilities.determine_power_levels(game_state)
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+        
+        for player in [first_player, second_player]:
+            peak_power = game_state["peak_power"][player]
+            points_to_award = peak_power
+            
+            game_state["points"][player] += points_to_award
+            await send_clients_log_message(f"{player} gains {points_to_award} points from {self.name} (peak power: {peak_power})")

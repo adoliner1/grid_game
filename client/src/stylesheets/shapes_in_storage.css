@@ -34,6 +34,11 @@
     justify-content: center;
 }
 
+.peak-power-row {
+    display: flex;
+    justify-content: center;
+}
+
 .shape-and-amount-container {
     display: flex;
     flex-direction: column;

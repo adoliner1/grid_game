@@ -6,41 +6,33 @@ class Saturn(Tile):
     def __init__(self):
         super().__init__(
             name="Saturn",
-            description = f"Ruling Criteria: most shapes, minimum 3\nRuling Benefits: Once per round, you may use this tile to burn one of your triangles here to produce 2 squares",
+            type="Producer",
+            description="Ruler: +2 power differential, minimum 4 power: Action: Once per round, burn one of your triangles here to produce 2 squares",
             number_of_slots=5,
+            is_on_cooldown=False
         )
 
-    def is_useable(self, game_state):
-        whose_turn_is_it = game_state["whose_turn_is_it"]
-        ruler = self.determine_ruler(game_state)
-
-        if whose_turn_is_it != ruler or self.is_on_cooldown:
-            return False
-        
-        for slot in self.slots_for_shapes:
-            if slot and slot["shape"] == "triangle" and slot["color"] == ruler:
-                return True
-        
-        return False
-
     def determine_ruler(self, game_state):
-        red_count = 0
-        blue_count = 0
-
-        for slot in self.slots_for_shapes:
-            if slot:
-                if slot["color"] == "red":
-                    red_count += 1
-                elif slot["color"] == "blue":
-                    blue_count += 1
-        if red_count >= 3:
+        self.determine_power()
+        red_power = self.power_per_player["red"]
+        blue_power = self.power_per_player["blue"]
+        if red_power >= 4 and red_power >= blue_power + 2:
             self.ruler = 'red'
             return 'red'
-        elif blue_count >= 3:
+        elif blue_power >= 4 and blue_power >= red_power + 2:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
         return None
+
+    def is_useable(self, game_state):
+        whose_turn_is_it = game_state["whose_turn_is_it"]
+        ruler = self.determine_ruler(game_state)
+        if whose_turn_is_it != ruler or self.is_on_cooldown:
+            return False
+        
+        return any(slot and slot["shape"] == "triangle" and slot["color"] == ruler 
+                   for slot in self.slots_for_shapes)
 
     async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
@@ -53,19 +45,14 @@ class Saturn(Tile):
             await send_clients_log_message(f"Non-ruler tried to use {self.name}")
             return False
         
-        triangle_found = False
         for i, slot in enumerate(self.slots_for_shapes):
             if slot and slot["shape"] == "triangle" and slot["color"] == ruler:
                 await send_clients_log_message(f"{self.name} is used")                
                 await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_utilities.find_index_of_tile_by_name(game_state, self.name), i)
-                triangle_found = True
-                break
+                for _ in range(2):
+                    await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 1, 'square', self.name)
+                self.is_on_cooldown = True
+                return True
         
-        if not triangle_found:
-            await send_clients_log_message(f"No triangle to burn on {self.name}")
-            return False
-        
-        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 2, 'square', self.name)
-
-        self.is_on_cooldown = True
-        return True
+        await send_clients_log_message(f"No triangle to burn on {self.name}")
+        return False

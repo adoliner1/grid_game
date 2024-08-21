@@ -6,11 +6,14 @@ class Pluto(Tile):
     def __init__(self):
         super().__init__(
             name="Pluto",
-            description = "Ruling Criteria: most shapes\nRuling Benefits: You may use this tile to burn 2 circles here to produce a square. At the end of the game +3 points",
+            type="Producer/Scorer",
+            description = "Ruler: Most Shapes, Action: Burn 2 circles here to produce a square",
             number_of_slots=5,
         )
 
     def is_useable(self, game_state):
+        if self.is_on_cooldown:
+            return False
         whose_turn_is_it = game_state["whose_turn_is_it"]
         ruler = self.determine_ruler(game_state)
 
@@ -65,9 +68,3 @@ class Pluto(Tile):
         
         await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_action_container.whose_action, 1, 'square', self.name)
         return True
-
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
-        ruler = self.determine_ruler(game_state)
-        if ruler:
-            await send_clients_log_message(f"{self.name} gives 3 points to {ruler}")
-            game_state["points"][ruler] += 3

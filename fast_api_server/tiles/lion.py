@@ -6,7 +6,8 @@ class Lion(Tile):
     def __init__(self):
         super().__init__(
             name="Lion",
-            description = f"Once per round, the player with the most shapes here may use this to receive 2 circles at an adjacent tile\nRuling Criteria: Fewest shapes\nRuling Benefits: At the start of the round, produce 1 square",
+            type="Producer/Giver",
+            description = f"Most Shapes, Action: Once per round, receive 2 circles at an adjacent tile\nRuler: Fewest Shapes, at the start of a round, produce 1 square",
             number_of_slots=5,
             data_needed_for_use=["tile_to_receive_shapes_at"]
         )
