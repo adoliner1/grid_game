@@ -1,12 +1,13 @@
 import React from 'react';
 
-const Triangle = ({ playerColor, selectable, onClick }) => {
+const Triangle = ({ playerColor, selectable, onClick, size = 24 }) => {
 
     const className = `owner-${playerColor} ${selectable ? 'selectable' : ''}`;
 
+    const points = [size/2, 2, 2, size-2, size-2, size-2];
     return (
-        <svg width='24' height='24' viewBox="0 0 24 24" className={ className } onClick={onClick}>
-            <polygon points="12,2 2,22 22,22" />
+        <svg width={ `${size}` } height={ `${size}` } viewBox={ `0 0 ${size} ${size}` } className={ className } onClick={onClick}>
+            <polygon points={ points.join(", ") } />
         </svg>
     );
 };
