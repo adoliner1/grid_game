@@ -30,7 +30,7 @@ class Maestro(Tile):
         available_actions["do_not_react"] = None
         index_of_tile_received_at = game_action_container.required_data_for_action.get('index_of_tile_received_at')
         if index_of_tile_received_at is not None:
-            adjacent_tiles = game_utilities.get_adjacent_tile_indices(game_state, index_of_tile_received_at)
+            adjacent_tiles = game_utilities.get_adjacent_tile_indices(index_of_tile_received_at)
             slots_without_a_shape_per_tile = {}
             for index in adjacent_tiles:
                 slots_without_shapes = [i for i, slot in enumerate(game_state["tiles"][index].slots_for_shapes) if not slot]

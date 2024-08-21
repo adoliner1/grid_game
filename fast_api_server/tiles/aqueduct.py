@@ -66,7 +66,7 @@ class Aqueduct(Tile):
         shape_to_move = game_state['tiles'][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from]["shape"]
         color_of_shape_to_move = game_state['tiles'][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from]["color"]
 
-        if not user == self.determine_ruler():
+        if not user == self.determine_ruler(game_state):
             if not self.slots_for_shapes[slot_index_to_burn_shape_from_here]:
                 await send_clients_log_message(f"Tried to use {self.name} but chose an empty slot to burn from")
                 return False

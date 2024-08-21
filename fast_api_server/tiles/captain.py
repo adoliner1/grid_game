@@ -16,7 +16,7 @@ class Captain(Tile):
     def set_available_actions_for_reaction(self, game_state, game_action_container, available_actions):
         available_actions["do_not_react"] = None
         slots_with_a_burnable_shape = {}
-        for tile_index in game_utilities.get_adjacent_tile_indices(game_utilities.find_index_of_tile_by_name(self.name)):
+        for tile_index in game_utilities.get_adjacent_tile_indices(game_utilities.find_index_of_tile_by_name(game_state, self.name)):
             slots_with_shapes = []
             for slot_index, slot in enumerate(game_state["tiles"][tile_index].slots_for_shapes):
                 if slot:
@@ -39,7 +39,7 @@ class Captain(Tile):
 
     async def react(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
-        index_of_captain = game_utilities.find_index_of_tile_by_name(self.name)
+        index_of_captain = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         if not self.ruler:
             await send_clients_log_message(f"No ruler determined for {self.name} cannot react")
             return False

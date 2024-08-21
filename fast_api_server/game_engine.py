@@ -442,6 +442,10 @@ class GameEngine:
         for player_color in game_constants.player_colors:
             for shape, amount in game_constants.base_income:
                 await game_utilities.produce_shape_for_player(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state, player_color, amount, shape, None)
+        
+        if self.game_state['round'] == 0 or self.game_state['round'] > 3:
+            for player_color in game_constants.player_colors:
+                await game_utilities.produce_shape_for_player(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state, player_color, 1, 'triangle', None)
 
     async def player_passes(self, player_color):
         if self.game_state["whose_turn_is_it"] != player_color:

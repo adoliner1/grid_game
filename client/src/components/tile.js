@@ -35,7 +35,7 @@ const Tile = ({
     .replace(/start of a round/gi, '<i>start of a round</i>')
     .replace(/end of a round/gi, '<i>end of a round</i>')
     .replace(/end of the game/gi, '<i>end of the game</i>')
-    .replace(/\b(burn|burns)\b/gi, '<span style="color: #ff8700;">$1</span>')
+    .replace(/\b(burn|burns|burned)\b/gi, '<span style="color: #ff8700;">$1</span>')
     .replace(/\b(receive|receives|received)\b/gi, '<span style="color: #9f00ff;">$1</span>')
     .replace(/\b(place|places|placed|placing)\b/gi, '<span style="color: #007a9a;">$1</span>')
     .replace(/\b(produce|produces|produced|producing)\b/gi, '<span style="color: #019000;">$1</span>');

@@ -63,7 +63,7 @@ class Sword(Tile):
             return False
 
         index_of_sword = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        slot_index_to_burn_shape_from_here = game_action_container.required_data_for_action['slot_to_burn_shape_from']
+        slot_index_to_burn_shape_from_here = game_action_container.required_data_for_action['slot_to_burn_shape_from']['slot_index']
         slot_index_to_burn_shape_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape_at']['slot_index']
         index_of_tile_to_burn_shape_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape_at']['tile_index']
 

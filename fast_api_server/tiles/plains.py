@@ -7,7 +7,7 @@ class Plains(Tile):
         super().__init__(
             name="Plains",
             type="Producer/Scorer",
-            description="Ruler: Supremacy in 2 or more shapes. When a tile you're present at produces shapes, +1 point. If it's adjacent to Plains also, produce one of that shape instead",
+            description="Ruler: More of at least 2 shape types. When a tile you're present at produces shapes, +1 point. If it's adjacent to Plains also, produce one of that shape instead",
             number_of_slots=7,
         )
 

@@ -7,8 +7,9 @@ class Calculus(Tile):
         super().__init__(
             name="Calculus",
             type="Producer",
-            description="5 power: At the start of a round, produce 1 square\nRuler: Most Power, minimum 8. Produce another",
-            number_of_slots=5,
+            description="5 Power: At the start of a round, produce 1 square\nRuler: Most Power, minimum 8. Produce another",
+            number_of_slots=
+            5,
         )
 
     def determine_ruler(self, game_state):

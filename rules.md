@@ -7,7 +7,9 @@ The board consists of a 3x3 grid of Tiles. Players place their resources (shapes
 Have the most points at the end of the game. The game ends when all tiles have a ruler at the end of a round or at the end of the 6th round.
 
 ## Base-Income
-At the start of each round, players receive: 2 circles, 1 square, and 1 triangle.
+At the start of the first round, each player produces 1 of each shape.
+At the start of each round after that, each player produces 1 circle and 1 square.
+At the start of rounds 4 and 5, they produce a triangle as well.
 
 ## Gameplay
 
