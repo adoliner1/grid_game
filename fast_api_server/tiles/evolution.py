@@ -7,7 +7,7 @@ class Evolution(Tile):
         super().__init__(
             name="Evolution",
             type="Producer/Giver/Scorer",
-            description=f"At the end of a round, burn each shape here and receive the next most powerful shape. Triangles become circles\nAction: Burn 3 of your triangles here to produce 4 circles and 8 points\nRuler: Most Shapes. At the end of the game, -6 points",
+            description=f"At the end of a round, burn each shape here and receive the next most powerful shape. Triangles yield circles\nAction: Burn 3 of your triangles here to produce 4 circles and 8 points\nRuler: Most Shapes. At the end of the game, -6 points",
             number_of_slots=7,
         )
 

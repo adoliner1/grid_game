@@ -7,7 +7,7 @@ class Caves(Tile):
         super().__init__(
             name="Caves",
             type="Giver/Scorer",
-            description="Ruler: Most shapes, minimum 3. When you place a square or a triangle, receive a circle at that tile. If the tile is adjacent to Caves, +4 points as well",
+            description="Ruler: Most shapes, minimum 2. When you place a square or a triangle, receive a circle at that tile. If the tile is adjacent to Caves, +4 points as well",
             number_of_slots=5,
         )
 
@@ -15,10 +15,10 @@ class Caves(Tile):
         red_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
         blue_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
        
-        if red_count > blue_count and red_count >= 3:
+        if red_count > blue_count and red_count >= 2:
             self.ruler = 'red'
             return 'red'
-        elif blue_count > red_count and blue_count >= 3:
+        elif blue_count > red_count and blue_count >= 2:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None

@@ -18,6 +18,7 @@ class RoundBonus:
     def serialize(self):
         return self.description
 
+'''
 class PointsPerCircle(RoundBonus):
     def __init__(self):
         super().__init__(
@@ -65,6 +66,7 @@ class PointsPerTriangle(RoundBonus):
         if (shape == "triangle"):
             game_state["points"][placer] += 3
             await send_clients_log_message(f"{placer} gets 3 points for placing a triangle (round bonus)")
+'''
 
 class PointsPerRow(RoundBonus):
     def __init__(self):
@@ -148,6 +150,7 @@ class CirclesPerPresence(RoundBonus):
         for player in [first_player, second_player]:
             presence = game_state["presence"][player]
             
+            await send_clients_log_message(f"Round bonus gives circles for presence:")
             for _ in range (math.floor(presence / 2)):
                 await game_utilities.produce_shape_for_player(
                     game_state,
@@ -174,6 +177,7 @@ class CirclesPerPeakPower(RoundBonus):
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
 
+        await send_clients_log_message(f"Round bonus gives circles for peak power:")
         for player in [first_player, second_player]:
             peak_power = game_state["peak_power"][player]
             for _ in range (math.floor(peak_power / 2)):
@@ -188,6 +192,58 @@ class CirclesPerPeakPower(RoundBonus):
                     "circle",
                     self.name
                 )
+            
+class CirclesForLongestChain(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Produce Circles for Longest Chain",
+            description="At the end of the round, produce circles equal to the length of your longest connected chain of ruled tiles",
+            listener_type="end_of_round",
+        )
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+        
+        longest_chains = game_utilities.find_longest_chain_of_ruled_tiles(game_state['tiles'])
+        
+        for player in [first_player, second_player]:
+            player_color = "red" if player == "red" else "blue"
+            longest_chain = longest_chains[player_color]
+            
+            await send_clients_log_message(f"Round bonus gives circles for longest chain:")
+            for _ in range(longest_chain):
+                await game_utilities.produce_shape_for_player(
+                    game_state,
+                    game_action_container_stack,
+                    send_clients_log_message,
+                    send_clients_available_actions,
+                    send_clients_game_state,
+                    player,
+                    1,
+                    "circle",
+                    self.name
+                )
+
+class PointsForLongestChain(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Produce Points for Longest Chain",
+            description="At the end of the round, gain points equal to the length*3 of your longest connected (adjacent) chain of ruled tiles",
+            listener_type="end_of_round",
+        )
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+        
+        longest_chains = game_utilities.find_longest_chain_of_ruled_tiles(game_state['tiles'])
+        
+        for player in [first_player, second_player]:
+            points_to_award = longest_chains[player]*3
+            game_state["points"][player] += points_to_award
+            await send_clients_log_message(f"{player} gains {points_to_award} points from round bonus. Longest chain: {longest_chains[player]}")
+
 
 class PointsPerPresence(RoundBonus):
     def __init__(self):
@@ -228,3 +284,5 @@ class PointsPerPeakPower(RoundBonus):
             
             game_state["points"][player] += points_to_award
             await send_clients_log_message(f"{player} gains {points_to_award} points from {self.name} (peak power: {peak_power})")
+
+

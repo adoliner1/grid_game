@@ -173,6 +173,8 @@ async def burn_shape_at_powerup_at_index(game_state, game_action_container_stack
     await send_clients_game_state(game_state)
     #for _, listener_function in game_state["listeners"]["on_burn"].items():
     #    await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, burner=game_action_container_stack[-1].whose_action, shape=shape, index_of_tile_burned_at=powerup_index)
+
+
 #sync
 def get_available_client_actions(game_state, game_action_container, player_color_to_get_actions_for):
 
@@ -394,12 +396,13 @@ def get_powerup_slots_that_can_be_placed_on(game_state, player_color, shape_type
     for color in game_constants.player_colors:
         if player_color == color:
             for powerup_index, powerup in enumerate(game_state["powerups"][color]):
-                slots_for_powerup = []
-                for slot_index, slot in enumerate(powerup.slots_for_shapes):
-                    if slot is None or game_constants.shape_hierarchy.get(slot["shape"]) < shape_strength:
-                        slots_for_powerup.append(slot_index)
-                if slots_for_powerup:
-                    powerup_slots_that_can_be_placed_on[color][powerup_index] = slots_for_powerup
+                if shape_type in powerup.shapes_which_can_be_placed_on_this:
+                    slots_for_powerup = []
+                    for slot_index, slot in enumerate(powerup.slots_for_shapes):
+                        if slot is None or game_constants.shape_hierarchy.get(slot["shape"]) < shape_strength:
+                            slots_for_powerup.append(slot_index)
+                    if slots_for_powerup:
+                        powerup_slots_that_can_be_placed_on[color][powerup_index] = slots_for_powerup
    
     return powerup_slots_that_can_be_placed_on
 
@@ -432,3 +435,27 @@ def get_adjacent_tile_indices(tile_index):
         adjacent_indices.append(tile_index + 1)
     
     return adjacent_indices
+
+def find_longest_chain_of_ruled_tiles(tiles):
+    def dfs(index, color, visited):
+        if index in visited or tiles[index].ruler != color:
+            return 0
+        
+        visited.add(index)
+        max_length = 1
+        
+        for adjacent in get_adjacent_tile_indices(index):
+            max_length = max(max_length, 1 + dfs(adjacent, color, visited))
+        
+        return max_length
+
+    red_max = 0
+    blue_max = 0
+    
+    for i in range(9):
+        if tiles[i].ruler == "red":
+            red_max = max(red_max, dfs(i, "red", set()))
+        elif tiles[i].ruler == "blue":
+            blue_max = max(blue_max, dfs(i, "blue", set()))
+
+    return {"red": red_max, "blue": blue_max}

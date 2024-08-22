@@ -298,7 +298,7 @@ const Game = () => {
             <div className="info_section">
                 <div className={clientColor.current === 'red' ? 'red-text' : 'blue-text'}> You are {clientColor.current} </div>
                 <div>
-                    {gameState.round_bonuses.map((bonus, index) => (<p key={index} className={index === gameState.round ? 'current-round' : ''}> <b>Round {index}: </b> {bonus}</p>))}
+                    {gameState.round_bonuses.map((bonus, index) => (<p key={index} className={index === gameState.round ? 'current-round' : ''}> <b>Round {index+1}: </b> {bonus}</p>))}
                 </div>
                 <div>
                     {currentPieceOfDataToFill}

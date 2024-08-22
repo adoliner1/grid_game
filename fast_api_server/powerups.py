@@ -1,7 +1,7 @@
 import game_utilities
 
 class Powerup:
-    def __init__(self, name, description, number_of_slots, owner, listener_type=None, data_needed_for_use=[], is_on_cooldown=False):
+    def __init__(self, name, description, number_of_slots, owner, listener_type=None, data_needed_for_use=[], is_on_cooldown=False, shapes_which_can_be_placed_on_this=["circle", "square"]):
         self.name = name
         self.description = description
         self.number_of_slots = number_of_slots
@@ -10,6 +10,7 @@ class Powerup:
         self.listener_type = listener_type
         self.data_needed_for_use = data_needed_for_use
         self.is_on_cooldown=is_on_cooldown
+        self.shapes_which_can_be_placed_on_this = shapes_which_can_be_placed_on_this
 
     def is_useable(self, game_state):
         return False
@@ -46,7 +47,8 @@ class ProduceCirclesFor4Circles(Powerup):
             name = "Produce 2 Circles For 4 Circles",
             description = "If filled with circles, produce 2 circles at the start of the round",
             number_of_slots=4,
-            owner=owner
+            owner=owner,
+            shapes_which_can_be_placed_on_this = ["circle"]
         )
 
     async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
@@ -84,6 +86,7 @@ class BurnTwoCirclesProduceTriangle(Powerup):
             name = "Burn Two Circles Produce Triangle",
             description = "If filled with circles, you may burn 2 circles here to produce a triangle",
             number_of_slots=5,
+            shapes_which_can_be_placed_on_this = ["circle"],
             owner=owner
         )
 
@@ -113,6 +116,7 @@ class ProduceTriangleFor3Squares(Powerup):
             name = "Produce Triangle For 3 Squares",
             description = "If filled with squares, produce 1 triangle at the start of the round",
             number_of_slots=3,
+            shapes_which_can_be_placed_on_this = ["square"],
             owner=owner
         )
 
@@ -165,7 +169,7 @@ class BurnForPoints(Powerup):
     def __init__(self, owner):
         super().__init__(
             name="Burn for Points",
-            description="When filled, once per round, you may use this to burn one your shapes on a tile. If you did, +2 points",
+            description="When filled, once per round, you may use this to burn one of your shapes on a tile. If you did, +3 points",
             number_of_slots=3,
             owner=owner,
             data_needed_for_use=["slot_and_tile_to_burn_shape_from"]
@@ -205,8 +209,8 @@ class BurnForPoints(Powerup):
 
         await send_clients_log_message(f"Using {self.name}")
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index)
-        game_state["points"][self.owner] += 2
-        await send_clients_log_message(f"{self.owner} gains 2 points from using {self.name}")
+        game_state["points"][self.owner] += 3
+        await send_clients_log_message(f"{self.owner} gains 3 points from using {self.name}")
         self.is_on_cooldown = True
         return True
     
@@ -218,7 +222,8 @@ class SwapPositionOfTileWithAdjacentTile(Powerup):
             description="When filled with squares, once per round, you may use this to swap the position of a tile with an adjacent tile",
             number_of_slots=3,
             owner=owner,
-            data_needed_for_use=["first_tile", "adjacent_tile_to_first_tile"]
+            data_needed_for_use=["first_tile", "adjacent_tile_to_first_tile"],
+            shapes_which_can_be_placed_on_this = ["square"]
         )
 
     def is_useable(self, game_state):

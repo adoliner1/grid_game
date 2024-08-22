@@ -7,7 +7,7 @@ class Highway(Tile):
         super().__init__(
             name="Highway",
             type="Mover",
-            description="3 Power, Action: Once per round, burn one of your shapes here to move a shape on a tile to another tile\nRuler: Most Power, minimum 5. Don't burn a shape when you use Highway",
+            description="3 Power, Action: Once per round, burn one of your shapes here to move a shape on a tile to another tile\nRuler: Most Power, minimum 5. Don't burn a shape",
             number_of_slots=4,
             data_needed_for_use=["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
         )

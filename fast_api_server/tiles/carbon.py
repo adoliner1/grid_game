@@ -8,7 +8,7 @@ class Carbon(Tile):
             name="Carbon",
             type="Giver/Scorer",
             description=f"At the end of a round, per circle you have here, receive a circle here. Action: Burn 3 of your circles here to receive a triangle here\nRuler: Most Shapes. +3 points at the end of the game",
-            number_of_slots=12,
+            number_of_slots=9,
         )
 
     def is_useable(self, game_state):
