@@ -7,8 +7,9 @@ class Evolution(Tile):
         super().__init__(
             name="Evolution",
             type="Producer/Giver/Scorer",
-            description=f"At the end of a round, burn each shape here and receive the next most powerful shape. Triangles yield circles\nAction: Burn 3 of your triangles here to produce 4 circles and 8 points\nRuler: Most Shapes. At the end of the game, -6 points",
+            description=f"You may not place triangles here\nAt the end of a round, burn each shape here and receive the next most powerful shape. Triangles yield circles\nAction: Burn 3 of your triangles here to produce 4 circles and 8 points\nRuler: Most Shapes. At the end of the game, -6 points",
             number_of_slots=7,
+            shapes_which_can_be_placed_on_this = ['circle', 'square']
         )
 
     def is_useable(self, game_state):

@@ -2,7 +2,7 @@ import game_utilities
 import game_constants
 
 class Tile:
-    def __init__(self, name, type, description, number_of_slots, data_needed_for_use=[], is_on_cooldown=False):
+    def __init__(self, name, type, description, number_of_slots, data_needed_for_use=[], is_on_cooldown=False, shapes_which_can_be_placed_on_this=["circle", "square", "triangle"]):
         self.name = name
         self.type = type
         self.description = description
@@ -13,6 +13,7 @@ class Tile:
         self.data_needed_for_use = data_needed_for_use
         self.is_on_cooldown=is_on_cooldown
         self.power_per_player = {"red": 0, "blue": 0}
+        self.shapes_which_can_be_placed_on_this=shapes_which_can_be_placed_on_this
 
     def determine_ruler(self, game_state):
         pass

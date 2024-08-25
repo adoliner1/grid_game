@@ -63,7 +63,7 @@ class Wormhole(Tile):
             await send_clients_log_message(f"Player does not have at least 2 different shapes or {self.name} is on cooldown")
             return False
 
-        await send_clients_log_message(f"Using {self.name} to swap tiles at indices {tile1_index} and {tile2_index}")
+        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index]} and {game_state['tiles'][tile2_index]}")
 
         # Swap the tiles
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]

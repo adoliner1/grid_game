@@ -55,6 +55,7 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
         await send_clients_game_state(game_state)
 
 async def place_shape_on_powerup(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, powerup_index, slot_index, shape, color):
+    
     game_state["powerups"][color][powerup_index].slots_for_shapes[slot_index] = {'shape': shape, 'color': color}   
     determine_power_levels(game_state)
     update_presence(game_state)
@@ -381,11 +382,12 @@ def get_tile_slots_that_can_be_placed_on(game_state, shape_type):
 
     for tile_index, tile in enumerate(game_state["tiles"]):
         slots_for_tile = []
-        for slot_index, slot in enumerate(tile.slots_for_shapes):
-            if slot is None or game_constants.shape_hierarchy.get(slot["shape"]) < shape_strength:
-                slots_for_tile.append(slot_index)
-        if slots_for_tile:
-            tile_slots_that_can_be_placed_on[tile_index] = slots_for_tile
+        if shape_type in tile.shapes_which_can_be_placed_on_this:
+            for slot_index, slot in enumerate(tile.slots_for_shapes):
+                if slot is None or game_constants.shape_hierarchy.get(slot["shape"]) < shape_strength:
+                    slots_for_tile.append(slot_index)
+            if slots_for_tile:
+                tile_slots_that_can_be_placed_on[tile_index] = slots_for_tile
     
     return tile_slots_that_can_be_placed_on
 

@@ -327,12 +327,17 @@ class GameEngine:
         slot_index = game_action_container.required_data_for_action["tile_slot_to_place_on"]["slot_index"]
         shape_type = game_action_container.required_data_for_action["shape_type_to_place"]
         color_of_player_placing = game_action_container.whose_action
+        tile = self.game_state["tiles"][tile_index]
+        slot = tile.slots_for_shapes[slot_index]
+        
         if self.game_state["whose_turn_is_it"] != color_of_player_placing:
             await self.send_clients_log_message("Not your turn")
             return False
 
-        tile = self.game_state["tiles"][tile_index]
-        slot = tile.slots_for_shapes[slot_index]
+        if shape_type not in tile.shapes_which_can_be_placed_on_this:
+            await self.send_clients_log_message("Cannot place this shape here")
+            return False    
+
 
         if slot and game_constants.shape_hierarchy[shape_type] <= game_constants.shape_hierarchy[slot['shape']]:
             await self.send_clients_log_message("Cannot place on this slot, shape is too weak to trump")
@@ -361,6 +366,10 @@ class GameEngine:
         if slot and game_constants.shape_hierarchy[shape_type] <= game_constants.shape_hierarchy[slot['shape']]:
             await self.send_clients_log_message("Cannot place on this slot, shape is too weak to trump")
             return False
+        
+        if shape_type not in powerup.shapes_which_can_be_placed_on_this:
+            await self.send_clients_log_message("Cannot place this shape here")
+            return False            
 
         await game_utilities.place_shape_on_powerup(self.game_state,
                                                  self.game_action_container_stack,
@@ -442,10 +451,6 @@ class GameEngine:
         for player_color in game_constants.player_colors:
             for shape, amount in game_constants.base_income:
                 await game_utilities.produce_shape_for_player(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state, player_color, amount, shape, None)
-        
-        if self.game_state['round'] == 0 or self.game_state['round'] > 3:
-            for player_color in game_constants.player_colors:
-                await game_utilities.produce_shape_for_player(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state, player_color, 1, 'triangle', None)
 
     async def player_passes(self, player_color):
         if self.game_state["whose_turn_is_it"] != player_color:

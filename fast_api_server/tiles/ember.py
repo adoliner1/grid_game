@@ -7,8 +7,9 @@ class Ember(Tile):
         super().__init__(
             name="Ember",
             type="Scorer",
-            description=f"-5 points when you place here. When a shape is burned on a tile, the owner receives a copy of it on Ember. At the end of a round, if Ember is full, remove all the shapes. +6 points to whichever player had more\nRuler: most shapes",
+            description=f"You may not place here\nWhen a shape is burned on a tile, the owner receives a copy of it on Ember. At the end of a round, if Ember is full, remove all the shapes. +6 points to whichever player had more\nRuler: most shapes",
             number_of_slots=11,
+            shapes_which_can_be_placed_on_this=[]
         )
 
     def determine_ruler(self, game_state):

@@ -8,7 +8,7 @@ class Orbit(Tile):
             name="Orbit",
             type="Tile-Mover",
             description=f"Ruler: Most shapes, Action: Once per round, choose a tile. Rotate the row that tile is in left once",
-            number_of_slots=5,
+            number_of_slots=3,
             data_needed_for_use=["tile_to_shift_row"]
         )
 
@@ -58,8 +58,6 @@ class Orbit(Tile):
         # Determine the row from the tile index
         row_to_shift = tile_to_shift_row // 3
 
-        await send_clients_log_message(f"Using {self.name} to shift row {row_to_shift}")
-
         # Shift the row of tiles
         row_start_index = row_to_shift * 3
         row_end_index = row_start_index + 3
@@ -67,6 +65,9 @@ class Orbit(Tile):
 
         # Perform the shift
         shifted_row_tiles = row_tiles[1:] + row_tiles[:1]
+
+        tile_names = [tile.name for tile in row_tiles]
+        await send_clients_log_message(f"Using {self.name} to rotate the row containing tiles ({', '.join(tile_names)})")
 
         # Update the game state with the shifted row
         game_state["tiles"][row_start_index:row_end_index] = shifted_row_tiles

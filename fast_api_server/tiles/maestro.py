@@ -9,18 +9,16 @@ class Maestro(Tile):
         super().__init__(
             name="Maestro",
             type="Mover",
-            description="Ruler: Most shapes, Reaction: Once per round, when you receive a shape, you may move it to a tile adjacent to the tile you received it at",
+            description="Ruler: Most Power, minimum 3, Reaction: Once per round, when you receive a shape, you may move it to a tile adjacent to the tile you received it at\n7 Power: Maestro has no cooldown",
             number_of_slots=5,
         )
 
     def determine_ruler(self, game_state):
-        red_shapes = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
-        blue_shapes = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
-        
-        if red_shapes > blue_shapes:
+        self.determine_power()
+        if self.power_per_player["red"] > self.power_per_player["blue"] and self.power_per_player["red"] >= 3:
             self.ruler = 'red'
             return 'red'
-        elif blue_shapes > red_shapes:
+        elif self.power_per_player["blue"] > self.power_per_player["red"] and self.power_per_player["blue"] >= 3:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -41,8 +39,12 @@ class Maestro(Tile):
     async def react(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         ruler = self.determine_ruler(game_state)
-        if not ruler or ruler != game_action_container.whose_action or self.is_on_cooldown:
+        if not ruler or ruler != game_action_container.whose_action:
             await send_clients_log_message(f"Cannot react with {self.name}")
+            return False
+
+        if self.is_on_cooldown:
+            await send_clients_log_message(f"{self.name} is on cooldown")
             return False
 
         index_of_tile_received_at = game_action_container.required_data_for_action['index_of_tile_received_at']
@@ -56,7 +58,9 @@ class Maestro(Tile):
 
         await send_clients_log_message(f"Reacting with {self.name}")
         await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_received_at, slot_index_received_at, index_of_tile_to_move_to, slot_index_to_move_to)
-        self.is_on_cooldown = True
+        
+        if self.power_per_player[ruler] < 7:
+            self.is_on_cooldown = True
         return True
 
     def setup_listener(self, game_state):
@@ -68,7 +72,10 @@ class Maestro(Tile):
         index_of_slot_received_at = data.get('index_of_slot_received_at')
 
         ruler = self.determine_ruler(game_state)
-        if ruler != receiver or self.is_on_cooldown:
+        if ruler != receiver:
+            return
+
+        if self.is_on_cooldown:
             return
 
         await send_clients_log_message(f"{ruler} may react with {self.name}")

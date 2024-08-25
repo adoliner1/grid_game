@@ -9,25 +9,16 @@ class Conductor(Tile):
         super().__init__(
             name="Conductor",
             type="Mover",
-            description="Ruler: Most Shapes, Reaction: Once per round, when you receive a shape, you may move it to a tile adjacent to Conductor",
+            description="3 Power: Reaction: Once per round, when you receive a shape, you may move it to a tile adjacent to Conductor\nRuler: Most Power, minimum 6: move it anywhere. +2 points at the end of the game",
             number_of_slots=5,
-            is_on_cooldown=False
         )
 
     def determine_ruler(self, game_state):
-        red_count = 0
-        blue_count = 0
-
-        for slot in self.slots_for_shapes:
-            if slot:
-                if slot["color"] == "red":
-                    red_count += 1
-                elif slot["color"] == "blue":
-                    blue_count += 1
-        if red_count > blue_count:
+        self.determine_power()
+        if self.power_per_player["red"] > self.power_per_player["blue"] and self.power_per_player["red"] >= 6:
             self.ruler = 'red'
             return 'red'
-        elif blue_count > red_count:
+        elif self.power_per_player["blue"] > self.power_per_player["red"] and self.power_per_player["blue"] >= 6:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -36,8 +27,11 @@ class Conductor(Tile):
     def set_available_actions_for_reaction(self, game_state, game_action_container, available_actions):
         available_actions["do_not_react"] = None
         slots_without_a_shape_per_tile = {}
+        index_of_conductor = game_utilities.find_index_of_tile_by_name(game_state, self.name)
+        ruler = self.determine_ruler(game_state)
+        
         for index, tile in enumerate(game_state["tiles"]):
-            if game_utilities.determine_if_directly_adjacent(game_utilities.find_index_of_tile_by_name(game_state, self.name), index):
+            if ruler == game_action_container.whose_action or game_utilities.determine_if_directly_adjacent(index_of_conductor, index):
                 slots_without_shapes = [slot_index for slot_index, slot in enumerate(tile.slots_for_shapes) if not slot]
                 if slots_without_shapes:
                     slots_without_a_shape_per_tile[index] = slots_without_shapes
@@ -47,7 +41,7 @@ class Conductor(Tile):
         game_action_container = game_action_container_stack[-1]
         ruler = self.determine_ruler(game_state)
         
-        if not ruler or ruler != game_action_container.whose_action or self.is_on_cooldown:
+        if self.power_per_player[game_action_container.whose_action] < 3 or self.is_on_cooldown:
             await send_clients_log_message(f"Cannot react with {self.name}")
             return False
 
@@ -57,7 +51,7 @@ class Conductor(Tile):
         slot_index_to = game_action_container.required_data_for_action['slot_and_tile_to_move_shape_to']['slot_index']
         tile_index_to = game_action_container.required_data_for_action['slot_and_tile_to_move_shape_to']['tile_index']
 
-        if not game_utilities.determine_if_directly_adjacent(index_of_conductor, tile_index_to):
+        if game_action_container.whose_action != ruler and not game_utilities.determine_if_directly_adjacent(index_of_conductor, tile_index_to):
             await send_clients_log_message(f"Tried to react with {self.name} but destination tile isn't adjacent")
             return False
 
@@ -82,11 +76,10 @@ class Conductor(Tile):
         index_of_tile_received_at = data.get('index_of_tile_received_at')
         index_of_slot_received_at = data.get('index_of_slot_received_at')
         
-        ruler = self.determine_ruler(game_state)
-        if ruler != receiver or self.is_on_cooldown:
+        if self.power_per_player[receiver] < 3 or self.is_on_cooldown:
             return
 
-        await send_clients_log_message(f"{ruler} may react with {self.name}")
+        await send_clients_log_message(f"{receiver} may react with {self.name}")
 
         new_container = game_action_container.GameActionContainer(
             event=asyncio.Event(),
@@ -105,5 +98,8 @@ class Conductor(Tile):
         await send_clients_available_actions(game_utilities.get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
         await game_action_container_stack[-1].event.wait()
 
-    async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
-        self.is_on_cooldown = False
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        ruler = self.determine_ruler(game_state)
+        if ruler:
+            game_state["points"][ruler] += 2
+            await send_clients_log_message(f"{ruler} gains 2 points at the end of the game from {self.name}")

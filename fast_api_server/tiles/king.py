@@ -28,7 +28,7 @@ class King(Tile):
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler is not None:
-            power_differential = self.power_per_player[ruler] - self.power_per_player[game_utilities.get_opponent_color(ruler)]
+            power_differential = self.power_per_player[ruler] - self.power_per_player[game_utilities.get_other_player_color(ruler)]
             
             if power_differential >= 7:
                 points_to_add = 15

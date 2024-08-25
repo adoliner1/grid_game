@@ -1,3 +1,5 @@
+import asyncio
+import game_action_container
 import game_utilities
 import game_constants
 from tiles.tile import Tile
@@ -7,31 +9,18 @@ class Plains(Tile):
         super().__init__(
             name="Plains",
             type="Producer/Scorer",
-            description="Ruler: More of at least 2 shape types. When a tile you're present at produces shapes, +1 point. If it's adjacent to Plains also, produce one of that shape instead",
-            number_of_slots=7,
+            description="Ruler: Most shapes, minimum 2. When a tile produces shapes, you may receive a circle at a tile adjacent to it",
+            number_of_slots=5,
         )
 
     def determine_ruler(self, game_state):
-        shape_counts = {
-            'red': {'circle': 0, 'square': 0, 'triangle': 0},
-            'blue': {'circle': 0, 'square': 0, 'triangle': 0}
-        }
-        for slot in self.slots_for_shapes:
-            if slot:
-                color = slot["color"]
-                shape = slot["shape"]
-                if color in shape_counts and shape in shape_counts[color]:
-                    shape_counts[color][shape] += 1
-        supremacy_count = {'red': 0, 'blue': 0}
-        for shape in ['circle', 'square', 'triangle']:
-            if shape_counts['red'][shape] > shape_counts['blue'][shape]:
-                supremacy_count['red'] += 1
-            elif shape_counts['blue'][shape] > shape_counts['red'][shape]:
-                supremacy_count['blue'] += 1
-        if supremacy_count['red'] >= 2:
+        red_shapes = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
+        blue_shapes = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
+       
+        if red_shapes > blue_shapes and red_shapes >= 2:
             self.ruler = 'red'
             return 'red'
-        elif supremacy_count['blue'] >= 2:
+        elif blue_shapes > red_shapes and blue_shapes >= 2:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -42,24 +31,66 @@ class Plains(Tile):
 
     async def on_produce_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         producing_tile_name = data.get('producing_tile_name')
-        shape = data.get('shape')
+        producing_player = data.get('producing_player')
         ruler = self.determine_ruler(game_state)
-        if not ruler:
+        if not ruler or ruler != producing_player:
             return
 
         producing_tile_index = game_utilities.find_index_of_tile_by_name(game_state, producing_tile_name)
-        producing_tile = game_state["tiles"][producing_tile_index]
+        plains_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
+        
+        adjacent_tiles = game_utilities.get_adjacent_tile_indices(producing_tile_index)
+        available_tiles = [tile_index for tile_index in adjacent_tiles if tile_index != plains_index]
 
-        # Check if ruler is present at the producing tile
-        if not game_utilities.has_presence(producing_tile, ruler):
+        if not available_tiles:
             return
 
-        plains_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        is_adjacent = game_utilities.determine_if_directly_adjacent(plains_index, producing_tile_index)
+        await send_clients_log_message(f"{ruler} may receive a circle at a tile adjacent to {producing_tile_name} due to {self.name}")
 
-        if is_adjacent:
-            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 1, shape, self.name)
-            await send_clients_log_message(f"{ruler} produces 1 {shape} from {self.name} due to adjacent production")
-        else:
-            game_state["points"][ruler] += 1
-            await send_clients_log_message(f"{ruler} gains 1 point from {self.name} due to production")
+        new_container = game_action_container.GameActionContainer(
+            event=asyncio.Event(),
+            game_action="react_with_tile",
+            required_data_for_action={
+                "tile_to_receive_circle": {},
+                "index_of_tile_being_reacted_with": plains_index
+            },
+            whose_action=ruler,
+            is_a_reaction=True,
+        )
+
+        game_action_container_stack.append(new_container)
+        await send_clients_available_actions(game_utilities.get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
+        await send_clients_available_actions(game_utilities.get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+        await game_action_container_stack[-1].event.wait()
+
+    def set_available_actions_for_reaction(self, game_state, game_action_container, available_actions):
+        available_actions["do_not_react"] = None
+        producing_tile_index = game_action_container.required_data_for_action.get('producing_tile_index')
+        if producing_tile_index is not None:
+            adjacent_tiles = game_utilities.get_adjacent_tile_indices(producing_tile_index)
+            plains_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
+            available_tiles = [tile_index for tile_index in adjacent_tiles if tile_index != plains_index]
+            available_actions["select_a_tile"] = available_tiles
+
+    async def react(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        game_action_container = game_action_container_stack[-1]
+        ruler = self.determine_ruler(game_state)
+        if ruler != game_action_container.whose_action:
+            await send_clients_log_message(f"Non-ruler tried to react with {self.name}")
+            return False
+
+        tile_to_receive_circle = game_action_container.required_data_for_action['tile_to_receive_circle']
+        
+        await game_utilities.player_receives_a_shape_on_tile(
+            game_state,
+            game_action_container_stack,
+            send_clients_log_message,
+            send_clients_available_actions,
+            send_clients_game_state,
+            ruler,
+            game_state["tiles"][tile_to_receive_circle],
+            "circle"
+        )
+        
+        await send_clients_log_message(f"{ruler} receives a circle at {game_state['tiles'][tile_to_receive_circle].name} due to {self.name}")
+        return True

@@ -7,7 +7,7 @@ class Queen(Tile):
         super().__init__(
             name="Queen",
             type="Scorer",
-            description="Ruler: Most shapes, minimum 3. Whenever a shape is placed here by the non-ruler, +1 point. At the end of the game, +6 points",
+            description="Ruler: Most shapes, minimum 3. Whenever a shape is placed here by the non-ruler, +2 points. At the end of the game, +7 points",
             number_of_slots=7,
         )
 
@@ -35,11 +35,11 @@ class Queen(Tile):
         
         ruler = self.determine_ruler(game_state)
         if ruler and placer != ruler:
-            game_state["points"][ruler] += 1
-            await send_clients_log_message(f"{ruler} earned 1 point as the ruler of {self.name} for a shape placement by {placer}")
+            game_state["points"][ruler] += 2
+            await send_clients_log_message(f"{ruler} earned 2 points as the ruler of {self.name}")
 
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler is not None:
-            await send_clients_log_message(f"{self.name} gives 6 points to {ruler}")
-            game_state["points"][ruler] += 6
+            await send_clients_log_message(f"{self.name} gives 7 points to {ruler}")
+            game_state["points"][ruler] += 7

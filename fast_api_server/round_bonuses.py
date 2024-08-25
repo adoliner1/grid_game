@@ -72,7 +72,7 @@ class PointsPerRow(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Points Per Completed Row",
-            description = "At the end of the round, if you rule all 3 tiles in a row, +10 points",
+            description = "If you rule all 3 tiles in a row, +10 points",
             listener_type="end_of_round",
         )
 
@@ -94,7 +94,7 @@ class PointsPerColumn(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Points Per Completed Column",
-            description = "At the end of the round, if you rule all 3 tiles in a column, +10 points",
+            description = "If you rule all 3 tiles in a column, +10 points",
             listener_type="end_of_round",
         )
 
@@ -116,7 +116,7 @@ class PointsPerTileRuled(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Points Per Tile Ruled",
-            description = "At the end of the round, gain 2 points for each tile you rule",
+            description = "Gain 2 points for each tile you rule",
             listener_type="end_of_round",
         )
 
@@ -138,7 +138,7 @@ class CirclesPerPresence(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Produce Circles for 2 Presence",
-            description="At the end of the round, produce circles equal to your presence/2 (round down)",
+            description="Produce circles equal to your presence/2 (round down)",
             listener_type="end_of_round",
         )
 
@@ -168,7 +168,7 @@ class CirclesPerPeakPower(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Produce Circles for 2 Peak-Power",
-            description="At the end of the round, produce circles equal to your peak power/2 (round down)",
+            description="Produce circles equal to your peak power/2 (round down)",
             listener_type="end_of_round",
         )
 
@@ -197,7 +197,7 @@ class CirclesForLongestChain(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Produce Circles for Longest Chain",
-            description="At the end of the round, produce circles equal to the length of your longest connected chain of ruled tiles",
+            description="Produce circles equal to the length of your longest connected chain of ruled tiles",
             listener_type="end_of_round",
         )
 
@@ -229,7 +229,7 @@ class PointsForLongestChain(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Produce Points for Longest Chain",
-            description="At the end of the round, gain points equal to the length*3 of your longest connected (adjacent) chain of ruled tiles",
+            description="Gain points equal to the length*3 of your longest connected chain of ruled tiles",
             listener_type="end_of_round",
         )
 
@@ -249,7 +249,7 @@ class PointsPerPresence(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Points for Presence",
-            description="At the end of the round, gain points equal to your presence",
+            description="Gain points equal to your presence",
             listener_type="end_of_round",
         )
 
@@ -269,7 +269,7 @@ class PointsPerPeakPower(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Points for Peak Power",
-            description="At the end of the round, gain points equal to your peak power",
+            description="Gain points equal to your peak power",
             listener_type="end_of_round",
         )
 
