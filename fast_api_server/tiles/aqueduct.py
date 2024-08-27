@@ -7,8 +7,8 @@ class Aqueduct(Tile):
         super().__init__(
             name="Aqueduct",
             type="Mover",
-            description=f"3 Power, Action: Once per turn, burn one of your shapes here. Choose a shape at a tile you're present at. Move as many of that shape (type and color) as possible to another tile you're present at\nRuler: Most Power, minimum 6. Don't burn a shape when you use Aqueduct",
-            number_of_slots=6,
+            description=f"**Ruler, Most Power, Minimum 3, Action:** Once per round, ^^burn^^ one of your shapes here. Choose a shape at a tile you're present at. Move as many of that shape type and color as possible to another tile you're present at",
+            number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_move_shapes_from", "tile_to_move_shapes_to"]
         )
 
@@ -17,9 +17,6 @@ class Aqueduct(Tile):
 
     def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
         
-        if self.determine_ruler(game_state) == game_action_container.whose_action:
-             game_action_container.required_data_for_action["slot_and_tile_to_burn_shape_from"] = "Ruler-Priviledge"
-
         current_piece_of_data_to_fill_in_current_action = game_action_container.get_next_piece_of_data_to_fill()
 
         if current_piece_of_data_to_fill_in_current_action == "slot_and_tile_to_burn_shape_from":
@@ -42,10 +39,10 @@ class Aqueduct(Tile):
 
     def determine_ruler(self, game_state):
         self.determine_power()
-        if self.power_per_player["red"] > self.power_per_player["blue"] and self.power_per_player["red"] >= 6:
+        if self.power_per_player["red"] > self.power_per_player["blue"] and self.power_per_player["red"] >= 3:
             self.ruler = 'red'
             return 'red'
-        elif self.power_per_player["blue"] > self.power_per_player["red"] and self.power_per_player["blue"] >= 6:
+        elif self.power_per_player["blue"] > self.power_per_player["red"] and self.power_per_player["blue"] >= 3:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -54,8 +51,8 @@ class Aqueduct(Tile):
     async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
-        if self.power_per_player[user] < 3:
-            await send_clients_log_message(f"Not enough power on {self.name} to use")
+        if self.determine_ruler!= user:
+            await send_clients_log_message(f"Tried to use {self.name} without being the ruler")
             return False            
 
         index_of_aqueduct = game_utilities.find_index_of_tile_by_name(game_state, self.name)

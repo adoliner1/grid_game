@@ -7,7 +7,7 @@ class RedDwarf(Tile):
         super().__init__(
             name="Red Dwarf",
             type="Tile-Mover",
-            description="Action: Burn one of your shapes here to swap the position of 2 tiles\nRuler: Most Shapes",
+            description="**Action:** ^^Burn^^ one of your shapes here to swap the position of 2 tiles\n**Ruler: Most Shapes**",
             number_of_slots=3,
             data_needed_for_use=["slot_to_burn_from_on_red_dwarf", "first_tile", "second_tile"]
         )
@@ -68,7 +68,7 @@ class RedDwarf(Tile):
         
         red_dwarf_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, red_dwarf_index, slot_to_burn_from)
-        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index]} and {game_state['tiles'][tile2_index]}")
+        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
 
         return True

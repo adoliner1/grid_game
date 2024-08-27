@@ -6,8 +6,8 @@ class Jupiter(Tile):
     def __init__(self):
         super().__init__(
             name="Jupiter",
-            type="Producer",
-            description="4 Power, Action: Once per round, burn one of your squares here to produce a triangle\nRuler: Most Power, minimum 6. +2 points when Jupiter is used",
+            type="Producer/Scorer",
+            description="**4 power, Action:** Once per round, ^^burn^^ one of your squares here to ++produce++ a triangle\n**Ruler, Most Power, Minimum 6:** +3 points when Jupiter is used",
             number_of_slots=5,
         )
 
@@ -52,8 +52,8 @@ class Jupiter(Tile):
 
         ruler = self.determine_ruler(game_state)
         if ruler:
-            game_state["points"][ruler] += 2
-            await send_clients_log_message(f"{ruler} gains 2 points as the ruler of {self.name}")
+            game_state["points"][ruler] += 3
+            await send_clients_log_message(f"{ruler} gains 3 points as the ruler of {self.name}")
 
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_shape_from)
         await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, user, 1, 'triangle', self.name)

@@ -7,7 +7,7 @@ class Chicken(Tile):
         super().__init__(
             name="Chicken",
             type="Producer/Giver",
-            description="The player with the fewest shapes produces 1 circle at the start of a round\nRuler, Most Shapes, Action: Once per round, receive 1 circle at an adjacent tile and +1 point",
+            description="The player with fewer shapes here ++produces++ 1 circle at the __start of a round__\n**Ruler, Most Shapes, Action:** Once per round, [[receive]] 1 circle at an adjacent tile and +1 point",
             number_of_slots=3,
             data_needed_for_use=["tile_to_receive_shapes_at"]
         )
@@ -62,7 +62,7 @@ class Chicken(Tile):
         game_state["points"][ruler] += 1
         await send_clients_log_message(f"{ruler} gained 1 point from using {self.name}")
         
-        await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'circle')
+        await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'circle', True)
         
         return True
 
@@ -70,9 +70,15 @@ class Chicken(Tile):
         red_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
         blue_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
         
-        player_with_fewest_shapes = 'red' if red_count < blue_count else 'blue'
+        if red_count < blue_count:
+            player_with_fewest_shapes = 'red'
+        elif blue_count < red_count:
+            player_with_fewest_shapes = 'blue'
+        else:
+            player_with_fewest_shapes = None
         
-        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_with_fewest_shapes, 1, 'circle', self.name)
-        await send_clients_log_message(f"{player_with_fewest_shapes} produces 1 circle from {self.name} at the start of the round")
+        if player_with_fewest_shapes:
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_with_fewest_shapes, 1, 'circle', self.name, True)
+            await send_clients_log_message(f"{player_with_fewest_shapes} produces 1 circle from {self.name} at the start of the round")
 
         self.is_on_cooldown = False

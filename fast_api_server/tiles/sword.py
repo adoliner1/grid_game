@@ -7,7 +7,7 @@ class Sword(Tile):
         super().__init__(
             name="Sword",
             type="Attacker",
-            description="Ruler: +1 Power differential, minimum 2 power: Action: Burn one of your shapes here and a shape at an adjacent tile",
+            description="**Ruler, Most Power, Minimum 2, Action:** ^^Burn^^ one of your shapes here and a shape at an adjacent tile",
             number_of_slots=3,
             data_needed_for_use=["slot_to_burn_shape_from", "slot_and_tile_to_burn_shape_at"]
         )
@@ -38,10 +38,10 @@ class Sword(Tile):
         blue_power = self.power_per_player["blue"]
         power_differential = 1
 
-        if red_power > blue_power + power_differential and red_power >= 2:
+        if red_power > blue_power and red_power >= 2:
             self.ruler = 'red'
             return 'red'
-        elif blue_power > red_power + power_differential and blue_power >= 2:
+        elif blue_power > red_power and blue_power >= 2:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None

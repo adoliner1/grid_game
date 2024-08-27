@@ -7,7 +7,7 @@ class Duke(Tile):
         super().__init__(
             name="Duke",
             type="Scorer",
-            description="Ruler: Most of any single shape, minimum 2 of that shape. At the end of the game, +7 points",
+            description="**Ruler, Most of any Shape Type, Minimum 2 of that Shape:** At the end of the game, +7 points",
             number_of_slots=7,
         )
 

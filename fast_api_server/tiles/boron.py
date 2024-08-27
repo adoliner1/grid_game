@@ -7,7 +7,7 @@ class Boron(Tile):
         super().__init__(
             name="Boron",
             type="Giver",
-            description = "At the end of a round, per square you have here, receive a circle here.\nRuler: Most Shapes. +3 points at the end of the game",
+            description = "At the __end of a round__, per square you have here, [[receive]] a circle here.\n**Ruler, Most Shapes:** +3 points at the end of the game",
             number_of_slots=11,
         )
 

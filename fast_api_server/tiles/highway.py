@@ -7,13 +7,16 @@ class Highway(Tile):
         super().__init__(
             name="Highway",
             type="Mover",
-            description="3 Power, Action: Once per round, burn one of your shapes here to move a shape on a tile to another tile\nRuler: Most Power, minimum 5. Don't burn a shape",
-            number_of_slots=4,
+            description="**3 Power, Action:** Once per round, ^^burn^^ one of your shapes here to move a shape on a tile to another tile\n**Ruler, Most Power, Minimum 5:** Don't ^^burn^^ a shape",
+            number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
         )
 
     def is_useable(self, game_state):
-        return not self.is_on_cooldown and self.determine_ruler(game_state) == game_state["whose_turn_is_it"] or (self.power_per_player[game_state["whose_turn_is_it"]] >= 3 and game_utilities.has_presence(self, game_state["whose_turn_is_it"]))
+        if self.is_on_cooldown:
+            return False
+
+        return self.determine_ruler(game_state) == game_state["whose_turn_is_it"] or (self.power_per_player[game_state["whose_turn_is_it"]] >= 3 and game_utilities.has_presence(self, game_state["whose_turn_is_it"]))
 
     def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
         if self.determine_ruler(game_state) == game_action_container.whose_action:

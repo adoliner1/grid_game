@@ -7,7 +7,7 @@ class SolarArray(Tile):
         super().__init__(
             name="Solar Array",
             type="Scorer",
-            description="Ruler: Most shapes, minimum 2. Action: burn all your shapes here. If your Peak Power >= 6: 3 points\n>= 10: 7 points\n>= 14: 12 points",
+            description="**Ruler, Most Shapes, Minimum 2, Action:** ^^Burn^^ all your shapes here, then:\n**If your Peak Power >= 6:** +3 points\n**>= 10:** +7 points\n**>= 14:** +12 points",
             number_of_slots=5,
         )
 

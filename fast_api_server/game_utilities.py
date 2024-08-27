@@ -3,7 +3,7 @@ import game_action_container
 import game_constants
 
 #async
-async def produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, amount, shape_type, calling_entity_name):
+async def produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, amount, shape_type, calling_entity_name, calling_entity_is_a_tile=False):
 
     game_state["shapes_in_storage"][player_color][shape_type] += amount
 
@@ -12,15 +12,13 @@ async def produce_shape_for_player(game_state, game_action_container_stack, send
     else:
         await send_clients_log_message(f" {player_color} produced {amount} {player_color}_{shape_type}")
 
-    if calling_entity_name == 'Produce Circles for 2 Presence' or 'Produce Circles for 2 Peak-Power':
-        return
-
-    for _, listener_function in game_state["listeners"]["on_produce"].items():
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, amount_produced=amount, producer=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
-        determine_power_levels(game_state)
-        update_presence(game_state)
-        determine_rulers(game_state)
-        await send_clients_game_state(game_state)
+    if calling_entity_is_a_tile:
+        for _, listener_function in game_state["listeners"]["on_produce"].items():
+            await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, amount_produced=amount, producing_player=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
+            determine_power_levels(game_state)
+            update_presence(game_state)
+            determine_rulers(game_state)
+            await send_clients_game_state(game_state)
 
 async def place_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
     tile_to_place_on = game_state["tiles"][tile_index]
@@ -116,35 +114,6 @@ async def move_shape_between_tiles(game_state, game_action_container_stack, send
 
     return True
 
-def has_presence(tile, color):
-    """
-    Check if a player has at least one shape on a given tile.
-    
-    :param tile: The tile to check
-    :param color: The color of the player ("red" or "blue")
-    :return: True if the player has at least one shape on the tile, False otherwise
-    """
-    return any(
-        slot is not None and slot["color"] == color
-        for slot in tile.slots_for_shapes
-    )
-
-def update_presence(game_state):
-    """
-    Update the presence for both players in the game state.
-    
-    :param game_state: The current game state
-    """
-    presence = {"red": 0, "blue": 0}
-
-    for tile in game_state["tiles"]:
-        for color in ["red", "blue"]:
-            if has_presence(tile, color):
-                presence[color] += 1
-
-    # Update the game state with the calculated presence
-    game_state["presence"] = presence
-
 async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index):
     tile = game_state["tiles"][tile_index]
     shape = tile.slots_for_shapes[slot_index]["shape"]
@@ -177,6 +146,38 @@ async def burn_shape_at_powerup_at_index(game_state, game_action_container_stack
 
 
 #sync
+def has_presence(tile, color):
+    """
+    Check if a player has at least one shape on a given tile.
+    
+    :param tile: The tile to check
+    :param color: The color of the player ("red" or "blue")
+    :return: True if the player has at least one shape on the tile, False otherwise
+    """
+    return any(
+        slot is not None and slot["color"] == color
+        for slot in tile.slots_for_shapes
+    )
+
+def update_presence(game_state):
+    """
+    Update the presence for both players in the game state.
+    
+    :param game_state: The current game state
+    """
+    presence = {"red": 0, "blue": 0}
+
+    for tile in game_state["tiles"]:
+        for color in ["red", "blue"]:
+            if has_presence(tile, color):
+                presence[color] += 1
+
+    # Update the game state with the calculated presence
+    game_state["presence"] = presence
+
+def count_all_shapes_for_color_on_tile(color, tile):
+    return sum(1 for slot in tile.slots_for_shapes if slot and slot["color"] == color)
+
 def get_available_client_actions(game_state, game_action_container, player_color_to_get_actions_for):
 
     if game_action_container.whose_action != player_color_to_get_actions_for:

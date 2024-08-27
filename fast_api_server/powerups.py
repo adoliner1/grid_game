@@ -169,7 +169,7 @@ class BurnForPoints(Powerup):
     def __init__(self, owner):
         super().__init__(
             name="Burn for Points",
-            description="When filled, once per round, you may use this to burn one of your shapes on a tile. If you did, +3 points",
+            description="When filled, once per round, you may use this to burn one of your shapes on a tile. If you did, +5 points",
             number_of_slots=3,
             owner=owner,
             data_needed_for_use=["slot_and_tile_to_burn_shape_from"]
@@ -209,8 +209,8 @@ class BurnForPoints(Powerup):
 
         await send_clients_log_message(f"Using {self.name}")
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index)
-        game_state["points"][self.owner] += 3
-        await send_clients_log_message(f"{self.owner} gains 3 points from using {self.name}")
+        game_state["points"][self.owner] += 5
+        await send_clients_log_message(f"{self.owner} gains 5 points from using {self.name}")
         self.is_on_cooldown = True
         return True
     

@@ -8,8 +8,8 @@ class Conductor(Tile):
     def __init__(self):
         super().__init__(
             name="Conductor",
-            type="Mover",
-            description="3 Power: Reaction: Once per round, when you receive a shape, you may move it to a tile adjacent to Conductor\nRuler: Most Power, minimum 6: move it anywhere. +2 points at the end of the game",
+            type="Mover/Scorer",
+            description="**3 Power, Reaction:** Once per round, after you [[receive]] a shape, you may move it to a tile adjacent to Conductor\n**Ruler, Most Power, Minimum 6:** Move it anywhere. +2 points at the end of the game",
             number_of_slots=5,
         )
 

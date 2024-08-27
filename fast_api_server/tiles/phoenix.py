@@ -6,8 +6,8 @@ class Phoenix(Tile):
     def __init__(self):
         super().__init__(
             name="Phoenix",
-            type="Producer",
-            description="Ruler: Most shapes, minimum 2. After a shape is burned at a tile, if you have 3 power there, receive a circle there",
+            type="Giver",
+            description="**Ruler, Most Shapes, Minimum 2:** Once per round, after a shape is ^^burned^^ at a tile, if you have 3 power there, [[receive]] a triangle there",
             number_of_slots=5,
         )
 
@@ -28,8 +28,10 @@ class Phoenix(Tile):
         game_state["listeners"]["on_burn"][self.name] = self.on_burn_effect
 
     async def on_burn_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        if self.is_on_cooldown:
+            return
+        
         index_of_tile_burned_at = data.get('index_of_tile_burned_at')
-       
         ruler = self.determine_ruler(game_state)
         if not ruler:
             return
@@ -49,5 +51,7 @@ class Phoenix(Tile):
             send_clients_game_state,
             ruler,
             tile_burned_at,
-            "circle"
+            "triangle"
         )
+
+        self.is_on_cooldown = True

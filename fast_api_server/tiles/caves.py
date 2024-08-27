@@ -6,8 +6,8 @@ class Caves(Tile):
     def __init__(self):
         super().__init__(
             name="Caves",
-            type="Giver/Scorer",
-            description="3 Power: When you place a triangle at an adjacent tile, receive a circle at that tile\n6 Power: adjacent or anywhere you're present\n9 Power: receive a square instead\nRuler: Most Power",
+            type="Giver",
+            description="**3 power:** When you ((place)) a triangle at an adjacent tile, [[receive]] a circle at that tile\n**6 power:** ...if it's adjacent or anywhere you were already present before ((placing))\n**9 Power:** ...[[receive]] a square instead\n**Ruler: most power**",
             number_of_slots=5,
         )
 
@@ -45,7 +45,7 @@ class Caves(Tile):
         if placer_power < 6 and not is_adjacent:
             return
 
-        if placer_power >= 6 and not (is_adjacent or game_utilities.has_presence(tile_placed_at, placer)):
+        if placer_power >= 6 and not (is_adjacent or game_utilities.count_all_shapes_for_color_on_tile(tile_placed_at, placer) >= 2):
             return
 
         shape_to_receive = "square" if placer_power >= 9 else "circle"

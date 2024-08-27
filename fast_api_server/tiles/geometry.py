@@ -7,7 +7,7 @@ class Geometry(Tile):
         super().__init__(
             name="Geometry",
             type="Producer",
-            description="7 power: At the start of a round, produce 1 triangle\nRuler: Most Power, minimum 10. Produce another one",
+            description="**7 power:** At the __start of a round__, ++produce++ 1 triangle\n**Ruler, Most Power, Minimum 10:** ++Produce++ another one",
             number_of_slots=7,
         )
 
@@ -46,5 +46,6 @@ class Geometry(Tile):
                     player, 
                     1,
                     'triangle', 
-                    self.name
+                    self.name, 
+                    True
                 )

@@ -7,7 +7,7 @@ class Lion(Tile):
         super().__init__(
             name="Lion",
             type="Producer/Giver",
-            description="The player with the fewest shapes produces 1 square at the start of a round\nRuler, Most Shapes, Action: Once per round, receive 2 circles at an adjacent tile",
+            description="The player with fewer shapes here ++produces++ 1 square at the __start of a round__\n**Ruler, Most Shapes, Action:** Once per round, [[receive]] 2 circles at an adjacent tile",
             number_of_slots=3,
             data_needed_for_use=["tile_to_receive_shapes_at"]
         )
@@ -59,6 +59,12 @@ class Lion(Tile):
         red_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
         blue_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
         
-        player_with_fewest_shapes = 'red' if red_count < blue_count else 'blue'
+        if red_count < blue_count:
+            player_with_fewest_shapes = 'red'
+        elif blue_count < red_count:
+            player_with_fewest_shapes = 'blue'
+        else:
+            player_with_fewest_shapes = None
         
-        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_with_fewest_shapes, 1, 'square', self.name)
+        if player_with_fewest_shapes:
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_with_fewest_shapes, 1, 'square', self.name, True)

@@ -7,7 +7,7 @@ class Ash(Tile):
         super().__init__(
             name="Ash",
             type="Scorer",
-            description="2 Power: After a shape is burned on a tile, if you're present there, +2 points\nRuler: Most power, minimum 6. +5 points instead",
+            description="**2 Power:** After a shape is ^^burned^^ on a tile, if you're present there, +2 points\n**Ruler, Most Power, Minimum 6:** +5 points instead",
             number_of_slots=5,
         )
 

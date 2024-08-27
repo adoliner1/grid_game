@@ -7,7 +7,7 @@ class Road(Tile):
         super().__init__(
             name="Road",
             type="Mover",
-            description="3 Power, Action: Once per round, choose a shape at an adjacent tile. Move it anywhere\n5 Power: Choose a shape at an adjacent tile, or anywhere you're present\n7 Power: Choose any shape\nRuler: Most Power",
+            description="**3 Power, Action:** Once per round, choose a shape at an adjacent tile. Move it anywhere\n**5 power:** ...choose a shape at an adjacent tile or anywhere you're present\n**7 power:** ...choose any shape\n**Ruler: Most Power**",
             number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
         )

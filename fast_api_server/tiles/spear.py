@@ -7,7 +7,7 @@ class Spear(Tile):
         super().__init__(
             name="Spear",
             type="Attacker",
-            description="3 Power, Action: Once per round, burn one of your shapes here, -2 points. Burn a shape at a tile you're present at\nRuler: Most Power, minimum 5. Don't lose points, choose a shape anywhere",
+            description="**3 Power, Action:** Once per round, ^^burn^^ one of your shapes here, -2 points, then ^^burn^^ a shape at a tile you're present at\n**Ruler: Most Power, Minimum 5:** Don't lose points and choose a shape anywhere",
             number_of_slots=5,
             data_needed_for_use=["slot_to_burn_shape_from", "slot_and_tile_to_burn_shape_at"]
         )

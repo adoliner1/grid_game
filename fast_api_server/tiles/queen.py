@@ -7,7 +7,7 @@ class Queen(Tile):
         super().__init__(
             name="Queen",
             type="Scorer",
-            description="Ruler: Most shapes, minimum 3. Whenever a shape is placed here by the non-ruler, +2 points. At the end of the game, +7 points",
+            description="**Ruler, Most Shapes, Minimum 3:** Whenever a shape is ((placed)) here by the non-ruler, +2 points. At the end of the game, +7 points",
             number_of_slots=7,
         )
 

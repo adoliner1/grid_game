@@ -7,7 +7,7 @@ class Prince(Tile):
         super().__init__(
             name="Prince",
             type="Scorer",
-            description = f"At the end of a round: For each same-shape pair you have here, +2 points\nRuler: Most Shapes. At the end of the game +3 points",
+            description = f"At the __end of a round__, for each same-shape pair you have here, +2 points\n**Ruler, Most Shapes:** At the end of the game +3 points",
             number_of_slots=7,
         )
 

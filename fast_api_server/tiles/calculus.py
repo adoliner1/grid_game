@@ -7,7 +7,7 @@ class Calculus(Tile):
         super().__init__(
             name="Calculus",
             type="Producer",
-            description="5 Power: At the start of a round, produce 1 square\nRuler: Most Power, minimum 8. Produce another",
+            description="**5 power:** At the __start of a round__, ++produce++ 1 square\n**Ruler, Most Power, Minimum 8:** ++Produce++ another",
             number_of_slots=
             5,
         )
@@ -30,8 +30,8 @@ class Calculus(Tile):
 
         for player in [first_player, second_player]:
             if self.power_per_player[player] >= 5:
-                await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player, 1, 'square', self.name)
+                await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player, 1, 'square', self.name, True)
 
         ruler = self.determine_ruler(game_state)
         if ruler:
-            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 1, 'square', self.name)
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 1, 'square', self.name, True)

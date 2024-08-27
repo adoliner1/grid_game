@@ -7,7 +7,7 @@ class Combinatorics(Tile):
         super().__init__(
             name="Combinatorics",
             type="Producer/Scorer",
-            description="At the end of a round, for each same-shape pair you have here, produce 1 shape of that type\nPer set you have here, +3 points per shape you produced this way\nRuler: Most shapes",
+            description="At the __end of a round__, for each same-shape pair you have here, ++produce++ 1 shape of that type\nPer set you have here, +3 points per shape you ++produced++ this way\n**Ruler: Most Shapes**",
             number_of_slots=9,
         )
 
@@ -42,7 +42,7 @@ class Combinatorics(Tile):
                         await game_utilities.produce_shape_for_player(
                             game_state, game_action_container_stack, send_clients_log_message, 
                             send_clients_available_actions, send_clients_game_state, 
-                            color, 1, shape, self.name
+                            color, 1, shape, self.name, True
                         )
                     total_produced += pairs
                     await send_clients_log_message(f"{color} produces {pairs} {shape}(s) from {self.name}")

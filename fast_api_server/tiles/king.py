@@ -7,7 +7,7 @@ class King(Tile):
         super().__init__(
             name="King",
             type="Scorer",
-            description="At the end of the game\n+3 power differential, +4 points\n+7 power differential, +15 points instead\nRuler: Most Power, minimum 3",
+            description="At the end of the game:\n**+3 power differential**, +4 points\n**+7 power differential**, +15 points instead\n**Ruler: Most Power, Minimum 3**",
             number_of_slots=9,
         )
 

@@ -7,7 +7,7 @@ class Turbine(Tile):
         super().__init__(
             name="Turbine",
             type="Producer",
-            description="Ruler: Most shapes, Action: Once per round, if your peak power >= 6, produce a circle\n >= 10, a square\n >= 14, a triangle",
+            description="**Ruler, Most Shapes, Action:** Once per round, if your peak power is\n>= 6, ++produce++ a circle\n>= 10, a square\n>= 14, a triangle",
             number_of_slots=3,
         )
 
@@ -44,28 +44,25 @@ class Turbine(Tile):
         await send_clients_log_message(f"{user} is using {self.name}")
 
         if peak_power >= 14:
-            await game_utilities.produce_shape_for_user(
+            await game_utilities.produce_shape_for_player(
                 game_state, game_action_container_stack, send_clients_log_message,
                 send_clients_available_actions, send_clients_game_state,
-                user, 1, "triangle", self.name
+                user, 1, "triangle", self.name, True
             )
-            await send_clients_log_message(f"{user} produces a triangle from {self.name}")
 
         elif peak_power >= 10:
-            await game_utilities.produce_shape_for_user(
+            await game_utilities.produce_shape_for_player(
                 game_state, game_action_container_stack, send_clients_log_message,
                 send_clients_available_actions, send_clients_game_state,
-                user, 1, "square", self.name
+                user, 1, "square", self.name, True
             )
-            await send_clients_log_message(f"{user} produces a square from {self.name}")
 
         elif peak_power >= 6:
-            await game_utilities.produce_shape_for_user(
+            await game_utilities.produce_shape_for_player(
                 game_state, game_action_container_stack, send_clients_log_message,
                 send_clients_available_actions, send_clients_game_state,
-                user, 1, "circle", self.name
+                user, 1, "circle", self.name, True
             )
-            await send_clients_log_message(f"{user} produces a circle from {self.name}")
 
         self.is_on_cooldown = True
         return True

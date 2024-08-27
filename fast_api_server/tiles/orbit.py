@@ -7,7 +7,7 @@ class Orbit(Tile):
         super().__init__(
             name="Orbit",
             type="Tile-Mover",
-            description=f"Ruler: Most shapes, Action: Once per round, choose a tile. Rotate the row that tile is in left once",
+            description=f"**Ruler, Most Shapes, Action:** Once per round, choose a tile. Rotate the row that tile is in left once",
             number_of_slots=3,
             data_needed_for_use=["tile_to_shift_row"]
         )

@@ -9,7 +9,7 @@ class Plains(Tile):
         super().__init__(
             name="Plains",
             type="Producer/Scorer",
-            description="Ruler: Most shapes, minimum 2. When a tile produces shapes, you may receive a circle at a tile adjacent to it",
+            description="**Ruler, Most Shapes, Minimum 3:** When a tile ++produces++ shapes, you may [[receive]] a circle at a tile adjacent to it",
             number_of_slots=5,
         )
 
@@ -17,10 +17,10 @@ class Plains(Tile):
         red_shapes = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
         blue_shapes = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
        
-        if red_shapes > blue_shapes and red_shapes >= 2:
+        if red_shapes > blue_shapes and red_shapes >= 3:
             self.ruler = 'red'
             return 'red'
-        elif blue_shapes > red_shapes and blue_shapes >= 2:
+        elif blue_shapes > red_shapes and blue_shapes >= 3:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -36,15 +36,7 @@ class Plains(Tile):
         if not ruler or ruler != producing_player:
             return
 
-        producing_tile_index = game_utilities.find_index_of_tile_by_name(game_state, producing_tile_name)
         plains_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        
-        adjacent_tiles = game_utilities.get_adjacent_tile_indices(producing_tile_index)
-        available_tiles = [tile_index for tile_index in adjacent_tiles if tile_index != plains_index]
-
-        if not available_tiles:
-            return
-
         await send_clients_log_message(f"{ruler} may receive a circle at a tile adjacent to {producing_tile_name} due to {self.name}")
 
         new_container = game_action_container.GameActionContainer(
@@ -52,7 +44,8 @@ class Plains(Tile):
             game_action="react_with_tile",
             required_data_for_action={
                 "tile_to_receive_circle": {},
-                "index_of_tile_being_reacted_with": plains_index
+                "index_of_tile_being_reacted_with": plains_index,
+                "producing_tile_index": game_utilities.find_index_of_tile_by_name(game_state, producing_tile_name)
             },
             whose_action=ruler,
             is_a_reaction=True,

@@ -7,7 +7,7 @@ class Wormhole(Tile):
         super().__init__(
             name="Wormhole",
             type="Tile-Mover",
-            description=f"At Least Two Different Shape Types: Action: Once per round, swap the position of two tiles\nRuler: Most Shapes",
+            description=f"**At Least Two Different Shape Types, Action:** Once per round, swap the position of two tiles\n**Ruler: Most Shapes**",
             number_of_slots=3,
             data_needed_for_use=["tile1", "tile2"]
         )
@@ -63,7 +63,7 @@ class Wormhole(Tile):
             await send_clients_log_message(f"Player does not have at least 2 different shapes or {self.name} is on cooldown")
             return False
 
-        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index]} and {game_state['tiles'][tile2_index]}")
+        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
 
         # Swap the tiles
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]

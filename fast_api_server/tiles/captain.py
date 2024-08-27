@@ -8,8 +8,8 @@ class Captain(Tile):
     def __init__(self):
         super().__init__(
             name="Captain",
-            type="Attacker",
-            description="Ruler: Most Power, Reaction: Once per round, after you receive a shape at a tile, you may burn a shape at a tile adjacent to it. +2 points at the end of the game",
+            type="Attacker/Scorer",
+            description="**Ruler, Most Power, Reaction:** Once per round, after you [[receive]] a shape at a tile, you may ^^burn^^ a shape at a tile adjacent to that tile. +2 points at the end of the game",
             number_of_slots=3,
         )
 
@@ -64,10 +64,10 @@ class Captain(Tile):
             await send_clients_log_message(f"Tried to react with {self.name} but there is no shape to burn at {game_state['tiles'][index_of_tile_to_burn_shape].name} at slot {slot_index_to_burn_shape}")
             return False
 
+        self.is_on_cooldown = True
         await send_clients_log_message(f"Reacting with {self.name}")
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_burn_shape, slot_index_to_burn_shape)
         
-        self.is_on_cooldown = True
         return True
     
     def setup_listener(self, game_state):

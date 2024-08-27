@@ -7,7 +7,7 @@ class Saturn(Tile):
         super().__init__(
             name="Saturn",
             type="Producer",
-            description="Ruler: +2 power differential, minimum 4 power: Action: Once per round, burn one of your triangles here to produce 2 squares",
+            description="**Ruler, +2 Power Differential, Minimum 4 Power, Action:** Once per round, ^^burn^^ one of your triangles here to ++produce++ 2 squares",
             number_of_slots=5,
             is_on_cooldown=False
         )
@@ -50,7 +50,7 @@ class Saturn(Tile):
                 await send_clients_log_message(f"{self.name} is used")                
                 await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_utilities.find_index_of_tile_by_name(game_state, self.name), i)
                 for _ in range(2):
-                    await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 1, 'square', self.name)
+                    await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, 1, 'square', self.name, True)
                 self.is_on_cooldown = True
                 return True
         

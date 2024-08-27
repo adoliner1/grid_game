@@ -9,7 +9,7 @@ class Maestro(Tile):
         super().__init__(
             name="Maestro",
             type="Mover",
-            description="Ruler: Most Power, minimum 3, Reaction: Once per round, when you receive a shape, you may move it to a tile adjacent to the tile you received it at\n7 Power: Maestro has no cooldown",
+            description="**Ruler, Most Power, Minimum 3, Reaction:** Once per round, after you [[receive]] a shape, you may move it to a tile adjacent to the tile you [[received]] it at\n**7 power:** Don't put Maestro on cooldown when you use it",
             number_of_slots=5,
         )
 
