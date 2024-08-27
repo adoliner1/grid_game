@@ -1,16 +1,32 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import ReactDOM from 'react-dom';
 import '../stylesheets/game.css'
 import Tile from './tile'
 import ShapesInStorage from './shapes_in_storage'
 import GameLog from './game_log'
 import Powerup from './powerup'
 
+const Modal = ({ isOpen, onClose, children }) => {
+    if (!isOpen) return null;
+  
+    return ReactDOM.createPortal(
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <button className="modal-close" onClick={onClose}>Close</button>
+          {children}
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
 const Game = () => {
     const [gameState, setGameState] = useState(null)
     const [availableActions, setAvailableActions] = useState({}) 
     const [currentPieceOfDataToFill, setcurrentPieceOfDataToFill] = useState("") 
     const [logs, setLogs] = useState([])
-    
+    const [isPowerupsModalOpen, setIsPowerupsModalOpen] = useState(false);
+
     const oldAvailableActions = useRef({})
     const socket = useRef(null)
     const clientColor = useRef(null)
@@ -64,6 +80,9 @@ const Game = () => {
     const addLog = (message) => {
         setLogs((prevLogs) => [...prevLogs, message])
     }
+
+    const openPowerupsModal = () => setIsPowerupsModalOpen(true);
+    const closePowerupsModal = () => setIsPowerupsModalOpen(false);
 
     //just used so we can play "your turn" sound for now - probably not necessary in future
     useEffect(() => {
@@ -297,6 +316,7 @@ const Game = () => {
         <div className="game-container">
             <div className="info_section">
                 <div className={clientColor.current === 'red' ? 'red-text' : 'blue-text'}> You are {clientColor.current} </div>
+                <button onClick={openPowerupsModal}>Open Powerups</button>
                 <div>
                     {gameState.round_bonuses.map((bonus, index) => (<p key={index} className={index === gameState.round ? 'current-round' : ''}> <b>Round {index+1}: </b> {bonus}</p>))}
                 </div>
@@ -365,44 +385,46 @@ const Game = () => {
                         )
                     })}
                 </div>
-                <div className="powerups">
-                    <div className="red-powerups">
-                        {gameState.powerups.red.map((powerup, powerup_index) => {
-                            return (
-                                <Powerup
-                                    key={powerup_index}
-                                    clients_color={clientColor.current}
-                                    description={powerup.description}
-                                    is_on_cooldown={powerup.is_on_cooldown}
-                                    powerup_index={powerup_index}
-                                    available_actions={availableActions}
-                                    onPowerupClick={() => handlePowerupClick(powerup_index)}
-                                    slots_for_shapes={powerup.slots_for_shapes}
-                                    onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
-                                    playerColorOfPowerups={"red"}
-                                />
-                            )
-                        })}
+                <Modal isOpen={isPowerupsModalOpen} onClose={closePowerupsModal}>
+                    <div className="powerups">
+                        <div className="red-powerups">
+                            {gameState.powerups.red.map((powerup, powerup_index) => {
+                                return (
+                                    <Powerup
+                                        key={powerup_index}
+                                        clients_color={clientColor.current}
+                                        description={powerup.description}
+                                        is_on_cooldown={powerup.is_on_cooldown}
+                                        powerup_index={powerup_index}
+                                        available_actions={availableActions}
+                                        onPowerupClick={() => handlePowerupClick(powerup_index)}
+                                        slots_for_shapes={powerup.slots_for_shapes}
+                                        onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
+                                        playerColorOfPowerups={"red"}
+                                    />
+                                )
+                            })}
+                        </div>
+                        <div className="blue-powerups">
+                            {gameState.powerups.blue.map((powerup, powerup_index) => {
+                                return (
+                                    <Powerup
+                                        key={powerup_index}
+                                        clients_color={clientColor.current}
+                                        description={powerup.description}
+                                        is_on_cooldown={powerup.is_on_cooldown}
+                                        powerup_index={powerup_index}
+                                        available_actions={availableActions}
+                                        onPowerupClick={() => handlePowerupClick(powerup_index)}
+                                        slots_for_shapes={powerup.slots_for_shapes}
+                                        onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
+                                        playerColorOfPowerups={"blue"}
+                                    />
+                                )
+                            })}
+                        </div>
                     </div>
-                    <div className="blue-powerups">
-                        {gameState.powerups.blue.map((powerup, powerup_index) => {
-                            return (
-                                <Powerup
-                                    key={powerup_index}
-                                    clients_color={clientColor.current}
-                                    description={powerup.description}
-                                    is_on_cooldown={powerup.is_on_cooldown}
-                                    powerup_index={powerup_index}
-                                    available_actions={availableActions}
-                                    onPowerupClick={() => handlePowerupClick(powerup_index)}
-                                    slots_for_shapes={powerup.slots_for_shapes}
-                                    onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
-                                    playerColorOfPowerups={"blue"}
-                                />
-                            )
-                        })}
-                    </div>
-                </div>
+                </Modal>
             </div>
         </div>
     )   

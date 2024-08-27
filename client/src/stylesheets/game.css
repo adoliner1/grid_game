@@ -1,107 +1,144 @@
 
-.game-container {
-  display: flex;
-  align-items: flex-start;
-  margin: 20px;
-  flex-direction: row;
+/* Base styles for HTML and body */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
+/* Game container */
+.game-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Info section */
+.info_section {
+  flex: 0 0 25%;
+  max-width: 25%;
+  display: flex;
+  flex-direction: column;
+  margin-right: 20px;
+  overflow-y: auto;
+}
+
+/* Tiles and powerups container */
+.tiles-and-powerups {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Tiles grid */
 .tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 10px;
-  flex: 2 1 auto;
-  justify-content: center;
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
 }
 
-.info_section {
-  flex: 1 1 auto;
+/* Powerups section */
+.powerups {
   display: flex;
-  flex-direction: column;
-  margin-bottom: 30px;
-  margin-right: 20px;
-  max-width: 25%;
-  min-width: 25%;
+  justify-content: space-between;
+  margin-top: 20px;
+  overflow-x: auto;
 }
 
-div {
-    padding: 5px;
-  }
-
-p {
-    white-space: normal;
-    word-wrap: break-word; /* For older browsers */
-    word-break: break-word; /* For newer browsers */
+.red-powerups, .blue-powerups {
+  flex: 1;
+  padding: 10px;
 }
 
-svg.owner-red {
-    stroke: red;
-    fill: red;
-  }
-  
-svg.owner-blue {
-    stroke: blue;
-    fill: blue;
-  }
-  
-svg.selectable  {
-    transition: fill 0.3s, stroke 0.3s;
-    stroke: #ffd700;
-    stroke-width: 2;
-  }
-  
-
-svg.selectable:hover {
-    stroke: #ffd700;
-    fill: #ffd700;
-  }
-
-
-svg.selectable:active {
-    stroke: black;
-    fill: black;
-  }
-
-svg.selectable {
-    cursor: pointer;
-}
-
+/* Game log */
 .game-log {
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    overflow-y: scroll;
-    font-size: 0.9em;
-    max-height: 250px;
-    min-height: 150px;
-    scroll-behavior: smooth;
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  font-size: 0.9em;
+  max-height: 250px;
+  min-height: 150px;
+  scroll-behavior: smooth;
 }
 
 .game-log p {
-    margin: 0;
-    padding: 5px 0;
-    border-bottom: 1px solid #eee;
+  margin: 0;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
 }
 
+/* General styles */
+div {
+  padding: 5px;
+}
+
+p {
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* SVG styles */
+svg.owner-red {
+  stroke: red;
+  fill: red;
+}
+
+svg.owner-blue {
+  stroke: blue;
+  fill: blue;
+}
+
+svg.selectable {
+  transition: fill 0.3s, stroke 0.3s;
+  stroke: #ffd700;
+  stroke-width: 2;
+  cursor: pointer;
+}
+
+svg.selectable:hover {
+  stroke: #ffd700;
+  fill: #ffd700;
+}
+
+svg.selectable:active {
+  stroke: black;
+  fill: black;
+}
+
+/* Directive text */
 .directive-text {
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    max-width: 300px; /* Adjust this value as needed */
-    word-wrap: break-word;
-    white-space: normal;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  max-width: 300px;
+  word-wrap: break-word;
+  white-space: normal;
 }
 
+/* Button styles */
 .btn-enabled {
   padding: 10px 20px;
   margin: 10px 0;
   border: none;
   background-color: #007bff;
+  color: white;
   cursor: pointer;
 }
 
@@ -117,11 +154,13 @@ svg.selectable {
   background-color: #0056b3;
 }
 
+/* Current round highlight */
 .current-round {
   outline: 2px solid rgb(0, 0, 0);
   padding: 5px;
 }
 
+/* Text colors */
 .red-text {
   color: red;
 }
@@ -130,35 +169,7 @@ svg.selectable {
   color: blue;
 }
 
-.tiles-and-powerups {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: fit-content;
-}
-
-.powerups {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: row;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.red-powerups {
-  border: 2px solid red;
-  padding: 10px;
-  flex: 1;
-  margin-right: 10px;
-}
-
-.blue-powerups {
-  border: 2px solid blue;
-  padding: 10px;
-  flex: 1;
-  margin-left: 10px;
-}
-
+/* Powerup styles */
 .powerup-container {
   display: flex;
   align-items: center;
@@ -177,4 +188,50 @@ svg.selectable {
 
 .selectable-powerup:hover {
   border-color: black;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-close {
+  align-self: flex-end;
+  margin-bottom: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .game-container {
+    flex-direction: column;
+  }
+
+  .info_section {
+    flex: 0 0 auto;
+    max-width: 100%;
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
