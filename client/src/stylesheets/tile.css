@@ -17,6 +17,11 @@
     margin-bottom: 10px;
 }
 
+.tile-description br {
+    display: block;
+    margin-bottom: 1em;
+  }
+
 .tile-name {
     margin: 0;
     font-size: 1.2em;
