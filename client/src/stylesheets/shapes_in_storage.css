@@ -8,6 +8,16 @@
     align-items: center;
 }
 
+.points-presence-peak-power-row {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+}
+
+.player-has-passed {
+    background-color: #d3d3d3; /* greyish background */
+}
+
 .passed-row {
     display: flex;
     justify-content: center;

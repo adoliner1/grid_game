@@ -28,10 +28,8 @@ const ShapesInStorage = ({player_color, whose_turn_is_it, has_passed, clients_co
     }
 
     return (
-        <div className="player-shapes-and-info" >
-                <div className="passed-row">
-                    <div> <b>Passed:</b> {has_passed.toString()}</div>
-                </div>
+        <div className={`player-shapes-and-info ${has_passed ? 'player-has-passed' : ''}`}>
+            <div className='points-presence-peak-power-row'>
                 <div className="points-row">
                     <div> <b>Points:</b> {points}</div>
                 </div>
@@ -40,7 +38,8 @@ const ShapesInStorage = ({player_color, whose_turn_is_it, has_passed, clients_co
                 </div>
                 <div className="peak-power-row">
                     <div> <b>Peak Power:</b> {peak_power}</div>
-                </div>                  
+                </div>
+            </div>                  
                 <div className="arrows-row">
                     <div className="arrow-container">
                         <ConversionArrow whose_turn_is_it={whose_turn_is_it}

@@ -9,7 +9,7 @@ class Plains(Tile):
         super().__init__(
             name="Plains",
             type="Producer/Scorer",
-            description="**Ruler, Most Shapes, Minimum 3:** When a tile ++produces++ shapes, you may [[receive]] a circle at a tile adjacent to it",
+            description="**Ruler, Most Shapes, Minimum 3:** When a tile ++produces++ a shape, you may [[receive]] a circle at a tile adjacent to it",
             number_of_slots=5,
         )
 

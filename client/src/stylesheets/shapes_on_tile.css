@@ -7,8 +7,8 @@
 }
 
 .slot {
-    width: 30px;
-    height: 30px;
+    width: 15px;
+    height: 15px;
     border: 1px solid #ccc;
     margin: 5px;
     display: flex;

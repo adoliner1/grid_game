@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Circle = ({ playerColor, selectable, onClick, size = 24 }) => {
+const Circle = ({ playerColor, selectable, onClick, size = 18 }) => {
     const className = `owner-${playerColor} ${selectable ? 'selectable' : ''}`;
 
     return (

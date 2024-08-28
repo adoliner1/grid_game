@@ -10,6 +10,12 @@
     transition: border-color 0.3s;
 }
 
+.power-per-player {
+    flex-direction: row;
+    display: flex;
+    justify-content: space-evenly;
+}
+
 .tile-header {
     display: flex;
     justify-content: space-between;
@@ -97,3 +103,9 @@
     color: rgb(52, 52, 255);
 
 }
+
+.separator {
+    height: 1px;
+    border: none;
+    border-top: 1px solid #797676;
+  }

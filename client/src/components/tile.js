@@ -32,7 +32,7 @@ const Tile = ({
           .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a;">$1</span>')  // Place (blue)
           .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000;">$1</span>')  // Produce (green)
           .replace(/\b(action|reaction)\b/gi, '<u>$1</u>')  // Underline action and reaction
-          .replace(/\n/g, '<br><br>');  // Double line breaks
+          .replace(/\n/g, '<br>');  // Double line breaks
       }
       
 
@@ -44,9 +44,13 @@ const Tile = ({
                 <h3 className={`tile-name ${ruler ? `tile-name-${ruler}` : ''}`}>{name}</h3>
                 <span className="tile-type">{type}</span>
             </div>
+            <div className="separator"></div>
             <p className="tile-description" dangerouslySetInnerHTML={{ __html: description }}></p>
-            <p className='red-power'> Red Power: {red_power} </p>
-            <p className='blue-power'> Blue Power: {blue_power} </p>
+            <div className="separator"></div>
+            <div className="power-per-player">
+                <p className='red-power'> <b>Red Power:</b> {red_power} </p>
+                <p className='blue-power'> <b> Blue Power:</b> {blue_power} </p>
+            </div>
             <ShapesOnTile 
                 slots_for_shapes={slots_for_shapes} 
                 tile_index={tile_index}

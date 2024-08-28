@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Triangle = ({ playerColor, selectable, onClick, size = 24 }) => {
+const Triangle = ({ playerColor, selectable, onClick, size = 18 }) => {
 
     const className = `owner-${playerColor} ${selectable ? 'selectable' : ''}`;
 
