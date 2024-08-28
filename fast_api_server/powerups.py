@@ -220,14 +220,14 @@ class SwapPositionOfTileWithAdjacentTile(Powerup):
         super().__init__(
             name="Swap Position Of Tile With Adjacent Tile",
             description="When filled with squares, once per round, you may use this to swap the position of a tile with an adjacent tile",
-            number_of_slots=3,
+            number_of_slots=2,
             owner=owner,
             data_needed_for_use=["first_tile", "adjacent_tile_to_first_tile"],
             shapes_which_can_be_placed_on_this = ["square"]
         )
 
     def is_useable(self, game_state):
-        return len([slot["shape"] == "square" for slot in self.slots_for_shapes if slot]) == 3 and not self.is_on_cooldown
+        return len([slot["shape"] == "square" for slot in self.slots_for_shapes if slot]) == 2 and not self.is_on_cooldown
 
     def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
@@ -259,7 +259,7 @@ class SwapPositionOfTileWithAdjacentTile(Powerup):
             await send_clients_log_message(f"Cannot select the same tile twice for {self.name}")
             return False
 
-        await send_clients_log_message(f"Using {self.name} to swap tiles at indices {tile1_index} and {tile2_index}")
+        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
 
         # Swap the tiles
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]

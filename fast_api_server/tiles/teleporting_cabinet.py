@@ -7,7 +7,7 @@ class TeleportingCabinet(Tile):
         super().__init__(
             name="Teleporting Cabinet",
             type="Mover",
-            description=f"**Ruler, Most Shapes, Action:** Once per turn, choose a shape at an adjacent tile and swap it with a shape anywhere",
+            description=f"**Ruler, Most Shapes, Action:** Once per round, choose a shape at an adjacent tile and swap it with a shape anywhere",
             number_of_slots=5,
             data_needed_for_use=["slot_and_tile_to_swap_shape_from", "slot_and_tile_to_swap_shape_to"]
         )
@@ -98,6 +98,8 @@ class TeleportingCabinet(Tile):
         game_state["tiles"][index_of_tile_to_swap_shape_from].slots_for_shapes[slot_index_to_swap_shape_from] = slot_data_to_swap_to
         game_state["tiles"][index_of_tile_to_swap_shape_to].slots_for_shapes[slot_index_to_swap_shape_to] = slot_data_to_swap_from
 
+        game_utilities.determine_power_levels(game_state)
+        game_utilities.update_presence(game_state)
         game_utilities.determine_rulers(game_state)
         await send_clients_log_message(f"Swapped {slot_data_to_swap_from['shape']} from {game_state['tiles'][index_of_tile_to_swap_shape_from].name} with {slot_data_to_swap_to['shape']} at {game_state['tiles'][index_of_tile_to_swap_shape_to].name}")
         self.is_on_cooldown = True
