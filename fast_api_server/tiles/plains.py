@@ -33,7 +33,7 @@ class Plains(Tile):
         producing_tile_name = data.get('producing_tile_name')
         producing_player = data.get('producing_player')
         ruler = self.determine_ruler(game_state)
-        if not ruler or ruler != producing_player:
+        if not ruler:
             return
 
         plains_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)

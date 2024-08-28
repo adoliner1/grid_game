@@ -7,7 +7,7 @@ class Queen(Tile):
         super().__init__(
             name="Queen",
             type="Scorer",
-            description="**Ruler, Most Shapes, Minimum 3:** Whenever a shape is ((placed)) here by the non-ruler, +2 points. At the end of the game, +7 points",
+            description="**Ruler, Most Shapes, Minimum 2:** After a shape is ((placed)) here by the non-ruler, +2 points. At the end of the game, +7 points",
             number_of_slots=7,
         )
 
@@ -15,10 +15,10 @@ class Queen(Tile):
         red_shape_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
         blue_shape_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
         
-        if red_shape_count > blue_shape_count and red_shape_count >= 3:
+        if red_shape_count > blue_shape_count and red_shape_count >= 2:
             self.ruler = 'red'
             return 'red'
-        elif blue_shape_count > red_shape_count and blue_shape_count >= 3:
+        elif blue_shape_count > red_shape_count and blue_shape_count >= 2:
             self.ruler = 'blue'
             return 'blue'
         self.ruler = None
@@ -42,4 +42,4 @@ class Queen(Tile):
         ruler = self.determine_ruler(game_state)
         if ruler is not None:
             await send_clients_log_message(f"{self.name} gives 7 points to {ruler}")
-            game_state["points"][ruler] += 7
+            game_state["points"][ruler] += 8

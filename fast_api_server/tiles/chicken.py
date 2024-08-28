@@ -62,7 +62,7 @@ class Chicken(Tile):
         game_state["points"][ruler] += 1
         await send_clients_log_message(f"{ruler} gained 1 point from using {self.name}")
         
-        await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'circle', True)
+        await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'circle')
         
         return True
 

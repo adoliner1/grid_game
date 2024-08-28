@@ -7,7 +7,7 @@ class Caves(Tile):
         super().__init__(
             name="Caves",
             type="Giver",
-            description="**3 power:** When you ((place)) a triangle at an adjacent tile, [[receive]] a circle at that tile\n**6 power:** ...if it's adjacent or anywhere you were already present before ((placing))\n**9 Power:** ...[[receive]] a square instead\n**Ruler: most power**",
+            description="**3 power:** When you ((place)) a triangle at an adjacent tile, [[receive]] a circle at that tile\n**5 power:** [[receive]] a square instead\n**7 Power:** [[receive]] a triangle instead\n**Ruler: most power**",
             number_of_slots=5,
         )
 
@@ -42,18 +42,20 @@ class Caves(Tile):
         is_adjacent = game_utilities.determine_if_directly_adjacent(index_of_caves, index_of_tile_placed_at)
         tile_placed_at = game_state["tiles"][index_of_tile_placed_at]
 
-        if placer_power < 6 and not is_adjacent:
+        if not is_adjacent:
             return
 
-        if placer_power >= 6 and not (is_adjacent or game_utilities.count_all_shapes_for_color_on_tile(tile_placed_at, placer) >= 2):
-            return
-
-        shape_to_receive = "square" if placer_power >= 9 else "circle"
+        if placer_power >= 7:
+            shape_to_receive = "triangle"
+        elif placer_power >= 5:
+            shape_to_receive = "square"
+        else:
+            shape_to_receive = "circle"
        
         await game_utilities.player_receives_a_shape_on_tile(
-            game_state, game_action_container_stack, send_clients_log_message, 
-            send_clients_available_actions, send_clients_game_state, 
+            game_state, game_action_container_stack, send_clients_log_message,
+            send_clients_available_actions, send_clients_game_state,
             placer, tile_placed_at, shape_to_receive
         )
-
-        await send_clients_log_message(f"{placer} receives a {shape_to_receive} at {tile_placed_at.name} from {self.name}")
+        
+        await send_clients_log_message(f"{placer} receives a {shape_to_receive} at {tile_placed_at.name} from {self.name}. They have {placer_power} there.")
