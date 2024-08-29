@@ -7,7 +7,7 @@ class Carbon(Tile):
         super().__init__(
             name="Carbon",
             type="Giver/Scorer",
-            description=f"At the __end of a round__, at Carbon, per circle you have, [[receive]] a circle\n**Action:** ^^Burn^^ 3 of your circles here to [[receive]] a triangle here\n**Ruler, most shapes:** +3 points at the __end of the game__",
+            description=f"At the __end of a round__, for each circle you have here, [[receive]] another circle here\n**Action:** ^^Burn^^ 3 of your circles here to [[receive]] a triangle here\n**Ruler, most shapes:** +3 points at the __end of the game__",
             number_of_slots=9,
         )
 

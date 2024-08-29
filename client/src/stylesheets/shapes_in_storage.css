@@ -1,6 +1,7 @@
 /* shapes_in_storage.css */
 .player-shapes-and-info {
     border: 1px solid black;
+    border-radius: 5px;
     padding: 2px;
     margin-bottom: 5px;
     display: flex;
@@ -11,41 +12,24 @@
 .points-presence-peak-power-row {
     display: flex;
     justify-content: space-evenly;
+    padding: 2px;
     flex-direction: row;
 }
 
 .player-has-passed {
-    background-color: #d3d3d3; /* greyish background */
-}
-
-.passed-row {
-    display: flex;
-    justify-content: center;
-}
-
-.points-row {
-    display: flex;
-    justify-content: center;
-}
-
-.presence-row {
-    display: flex;
-    justify-content: center;
+    background-color: #d3d3d3;
 }
 
 .arrows-row {
     display: flex;
     justify-content: center;
+    padding: 2px;
     margin-bottom: -60px;
 }
 
 .shapes-row {
     display: flex;
-    justify-content: center;
-}
-
-.peak-power-row {
-    display: flex;
+    padding: 2px;
     justify-content: center;
 }
 

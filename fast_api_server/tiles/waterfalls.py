@@ -7,7 +7,7 @@ class Waterfalls(Tile):
         super().__init__(
             name="Waterfalls",
             type="Scorer",
-            description="**3 Power:** at the __end of a round__, +1 point per tile you're present at\n**6 Power:** +2 points instead\n**Ruler: Most Power**",
+            description="**3 Power:** At the __end of a round__, +1 point per tile you're present at\n**6 Power:** +2 points instead\n**Ruler: Most Power**",
             number_of_slots=5,
         )
 

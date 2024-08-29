@@ -7,7 +7,7 @@ class Nitrogen(Tile):
         super().__init__(
             name="Nitrogen",
             type="Giver/Scorer",
-            description="At the __end of a round__, at Nitrogen, per triangle you have, [[receive]] a square and a circle\n**Action:** ^^Burn^^ one of your sets here for +4 points\n**Ruler: Most Shapes**",
+            description="At the __end of a round__, for each triangle you have here, [[receive]] a square and a circle here\n**Action:** ^^Burn^^ one of your sets here for +4 points\n**Ruler: Most Shapes**",
             number_of_slots=11,
         )
 

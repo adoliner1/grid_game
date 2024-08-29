@@ -9,10 +9,11 @@ html, body {
 /* Game container */
 .game-container {
   display: flex;
+  flex-direction: row;
   height: 100vh;
   width: 100vw;
   margin: 0;
-  padding: 5px;
+  padding: 1vh 1vw;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -28,6 +29,12 @@ html, body {
   font-size: clamp(2px, 1vw, 12px)
 }
 
+.pass-and-do-not-react-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
 /* Tiles grid */
 .tiles {
   flex: 1;
@@ -35,7 +42,7 @@ html, body {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 10px;
-  margin: 10px;
+  margin: 5px;
   overflow: auto;
   font-size: clamp(2px, 1vw, 12px)
 }
@@ -64,15 +71,13 @@ html, body {
   background-color: #f9f9f9;
   border-radius: 5px;
   font-size: 0.8em;
-  max-height: 250px;
-  min-height: 150px;
   scroll-behavior: smooth;
 }
 
 .game-log p {
   margin: 0;
   padding: 5px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #7a7979;
 }
 
 /* General styles */
@@ -114,27 +119,15 @@ svg.selectable:active {
   fill: black;
 }
 
-/* Directive text */
-.directive-text {
-  margin-top: 10px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  background-color: #f9f9f9;
-  border-radius: 5px;
-  max-width: 300px;
-  word-wrap: break-word;
-  white-space: normal;
-}
-
 /* Button styles */
 .btn-enabled, .btn-disabled {
   padding: 10px 20px;
-  margin: 10px 0;
+  margin: 5px 0;
   border: none;
 }
 
 .btn-enabled {
-  background-color: #007bff;
+  background-color: #4289d4;
   color: white;
   cursor: pointer;
 }
@@ -159,6 +152,10 @@ svg.selectable:active {
   color: red;
 }
 
+.blue-text {
+  color: blue;
+}
+
 .red-powerups { 
   border: 2px solid red
 }
@@ -167,14 +164,10 @@ svg.selectable:active {
   border: 2px solid blue
 }
 
-.blue-text {
-  color: blue;
-}
-
 /* Powerup styles */
 .powerup-container {
   display: flex;
-  margin: 10px 0;
+  margin: 5px 0;
   box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
@@ -194,9 +187,16 @@ svg.selectable:active {
   border-color: black;
 }
 
-/* Ensure consistent size for powerup elements */
 .powerup-container > * {
   box-sizing: border-box;
+}
+
+.red-powerups { 
+  border: 2px solid red
+}
+
+.blue-powerups { 
+  border: 2px solid blue
 }
 
 /* Modal styles */

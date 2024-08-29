@@ -282,6 +282,7 @@ const Game = () => {
                 case "current_available_actions":
                     setAvailableActions(data.available_actions)
                     setcurrentPieceOfDataToFill(data.current_piece_of_data_to_fill_in_current_action)
+                    console.log(currentPieceOfDataToFill)
                     if (data.available_actions.hasOwnProperty('select_a_slot_on_a_powerup')) {
                         setIsPowerupsModalOpen(true);
                     }
@@ -344,7 +345,6 @@ const Game = () => {
                 </p>
               ))}
             </div>
-            <div>{currentPieceOfDataToFill}</div>
             <ShapesInStorage   
               player_color="red"
               whose_turn_is_it={gameState.whose_turn_is_it}
@@ -371,18 +371,20 @@ const Game = () => {
               onShapeClick={handleShapeInStorageClick}
               onConversionArrowClick={handleConversionArrowClick}
             />
-            <button 
-              onClick={handlePassButtonClick} 
-              disabled={!availableActions.hasOwnProperty('pass')}
-              className={availableActions.hasOwnProperty('pass') ? 'btn-enabled' : 'btn-disabled'} >
-              Pass
-            </button>
-            <button 
-              onClick={handleChooseNotToReactClick} 
-              disabled={!availableActions.hasOwnProperty('do_not_react')}
-              className={availableActions.hasOwnProperty('do_not_react') ? 'btn-enabled' : 'btn-disabled'} >
-              Don't Use Reaction
-            </button>
+            <div className="pass-and-do-not-react-buttons">
+                <button 
+                onClick={handlePassButtonClick} 
+                disabled={!availableActions.hasOwnProperty('pass')}
+                className={availableActions.hasOwnProperty('pass') ? 'btn-enabled' : 'btn-disabled'} >
+                Pass
+                </button>
+                <button 
+                onClick={handleChooseNotToReactClick} 
+                disabled={!availableActions.hasOwnProperty('do_not_react')}
+                className={availableActions.hasOwnProperty('do_not_react') ? 'btn-enabled' : 'btn-disabled'} >
+                Don't Use Reaction
+                </button>
+            </div>
             <GameLog logs={logs} />
           </div>
           <div className="tiles">
