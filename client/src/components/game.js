@@ -336,7 +336,7 @@ const Game = () => {
         <div className="game-container">
           <div className="info_section">
             <div className={clientColor.current === 'red' ? 'red-text' : 'blue-text'}> You are {clientColor.current} </div>
-            <button onClick={openPowerupsModal}>Open Powerups</button>
+            <button onClick={openPowerupsModal}>Open Graveyard</button>
             <div>
               {gameState.round_bonuses.map((bonus, index) => (
                 <p key={index} className={index === gameState.round ? 'current-round' : ''}>
