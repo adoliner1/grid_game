@@ -259,8 +259,8 @@ const Game = () => {
     }
     
     useEffect(() => {
-        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
-        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
+        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         socket.current.onopen = () => {
             console.log("WebSocket connection established")
         }

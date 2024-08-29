@@ -175,6 +175,7 @@ svg.selectable:active {
 .powerup-container {
   display: flex;
   margin: 10px 0;
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 .powerup-description {
@@ -185,12 +186,20 @@ svg.selectable:active {
 .selectable-powerup {
   border: 2px solid gold;
   cursor: pointer;
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  transition: border-color 0.3s ease; /* Smooth transition for border color change */
 }
 
 .selectable-powerup:hover {
   border-color: black;
 }
 
+/* Ensure consistent size for powerup elements */
+.powerup-container > * {
+  box-sizing: border-box;
+}
+
+/* Modal styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -220,4 +229,15 @@ svg.selectable:active {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+.powerups {
+  display: flex;
+  justify-content: space-between;
+}
+
+.red-powerups, .blue-powerups {
+  flex: 1;
+  padding: 10px;
+  box-sizing: border-box;
 }

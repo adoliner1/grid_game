@@ -51,7 +51,7 @@ class Aqueduct(Tile):
     async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
-        if self.determine_ruler!= user:
+        if self.determine_ruler != user:
             await send_clients_log_message(f"Tried to use {self.name} without being the ruler")
             return False            
 

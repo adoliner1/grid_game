@@ -1,53 +1,63 @@
 # Shapes And Tiles
 
-# Overview
-The board consists of a 3x3 grid of Tiles. Players place their resources (shapes) on the tiles. Tiles offer various benefits such as income, points, utility, etc. There is also a powerups section below the 3x3 grid.
+# Overview and Objective
+The board consists of a 3x3 grid of randomly selected Tiles. Players place their resources (shapes) on the tiles to rule them and get various benefits. The objective is to have the most points at the end of the game.
 
-## Objective
-Have the most points at the end of the game. The game ends either when:
+End conditions:
 1. All tiles have a ruler at the end of a round
 2. At the end of the 6th round
+
 ## Gameplay
 
 Rounds consist of alternating turns between players. On a player's turn, they may take one of these actions:
 
-1. **Place a shape from storage onto a slot on a tile.** Shapes have power levels (see below). Stronger shapes can be placed on top of weaker shapes, removing the weaker shape from the tile. This is called trumping. The weaker shape which was removed may be placed by the owner in their Powerups section
-2. **Use a tile**.
-3. **Use a powerup.**
-4. **Pass**. After passing, a player may not take any more actions that round (they can still react). If they're the first player to pass in a round, they become first player for the next round.
+1. **Place a shape on a tile** Take a shape from your bank, and place it on a tile.
+2. **Use a tile** 
+3. **Use a powerup**
+4. **Pass** After passing, a player may not take any more actions that round (they can still react). If they're the first player to pass in a round, they become first player for the next round.
 
 A round ends when both players have passed. 
 
 ## Shape Hierarchy/Power
 
+Shapes have power levels:
+
+```
 Triangles: 3
 Squares: 2
 Circles: 1
+```
+
+Stronger shapes can be placed on top of weaker ones. This is called trumping. When this happens, the weaker shape is removed from the slot it was on. It may be placed by the owner in their graveyard.
+
+## Graveyard
+Each player has 3 different powers in their graveyard. They're similar to tiles. Shapes are placed on them, and they give various boons.
 
 ## Base-Income
-At the start of each round, players produce (in their storage) 1 of each shape.
+At the start of each round, players produce 1 of each shape.
 
-## Ruling
-Each tile has some criteria which determines who rules that tile (if anyone). The ruler gains some benefit (normally) from being ruler. 
+## Tiles
 
-## Presence
-You are present at a tile if you have a shape there. Your **presence** is the total number of tiles you are present at.
+**Ruling a tile** Each tile has some criteria which determines who rules the tile (can be no one). This normally gives a benefit to the ruler. 
 
-## Power
-Players have power at each tile. It comes from the sum of the power of their shapes there. Your **peak power** is the highest power you have across all tiles.
+**Presence:** A player is present at a tile if they have a shape there. Your **presence** is the total number of tiles you are present at.
+
+**Power at Tiles:** Each player has a power-level at a tile. It comes from the sum of the power of their shapes there. Your **peak power** is the highest power you have across all tiles.
+
+**Cooldowns:** Many tiles have a cooldown (the description will say "once per round"). Cooldowns are __shared__ between players. I.e. once a tile is on cooldown, it may not be used by anyone.
 
 ## Round Bonuses
 Rewards are given to players that fulfill a condition at the end of each round.
 
 ## Conversions
-At any time on a player's turn, they may perform conversions with their shapes in storage at the following rates. Performing a conversion does not count as performing an action:
+At any time on a player's turn, they may perform conversions with their shapes in bank at the following rates. Performing a conversion does not count as performing an action:
 
 - 3 circles to 1 square
 - 3 squares to 1 triangle
 - 1 square to 1 circle
 - 1 triangle to 1 square
 
-## Miscellaneous
+## Miscellaneous/Terms
 
 When multiple tiles are resolving effects at the same time, they happen in this order:
 
@@ -56,23 +66,20 @@ When multiple tiles are resolving effects at the same time, they happen in this 
 3 4 5 
 6 7 8
 ```
+Some tiles use adjacency. In the above grid, 0 is adjacent to 1 and 3, but not to 4. 
 
 When both players are due to resolve some effect at the same time, the first player resolves them first. 
 
-Some tiles use adjacency. In the above grid, 0 is adjacent to 1 and 3, but not to 4. 
+__Producing__ a shape adds it to your bank.
 
-Producing a shape means: add to your storage.
+__Burning__ a shape removes it from the game. It does not go to the graveyard.
 
-Burning a shape removes it from the game. It doesn't go to the powerups section.
+__Receiving__ a shape always happens at an empty slot on a tile. If there are no empty slots at that tile, no shape is received. 
 
-End of round effects happen before end of round bonuses are calculated.
+__Moving__ a shape also always goes to an empty slot.
 
-Moving/Placing/Receiving are different i.e. if you receive a shape on a tile it will not trigger on place or on move effects.
-
-When you receive or move a shape, it may not trump.
+Some Tile's have effects that happen at the end of a round. These resolve before round bonuses.
 
 A **set** is 1 circle, 1 square, and 1 triangle
 
 A **pair** is any 2 shapes
-
-Some tiles can only be used once per round. This applies to everyone, players do not get to each use it once per round
