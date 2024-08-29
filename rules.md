@@ -1,5 +1,3 @@
-# Shapes And Tiles
-
 # Overview and Objective
 The board consists of a 3x3 grid of randomly selected Tiles. Players place their resources (shapes) on the Tiles to rule them and get various benefits. The objective is to have the most points at the end of the game.
 
@@ -20,7 +18,7 @@ After passing, a player may not take any more actions that round (they can still
 
 ## Shape Hierarchy/Power
 
-Shapes have power levels:
+Shapes have power levels. Triangles are the strongest, circles are the weakest.
 
 ```
 Triangles: 3
@@ -28,10 +26,10 @@ Squares: 2
 Circles: 1
 ```
 
-Stronger shapes can be placed on top of weaker ones. This is called trumping. When this happens, the weaker shape is removed from the slot it was on. It may be placed by the owner in their graveyard.
+Stronger shapes can be placed on top of weaker ones. This is called trumping. When this happens, the weaker shape is removed from the slot it was on. The owner may place it in their graveyard.
 
 ## Graveyard
-Each player has 3 different powers in their graveyard. They're similar to tiles. Shapes are placed on them, and they give various boons.
+Each player has 3 different powers in their graveyard. They're similar to tiles. Shapes are placed on them and they give various boons.
 
 ## Tiles
 
@@ -41,7 +39,7 @@ Each player has 3 different powers in their graveyard. They're similar to tiles.
 
 **Power at Tiles:** Each player has a power-level at a tile. It comes from the sum of the power of their shapes there. Your **peak power** is the highest power you have across all tiles.
 
-**Cooldowns:** Many tiles have a cooldown (the description will say "once per round"). Cooldowns are _shared_ between players. I.e. once a tile is on cooldown, it may not be used by anyone.
+**Cooldowns:** Some tiles have a cooldown (the description will say "once per round"). Cooldowns are _shared_ between players. I.e. once a tile is on cooldown, it may not be used by anyone.
 
 ## Base-Income
 At the start of each round, players produce 1 of each shape.
