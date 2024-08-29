@@ -57,24 +57,23 @@ At any time on a player's turn, they may perform conversions within their bank. 
 When multiple tiles are resolving effects at the same time, they happen in this order:
 
 ```
-0 1 2 
-3 4 5 
-6 7 8
+1 2 3
+4 5 6
+7 8 9
 ```
-
-Some tiles use **adjacency**. In the above grid, 0 is adjacent to 1 and 3, but not to 4. 
+Some tiles use **adjacency**. In the above grid, 1 is adjacent to 2 and 4.
 
 When both players are due to resolve some effect at the same time, the first player resolves them first. 
 
+Some Tiles have effects that happen at the end of a round. These resolve before round bonuses.
+
 **Producing** a shape adds it to your bank.
 
-**Burning** a shape removes it from the game. It does not go to the graveyard.
+**Burning** a shape removes it. It does not go to the graveyard.
 
 **Receiving** a shape always happens at an empty slot on a tile. If there are no empty slots at that tile, no shape is received. 
 
-**Moving** a shape also always goes to an empty slot.
-
-Some Tiles have effects that happen at the end of a round. These resolve before round bonuses.
+When **Moving** a shape, it must also go to an empty slot.
 
 A **set** is 1 circle, 1 square, and 1 triangle
 
