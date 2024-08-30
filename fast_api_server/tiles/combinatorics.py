@@ -7,8 +7,9 @@ class Combinatorics(Tile):
         super().__init__(
             name="Combinatorics",
             type="Producer/Scorer",
-            description="At the __end of a round__, for each same-shape pair you have here, ++produce++ 1 shape of that type\nPer set you have here, +3 points per shape you ++produced++ this way\n**Ruler: Most Shapes**",
+            description="You may not ((place)) triangles here\nAt the __end of a round__, for each same-shape pair you have here, ++produce++ 1 shape of that type\nPer set you have here, +3 points per shape you ++produced++ this way\n**Ruler: Most Shapes**",
             number_of_slots=9,
+            shapes_which_can_be_placed_on_this = ['circle', 'square'],
         )
 
     def determine_ruler(self, game_state):
