@@ -1,10 +1,5 @@
 import asyncio
 
-shape_hierarchy = {'circle': 1,
-                   'square': 2,
-                   'triangle': 3 }
-
-
 shape_power = {'circle': 1,
                'square': 2,
                'triangle': 3 }

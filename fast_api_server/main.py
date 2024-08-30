@@ -183,6 +183,4 @@ def serialize_game_state(game_state):
     del serialized_game_state['listeners'] #delete listeners, it's a server only piece of game_state
     serialized_game_state["tiles"] = [tile.serialize() for tile in game_state["tiles"]]
     serialized_game_state["round_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["round_bonuses"]]
-    serialized_game_state["powerups"]["red"] = [powerup.serialize() for powerup in game_state["powerups"]["red"]]
-    serialized_game_state["powerups"]["blue"] = [powerup.serialize() for powerup in game_state["powerups"]["blue"]]
     return json.dumps(serialized_game_state)

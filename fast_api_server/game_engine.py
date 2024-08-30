@@ -8,7 +8,6 @@ import game_utilities
 import game_constants
 import game_action_container
 import asyncio
-import powerups
 import round_bonuses
 from tiles.ash import Ash
 from tiles.ember import Ember
@@ -94,17 +93,6 @@ class GameEngine:
                 return game_action_container.GameActionContainer(
                     event=asyncio.Event(),
                     game_action="use_tile",
-                    required_data_for_action=required_data,
-                    whose_action=self.game_state['whose_turn_is_it']
-                )
-            case 'select_a_powerup':
-                required_data = OrderedDict({"index_of_powerup_in_use": data['initial_data_passed_along_with_choice']})
-                powerup_in_use = self.game_state["powerups"][self.game_state['whose_turn_is_it']][data['initial_data_passed_along_with_choice']]
-                for piece_of_data_needed_for_powerup_use in powerup_in_use.data_needed_for_use:
-                    required_data[piece_of_data_needed_for_powerup_use] = {} if 'slot' in piece_of_data_needed_for_powerup_use else None
-                return game_action_container.GameActionContainer(
-                    event=asyncio.Event(),
-                    game_action="use_powerup",
                     required_data_for_action=required_data,
                     whose_action=self.game_state['whose_turn_is_it']
                 )
@@ -204,18 +192,7 @@ class GameEngine:
                 round_bonus_classes.append(obj)
         
         return round_bonus_classes
-    
-    def get_all_powerups(self):
-        module_name = 'powerups'
-        module = importlib.import_module(module_name)
-        
-        powerup_classes = []
-        
-        for name, obj in inspect.getmembers(module, inspect.isclass):
-            if issubclass(obj, powerups.Powerup) and obj is not powerups.Powerup:
-                powerup_classes.append(obj)
-        
-        return powerup_classes
+
 
     def create_new_game_state(self):
         chosen_tiles = random.sample(self.import_all_tiles_from_folder('tiles'), 9)
@@ -224,10 +201,6 @@ class GameEngine:
         chosen_round_bonuses = random.sample(all_bonuses, num_bonuses)
         chosen_round_bonuses = [bonus() for bonus in chosen_round_bonuses]
 
-        all_powerups = self.get_all_powerups()
-        num_powerups = 3
-        blue_chosen_powerups = random.sample(all_powerups, num_powerups)        
-        red_chosen_powerups = blue_chosen_powerups.copy() 
         game_state = {
             "round": 0,
             "shapes_in_storage": {
@@ -253,25 +226,13 @@ class GameEngine:
             "tiles": [tile() for tile in chosen_tiles],
             "whose_turn_is_it": "red",
             "first_player": "red",
-            "powerups": {
-                "red": [powerup(owner="red") for powerup in red_chosen_powerups],
-                "blue": [powerup(owner="blue") for powerup in blue_chosen_powerups]
-            },
             "round_bonuses": chosen_round_bonuses,
-            "listeners": {"on_place": {}, "on_powerup_place": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
+            "listeners": {"on_place": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
         }
 
         for tile in game_state["tiles"]:
             if hasattr(tile, 'setup_listener'):
                 tile.setup_listener(game_state)
-
-        for powerup in game_state["powerups"]["red"]:
-            if hasattr(powerup, 'setup_listener'):
-                powerup.setup_listener(game_state)
-
-        for powerup in game_state["powerups"]["blue"]:
-            if hasattr(powerup, 'setup_listener'):
-                powerup.setup_listener(game_state)
 
         return game_state
 
@@ -291,26 +252,13 @@ class GameEngine:
                 # if use tile returns false, the action failed, so don't update the rest of the game state
                 if not await tile.use_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state):
                     return False
-            case 'use_powerup':
-                powerup = self.game_state["powerups"][game_action_container.whose_action][game_action_container.required_data_for_action["index_of_powerup_in_use"]]
-                # if use powerup returns false, the action failed, so don't update the rest of the game state
-                if not await powerup.use_powerup(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state):
-                    return False
             case 'place_shape_on_tile_slot':
                 if not await self.execute_place_shape_on_tile_slot_action(game_action_container):
-                    return False
-            case 'place_shape_on_powerup_slot':
-                if not await self.execute_place_shape_on_powerup_action(game_action_container):
                     return False
             case 'react_with_tile':
                 tile = self.game_state["tiles"][game_action_container.required_data_for_action["index_of_tile_being_reacted_with"]]
                 # if react returns false, the action failed, so don't update the rest of the game state
                 if not await tile.react(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state):
-                    return False
-            case 'react_with_powerup':
-                powerup = self.game_state["powerups"][game_action_container.whose_action][game_action_container.required_data_for_action["index_of_powerup_in_use"]]
-                # if react with powerup returns false, the action failed, so don't update the rest of the game state
-                if not await powerup.react(self.game_state, game_action_container.whose_action, self.send_clients_log_message, **game_action_container.required_data_for_action):
                     return False
             case 'pass':
                 if not await self.player_passes(game_action_container.whose_action):
@@ -338,9 +286,8 @@ class GameEngine:
             await self.send_clients_log_message("Cannot place this shape here")
             return False    
 
-
-        if slot and game_constants.shape_hierarchy[shape_type] <= game_constants.shape_hierarchy[slot['shape']]:
-            await self.send_clients_log_message("Cannot place on this slot, shape is too weak to trump")
+        if slot is not None:
+            await self.send_clients_log_message("Cannot place on this slot, it's not empty")
             return False
 
         if self.game_state["shapes_in_storage"][color_of_player_placing][shape_type] <= 0:
@@ -353,37 +300,7 @@ class GameEngine:
 
         game_utilities.determine_rulers(self.game_state)
         return True
-    
-    async def execute_place_shape_on_powerup_action(self, game_action_container):
-        powerup_index = game_action_container.required_data_for_action["resettable_powerup_slot_to_place_on"]["powerup_index"]
-        slot_index = game_action_container.required_data_for_action["resettable_powerup_slot_to_place_on"]["slot_index"]
-        shape_type = game_action_container.required_data_for_action["shape_type_to_place"]
-        color_of_player_placing = game_action_container.whose_action
 
-        powerup = self.game_state["powerups"][color_of_player_placing][powerup_index]
-        slot = powerup.slots_for_shapes[slot_index]
-
-        if slot and game_constants.shape_hierarchy[shape_type] <= game_constants.shape_hierarchy[slot['shape']]:
-            await self.send_clients_log_message("Cannot place on this slot, shape is too weak to trump")
-            return False
-        
-        if shape_type not in powerup.shapes_which_can_be_placed_on_this:
-            await self.send_clients_log_message("Cannot place this shape here")
-            return False            
-
-        await game_utilities.place_shape_on_powerup(self.game_state,
-                                                 self.game_action_container_stack,
-                                                 self.send_clients_log_message,
-                                                 self.send_clients_available_actions,
-                                                 self.send_clients_game_state,
-                                                 powerup_index, 
-                                                 slot_index, 
-                                                 shape_type, 
-                                                 color_of_player_placing, 
-)
-
-        game_utilities.determine_rulers(self.game_state)
-        return True
 
     async def perform_conversions(self, player_color, conversions):
         for conversion in conversions:
@@ -431,14 +348,6 @@ class GameEngine:
             await tile.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
             tile.is_on_cooldown = False
 
-        for powerup in self.game_state["powerups"]["red"]:
-            await powerup.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
-            powerup.is_on_cooldown = False
-
-        for powerup in self.game_state["powerups"]["blue"]:
-            await powerup.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)                    
-            powerup.is_on_cooldown = False
-
         for _, listener_function in self.game_state["listeners"]["start_of_round"].items():
                 await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  
 
@@ -475,12 +384,6 @@ class GameEngine:
         for tile in self.game_state["tiles"]:
             await tile.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
 
-        for powerup in self.game_state["powerups"]["red"]:
-            await powerup.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
-
-        for powerup in self.game_state["powerups"]["blue"]:
-            await powerup.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)                    
-
         for _, listener_function in self.game_state["listeners"]["end_of_round"].items():
             await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  
 
@@ -510,12 +413,6 @@ class GameEngine:
     async def end_game(self):
         for tile in self.game_state["tiles"]:
             await tile.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
-
-        for powerup in self.game_state["powerups"]["red"]:
-                    await powerup.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
-
-        for powerup in self.game_state["powerups"]["blue"]:
-            await powerup.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)                    
 
         for _, listener_function in self.game_state["listeners"]["end_game"].items():
             await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  

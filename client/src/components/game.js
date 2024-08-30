@@ -4,45 +4,12 @@ import '../stylesheets/game.css';
 import Tile from './tile';
 import ShapesInStorage from './shapes_in_storage';
 import GameLog from './game_log';
-import Powerup from './powerup';
-
-const Modal = ({ isOpen, onClose, children }) => {
-    const modalRef = useRef(null);
-  
-    useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (modalRef.current && !modalRef.current.contains(event.target)) {
-          onClose();
-        }
-      }
-  
-      if (isOpen) {
-        document.addEventListener('mousedown', handleClickOutside);
-      }
-  
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }, [isOpen, onClose]);
-  
-    if (!isOpen) return null;
-  
-    return ReactDOM.createPortal(
-      <div className="modal-overlay">
-        <div className="modal-content" ref={modalRef}>
-          {children}
-        </div>
-      </div>,
-      document.body
-    );
-  };
 
 const Game = () => {
     const [gameState, setGameState] = useState(null)
     const [availableActions, setAvailableActions] = useState({}) 
     const [currentPieceOfDataToFill, setcurrentPieceOfDataToFill] = useState("") 
     const [logs, setLogs] = useState([])
-    const [isPowerupsModalOpen, setIsPowerupsModalOpen] = useState(false);
 
     const oldAvailableActions = useRef({})
     const socket = useRef(null)
@@ -97,9 +64,6 @@ const Game = () => {
     const addLog = (message) => {
         setLogs((prevLogs) => [...prevLogs, message])
     }
-
-    const openPowerupsModal = () => setIsPowerupsModalOpen(true);
-    const closePowerupsModal = () => setIsPowerupsModalOpen(false);
 
     //just used so we can play "your turn" sound for now - probably not necessary in future
     useEffect(() => {
@@ -232,27 +196,6 @@ const Game = () => {
             sendRequest()
         }
     }
-
-    const handlePowerupClick = (powerup_index) => {
-        if (availableActions.hasOwnProperty('select_a_powerup')) {
-            clickSound.current.play();
-            request.current.client_action = "select_a_powerup"
-            request.current[currentPieceOfDataToFill] = powerup_index
-            sendRequest() 
-        }
-    }
-
-    const handlePowerupSlotClick = (powerup_index, slot_index) => {
-        clickSound.current.play();
-        if (availableActions.hasOwnProperty('select_a_slot_on_a_powerup')) {
-            request.current.client_action = "select_a_slot_on_a_powerup"
-            request.current[currentPieceOfDataToFill] = {}
-            request.current[currentPieceOfDataToFill].slot_index = slot_index
-            request.current[currentPieceOfDataToFill].powerup_index = powerup_index
-            setTimeout(() => setIsPowerupsModalOpen(false), 500)
-            sendRequest()
-        }
-    }
     const sendRequest = () => {
         socket.current.send(JSON.stringify(request.current))
         request.current = {'conversions': []}
@@ -283,9 +226,6 @@ const Game = () => {
                     setAvailableActions(data.available_actions)
                     setcurrentPieceOfDataToFill(data.current_piece_of_data_to_fill_in_current_action)
                     console.log(currentPieceOfDataToFill)
-                    if (data.available_actions.hasOwnProperty('select_a_slot_on_a_powerup')) {
-                        setIsPowerupsModalOpen(true);
-                    }
                     break
                 default:
                     addLog("Unknown action received")
@@ -337,7 +277,6 @@ const Game = () => {
         <div className="game-container">
           <div className="info_section">
             <div className={clientColor.current === 'red' ? 'red-text' : 'blue-text'}> You are {clientColor.current} </div>
-            <button onClick={openPowerupsModal}>Open Graveyard</button>
             <div>
               {gameState.round_bonuses.map((bonus, index) => (
                 <p key={index} className={index === gameState.round ? 'current-round' : ''}>
@@ -406,42 +345,6 @@ const Game = () => {
               />
             ))}
           </div>
-          <Modal isOpen={isPowerupsModalOpen} onClose={closePowerupsModal}>
-            <div className="powerups">
-              <div className="red-powerups">
-                {gameState.powerups.red.map((powerup, powerup_index) => (
-                  <Powerup
-                    key={powerup_index}
-                    clients_color={clientColor.current}
-                    description={powerup.description}
-                    is_on_cooldown={powerup.is_on_cooldown}
-                    powerup_index={powerup_index}
-                    available_actions={availableActions}
-                    onPowerupClick={() => handlePowerupClick(powerup_index)}
-                    slots_for_shapes={powerup.slots_for_shapes}
-                    onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
-                    playerColorOfPowerups={"red"}
-                  />
-                ))}
-              </div>
-              <div className="blue-powerups">
-                {gameState.powerups.blue.map((powerup, powerup_index) => (
-                  <Powerup
-                    key={powerup_index}
-                    clients_color={clientColor.current}
-                    description={powerup.description}
-                    is_on_cooldown={powerup.is_on_cooldown}
-                    powerup_index={powerup_index}
-                    available_actions={availableActions}
-                    onPowerupClick={() => handlePowerupClick(powerup_index)}
-                    slots_for_shapes={powerup.slots_for_shapes}
-                    onPowerupSlotClick={(slotIndex) => handlePowerupSlotClick(powerup_index, slotIndex)}
-                    playerColorOfPowerups={"blue"}
-                  />
-                ))}
-              </div>
-            </div>
-          </Modal>
         </div>
       );
     };
