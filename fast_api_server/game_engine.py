@@ -9,9 +9,6 @@ import game_constants
 import game_action_container
 import asyncio
 import round_bonuses
-from tiles.ash import Ash
-from tiles.ember import Ember
-from tiles.spear import Spear
 from tiles.tile import Tile
 
 
@@ -41,7 +38,7 @@ class GameEngine:
     #whenever we're in this loop, it means an initial (turn starting) decision needs to be made
     async def run_game_loop(self):
         while not self.game_has_ended:
-            #outside of the initial game_state, the stack will always be empty here. when we're here, it indicates a turn just finished, so we need to figure out who goes next
+            #outside of the initial game_state, the stack will always be empty here. when we're here, it indicates a turn just finished, so we need to figure out who goes next\
             if not self.game_action_container_stack:
                 self.game_action_container_stack.append(self.create_initial_decision_game_action_container())
 
@@ -60,56 +57,14 @@ class GameEngine:
                         await self.send_clients_log_message(f"{other_player_color} has passed, turn remains with {self.game_state['whose_turn_is_it']}")
                         self.game_action_container_stack[-1].whose_action = self.game_state["whose_turn_is_it"]
 
-            initial_game_action = self.game_action_container_stack[-1]
+            top_of_game_action_stack = self.game_action_container_stack[-1]
             await self.send_clients_game_state(self.game_state)
-            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, initial_game_action, player_color_to_get_actions_for="red"), initial_game_action.get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, initial_game_action, player_color_to_get_actions_for="blue"), initial_game_action.get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
-            await initial_game_action.event.wait()
+            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for="red"), top_of_game_action_stack.get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
+            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for="blue"), top_of_game_action_stack.get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+            await top_of_game_action_stack.event.wait()
 
-    def create_new_game_action_container_from_initial_decision(self, data):
-        match data['client_action']:
-            case 'pass':
-                return game_action_container.GameActionContainer(
-                    event=asyncio.Event(),
-                    game_action="pass",
-                    required_data_for_action={},
-                    whose_action=self.game_state['whose_turn_is_it']
-                )
-            case 'select_a_shape_in_storage':
-                return game_action_container.GameActionContainer(
-                    event=asyncio.Event(),
-                    game_action="place_shape_on_tile_slot",
-                    required_data_for_action={
-                        "shape_type_to_place": data['initial_data_passed_along_with_choice'],
-                        "tile_slot_to_place_on": {}
-                    },
-                    whose_action=self.game_state['whose_turn_is_it']
-                )
-            case 'select_a_tile':
-                required_data = OrderedDict({"index_of_tile_in_use": data['initial_data_passed_along_with_choice']})
-                tile_in_use = self.game_state["tiles"][data['initial_data_passed_along_with_choice']]
-                for piece_of_data_needed_for_tile_use in tile_in_use.data_needed_for_use:
-                    required_data[piece_of_data_needed_for_tile_use] = {} if 'slot' in piece_of_data_needed_for_tile_use else None
-                return game_action_container.GameActionContainer(
-                    event=asyncio.Event(),
-                    game_action="use_tile",
-                    required_data_for_action=required_data,
-                    whose_action=self.game_state['whose_turn_is_it']
-                )
-            case _:
-                return None
-
-    def reset_resettable_values(self, data):
-        for key, value in data.items():
-            if "resettable" in key:
-                if isinstance(value, dict):
-                    data[key] = {}
-                else:
-                    data[key] = None
-        return data
-        
-    #effectively creates a loop which takes data from the client, populates the data in the action
-    #at the top of the stack, executes the action if it's ready and sends new available actions otherwise
+    #populates the data in the action at the top of the stack with the decision from the client
+    #executes the action if it's ready and sends new available actions otherwise
     async def process_data_from_client(self, data, player_color):
         if self.game_action_container_stack[-1].whose_action != player_color:
             await self.send_clients_log_message(f"{player_color} tried to take action but it's not their action to take")
@@ -121,7 +76,14 @@ class GameEngine:
                 await self.send_clients_log_message(f"{player_color} chose not to react but it's not a reaction on top of the stack")
             else:
                 await self.send_clients_log_message(f"{player_color} chooses not to react")
-                self.game_action_container_stack.pop().event.set()
+
+                action_to_not_react_with = self.game_action_container_stack.pop()
+                reactions_to_resolve_container = self.game_action_container_stack[-1]
+                #remove that tile from the reactions to resolve, a tile can only be reacted with once per event
+                reactions_to_resolve_container.tiers_to_resolve.pop(action_to_not_react_with.required_data_for_action['index_of_tile_in_use'])
+                #reset the required data field
+                reactions_to_resolve_container.required_data_for_action['tier_to_react_with'] = {}
+                action_to_not_react_with.event.set()
                 return
 
         if data['client_action'] == "reset_current_action":
@@ -149,15 +111,38 @@ class GameEngine:
                 await self.send_clients_log_message(f"{player_color} sent an invalid client action")
                 return
             
+        elif self.game_action_container_stack[-1].game_action == "choose_a_reaction_to_resolve":
+            tile_index = data['tier_to_react_with']['tile_index']
+            tier_index = data['tier_to_react_with']['tier_index']
+            await self.game_state['tiles'][tile_index].create_append_and_send_available_actions_for_container(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state, tier_index)            
+            
+            reactions_to_resolve_container = self.game_action_container_stack[-1]
+            #nothing more to resolve. we can pop it and set it
+            if not reactions_to_resolve_container.tiers_to_resolve:
+                self.game_action_container_stack.pop().event.set()
+                #need to return here to stop the task that was handling the resolution of reactions. It no longer has any more game containers to add to the stack
+                #so it would erroneously execute the action that spawned the reactions again if we were to let it keep running
+                return
+
+        #should be use a tier    
         else:
             data_key = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
             self.game_action_container_stack[-1].required_data_for_action[data_key] = data[data_key]
+
+        #figure out if we need to have the client make another decision, or if we're ready to execute the action.
+        #execute it if we're ready. If it was a reaction, we need to remove that tile from the reactions to resolve and reset the tier to react with in case there are more
 
         next_piece_of_data_to_fill = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
         if not next_piece_of_data_to_fill:
             action_to_execute = self.game_action_container_stack[-1]
             await self.execute_game_action(action_to_execute)
             if action_to_execute.is_a_reaction:
+                #the reaction just got popped and executed, the container that was under it should be the reactions to resolve container
+                reactions_to_resolve_container = self.game_action_container_stack[-1]
+                #remove that tile from the reactions to resolve, a tile can only be reacted with once per event
+                reactions_to_resolve_container.tiers_to_resolve.pop(action_to_execute.required_data_for_action['index_of_tile_in_use'])
+                #reset the required data field
+                reactions_to_resolve_container.required_data_for_action['tier_to_react_with'] = {}
                 action_to_execute.event.set()
             else:
                 self.game_action_container_stack.pop().event.set() #this is the old initial decision container. pop it off (we'll make a new one in the main loop).
@@ -166,6 +151,73 @@ class GameEngine:
             await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="red"), next_piece_of_data_to_fill, player_color_to_send_to="red")
             await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), next_piece_of_data_to_fill, player_color_to_send_to="blue")    
 
+    #only ever executing top of stack.. don't need to pass container?
+    async def execute_game_action(self, game_action_container):
+        match game_action_container.game_action:
+            case 'place_shape_on_tile_slot':
+                if not await self.execute_place_shape_on_tile_slot_action(game_action_container):
+                    return False
+            case 'use_a_tier':
+                tile = self.game_state["tiles"][game_action_container.required_data_for_action["index_of_tile_in_use"]]
+                tier_index = game_action_container.required_data_for_action["index_of_tier_in_use"]
+                # if use tile returns false, the action failed, so don't update the rest of the game state
+                if not await tile.use_a_tier(self.game_state, tier_index, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state):
+                    return False
+            case 'pass':
+                if not await self.player_passes(game_action_container.whose_action):
+                    return False
+
+        #if we fail before here... we need to reset some data in required data i think
+        self.game_action_container_stack.pop()
+        await self.send_clients_game_state(self.game_state)
+        return True    
+
+    def create_new_game_action_container_from_initial_decision(self, data):
+        match data['client_action']:
+            case 'pass':
+                return game_action_container.GameActionContainer(
+                    event=asyncio.Event(),
+                    game_action="pass",
+                    required_data_for_action={},
+                    whose_action=self.game_state['whose_turn_is_it']
+                )
+            case 'select_a_shape_in_storage':
+                return game_action_container.GameActionContainer(
+                    event=asyncio.Event(),
+                    game_action="place_shape_on_tile_slot",
+                    required_data_for_action={
+                        "shape_type_to_place": data['initial_data_passed_along_with_choice'],
+                        "tile_slot_to_place_on": {}
+                    },
+                    whose_action=self.game_state['whose_turn_is_it']
+                )
+            case 'select_a_tier':
+                tile_index = data['initial_data_passed_along_with_choice']['tile_index']
+                tier_index = data['initial_data_passed_along_with_choice']['tier_index']
+                required_data = OrderedDict({"index_of_tile_in_use": tile_index, "index_of_tier_in_use": tier_index})
+                tile_in_use = self.game_state["tiles"][tile_index]
+                tier_in_use = tile_in_use.power_tiers[tier_index]
+                if tier_in_use['data_needed_for_use']:
+                    for piece_of_data_needed_for_tile_use in tier_in_use['data_needed_for_use']:
+                        required_data[piece_of_data_needed_for_tile_use] = {} if 'slot' in piece_of_data_needed_for_tile_use else None
+                return game_action_container.GameActionContainer(
+                    event=asyncio.Event(),
+                    game_action="use_a_tier",
+                    required_data_for_action=required_data,
+                    whose_action=self.game_state['whose_turn_is_it']
+                )
+            case _:
+                return None
+
+    def reset_resettable_values(self, data):
+        for key, value in data.items():
+            if "resettable" in key:
+                if isinstance(value, dict):
+                    data[key] = {}
+                else:
+                    data[key] = None
+        return data
+        
     def import_all_tiles_from_folder(self, folder_name):
         sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
         tile_classes = []
@@ -192,7 +244,6 @@ class GameEngine:
                 round_bonus_classes.append(obj)
         
         return round_bonus_classes
-
 
     def create_new_game_state(self):
         chosen_tiles = random.sample(self.import_all_tiles_from_folder('tiles'), 9)
@@ -244,32 +295,6 @@ class GameEngine:
                 whose_action="red",
             )
 
-    #only ever executing top of stack.. don't need to pass container?
-    async def execute_game_action(self, game_action_container):
-        match game_action_container.game_action:
-            case 'use_tile':
-                tile = self.game_state["tiles"][game_action_container.required_data_for_action["index_of_tile_in_use"]]
-                # if use tile returns false, the action failed, so don't update the rest of the game state
-                if not await tile.use_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state):
-                    return False
-            case 'place_shape_on_tile_slot':
-                if not await self.execute_place_shape_on_tile_slot_action(game_action_container):
-                    return False
-            case 'react_with_tile':
-                tile = self.game_state["tiles"][game_action_container.required_data_for_action["index_of_tile_being_reacted_with"]]
-                # if react returns false, the action failed, so don't update the rest of the game state
-                if not await tile.react(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state):
-                    return False
-            case 'pass':
-                if not await self.player_passes(game_action_container.whose_action):
-                    return False
-
-        #if we fail before here... we need to reset some data in required data i think
-
-        self.game_action_container_stack.pop()
-        await self.send_clients_game_state(self.game_state)
-        return True
-
     async def execute_place_shape_on_tile_slot_action(self, game_action_container):
         tile_index = game_action_container.required_data_for_action["tile_slot_to_place_on"]["tile_index"]
         slot_index = game_action_container.required_data_for_action["tile_slot_to_place_on"]["slot_index"]
@@ -300,7 +325,6 @@ class GameEngine:
 
         game_utilities.determine_rulers(self.game_state)
         return True
-
 
     async def perform_conversions(self, player_color, conversions):
         for conversion in conversions:
@@ -346,7 +370,8 @@ class GameEngine:
         self.game_state['player_has_passed']['blue'] = False
         for tile in self.game_state["tiles"]:
             await tile.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
-            tile.is_on_cooldown = False
+            for tier in tile.power_tiers:
+                tier['is_on_cooldown'] = False
 
         for _, listener_function in self.game_state["listeners"]["start_of_round"].items():
                 await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  

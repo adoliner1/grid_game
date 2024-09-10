@@ -1,5 +1,3 @@
-/* client/src/components/tile.css */
-
 .tile {
     border: 1px solid #000000;
     border-radius: 10px;
@@ -10,23 +8,12 @@
     transition: border-color 0.3s;
 }
 
-.power-per-player {
-    flex-direction: row;
-    display: flex;
-    justify-content: space-evenly;
-}
-
 .tile-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 2px;
 }
-
-.tile-description br {
-    display: block;
-    margin-bottom: 1em;
-  }
 
 .tile-name {
     margin: 0;
@@ -40,34 +27,22 @@
     color: #666;
 }
 
+.tile-description {
+    border-top: 1px solid #a39e9e;
+    padding: 10px;
+  }
+
+.power-per-player {
+    border-top: 1px solid #a39e9e;
+    flex-direction: row;
+    display: flex;
+    justify-content: space-evenly;
+}
+
 @keyframes flash {
     0% { border-color: gold; }
     50% { border-color: black; }
     100% { border-color: gold; }
-}
-
-.tile-red {
-    border: 3px solid;
-    border-color: rgb(255, 41, 41);
-}
-
-.tile-blue {
-    border: 3px solid;
-    border-color: rgb(52, 52, 255);
-}
-
-.tile-name-red {
-    margin: 0;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: rgb(255, 41, 41);
-}
-
-.tile-name-blue {
-    margin: 0;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: rgb(52, 52, 255);
 }
 
 .selectable-tile {
@@ -91,21 +66,37 @@
     animation: flash 0.2s;
 }
 
-.tile-on-cooldown {
-    background-color: #d3d3d3; /* greyish background */
-}
-
 .red-power{
     color: rgb(255, 41, 41);
+    font-weight: bold;
 }
 
 .blue-power{
     color: rgb(52, 52, 255);
-
+    font-weight: bold;
 }
 
-.separator {
-    height: 1px;
-    border: none;
-    border-top: 1px solid #797676;
-  }
+.ruler-crown-in-header {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+.crown-icon {
+    margin-right: 5px;
+    width: 24px;
+    height: 24px;
+}
+
+.ruler-crown-red .crown-icon {
+    color: rgb(255, 41, 41);
+}
+
+.ruler-crown-blue .crown-icon {
+    color: rgb(52, 52, 255);
+}
+
+/* Default color when there's no ruler */
+.ruler-crown-in-header:not(.ruler-crown-red):not(.ruler-crown-blue) .crown-icon {
+    color: black;
+}

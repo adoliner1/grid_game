@@ -7,35 +7,42 @@ class Nitrogen(Tile):
         super().__init__(
             name="Nitrogen",
             type="Giver/Scorer",
-            description="At the __end of a round__, for each triangle you have here, [[receive]] a square and a circle here\n**Action:** ^^Burn^^ one of your sets here for +4 points\n**Ruler: Most Shapes**",
+            minimum_power_to_rule=2,
+            description="At the __end of a round__, for each triangle you have here, [[receive]] a square and a circle here",
             number_of_slots=11,
+            power_tiers=[
+                {
+                    "power_to_reach_tier": 0,
+                    "must_be_ruler": False,                    
+                    "description": "**Action:** ^^Burn^^ one of your sets here for +4 points",
+                    "is_on_cooldown": False,
+                    "has_a_cooldown": False,                     
+                    "data_needed_for_use": [],
+                },            
+            ]      
         )
 
-    def is_useable(self, game_state):
+    def get_useable_tiers(self, game_state):
+        useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         
         circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "circle" and slot["color"] == whose_turn_is_it)
         square_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "square" and slot["color"] == whose_turn_is_it)
         triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "triangle" and slot["color"] == whose_turn_is_it)
         
-        return circle_count >= 1 and square_count >= 1 and triangle_count >= 1
+        if circle_count >= 1 and square_count >= 1 and triangle_count >= 1:
+            useable_tiers.append(0)
+
+        return useable_tiers
 
     def determine_ruler(self, game_state):
-        red_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
-        blue_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
-        
-        if red_count > blue_count:
-            self.ruler = 'red'
-            return 'red'
-        elif blue_count > red_count:
-            self.ruler = 'blue'
-            return 'blue'
-        self.ruler = None
-        return None
+        return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         first_player = game_state["first_player"]
-        second_player = 'red' if first_player == 'blue' else 'blue'
+        second_player = game_utilities.get_other_player_color(first_player)
+
+        await send_clients_log_message(f"{self.name} runs")
 
         for player in [first_player, second_player]:
             triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == player and slot["shape"] == "triangle")
@@ -44,11 +51,8 @@ class Nitrogen(Tile):
                 await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player, self, 'square')
                 await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player, self, 'circle')
             
-            if triangle_count > 0:
-                await send_clients_log_message(f"{player} receives {triangle_count} square(s) and {triangle_count} circle(s) on {self.name}")
-
-    async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
-        game_action_container = game_action_container_stack[-1]  
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        game_action_container = game_action_container_stack[-1]
         player = game_action_container.whose_action
         
         circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "circle" and slot["color"] == player)
@@ -59,6 +63,7 @@ class Nitrogen(Tile):
             await send_clients_log_message(f"Not enough shapes to burn a set on {self.name}")
             return False
         
+        await send_clients_log_message(f"{self.name} is used")
         nitrogen_tile_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         shapes_burned = {'circle': 0, 'square': 0, 'triangle': 0}
         for i, slot in enumerate(self.slots_for_shapes):

@@ -12,13 +12,9 @@ async def produce_shape_for_player(game_state, game_action_container_stack, send
     else:
         await send_clients_log_message(f" {player_color} produced {amount} {player_color}_{shape_type}")
 
-    if calling_entity_is_a_tile:
-        for _, listener_function in game_state["listeners"]["on_produce"].items():
-            await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, amount_produced=amount, producing_player=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
-            determine_power_levels(game_state)
-            update_presence(game_state)
-            determine_rulers(game_state)
-            await send_clients_game_state(game_state)
+    if calling_entity_is_a_tile: 
+        await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_produce", amount_produced=amount, producing_player=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
+
 
 async def place_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
     tile_to_place_on = game_state["tiles"][tile_index]
@@ -28,13 +24,7 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
     await send_clients_log_message(f"{color} placed a {color}_{shape} on {tile_to_place_on.name}")
-
-    for _, listener_function in game_state["listeners"]["on_place"].items():
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, placer=color, shape=shape, index_of_tile_placed_at=tile_index, slot_index_placed_at=slot_index)
-        determine_power_levels(game_state)
-        update_presence(game_state)
-        determine_rulers(game_state)
-        await send_clients_game_state(game_state)
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_place", placer=color, shape=shape, index_of_tile_placed_at=tile_index, slot_index_placed_at=slot_index)
 
 async def player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, tile, shape_type):
     if None not in tile.slots_for_shapes:
@@ -49,12 +39,9 @@ async def player_receives_a_shape_on_tile(game_state, game_action_container_stac
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    for _, listener_function in game_state["listeners"]["on_receive"].items():
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, receiver=player_color, shape=shape_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
-        determine_power_levels(game_state)
-        update_presence(game_state)
-        determine_rulers(game_state)
-        await send_clients_game_state(game_state)
+
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_receive", receiver=player_color, shape=shape_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
+
 
 async def move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
     shape_to_move = game_state["tiles"][from_tile_index].slots_for_shapes[from_slot_index]
@@ -73,12 +60,7 @@ async def move_shape_between_tiles(game_state, game_action_container_stack, send
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    for _, listener_function in game_state["listeners"]["on_move"].items():
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, shape=shape_to_move["shape"], from_tile_index=from_tile_index, to_tile_index=to_tile_index)
-        determine_power_levels(game_state)
-        update_presence(game_state)
-        determine_rulers(game_state)
-        await send_clients_game_state(game_state)
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_move", shape=shape_to_move["shape"], from_tile_index=from_tile_index, to_tile_index=to_tile_index)
 
     return True
 
@@ -92,12 +74,46 @@ async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, s
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    for _, listener_function in game_state["listeners"]["on_burn"].items():
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, burner=game_action_container_stack[-1].whose_action, shape=shape, color=color, index_of_tile_burned_at=tile_index)
+
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_burn", burner=game_action_container_stack[-1].whose_action, shape=shape, color=color, index_of_tile_burned_at=tile_index)
+
+
+async def call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, event_type, **data):
+    reactions_by_player = {"red":   game_action_container.GameActionContainer(
+                                    event=asyncio.Event(),
+                                    game_action="choose_a_reaction_to_resolve",
+                                    required_data_for_action={"tier_to_react_with": {}},
+                                    tiers_to_resolve={},
+                                    data_from_event=data,
+                                    whose_action="red",
+                                ),
+                            "blue": game_action_container.GameActionContainer(
+                                    event=asyncio.Event(),
+                                    game_action="choose_a_reaction_to_resolve",
+                                    required_data_for_action={"tier_to_react_with": {}},
+                                    tiers_to_resolve={},
+                                    data_from_event=data,
+                                    whose_action="blue",
+                            ) }
+
+
+    for _, listener_function in game_state["listeners"][event_type].items():
+        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data)
         determine_power_levels(game_state)
         update_presence(game_state)
         determine_rulers(game_state)
         await send_clients_game_state(game_state)
+
+    first_player = game_state['first_player']
+    second_player = get_other_player_color(first_player)
+    
+    for player in [first_player, second_player]:
+        if reactions_by_player[player].tiers_to_resolve:
+            await send_clients_log_message(f"{player} must choose order to resolve reactions in")
+            game_action_container_stack.append(reactions_by_player[player])
+            await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
+            await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+            await game_action_container_stack[-1].event.wait()
 
 #sync
 def has_presence(tile, color):
@@ -133,7 +149,6 @@ def count_all_shapes_for_color_on_tile(color, tile):
     return sum(1 for slot in tile.slots_for_shapes if slot and slot["color"] == color)
 
 def get_available_client_actions(game_state, game_action_container, player_color_to_get_actions_for):
-
     if game_action_container.whose_action != player_color_to_get_actions_for:
         return {}
     
@@ -144,22 +159,18 @@ def get_available_client_actions(game_state, game_action_container, player_color
         slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, shape_type_to_place)
         available_client_actions["select_a_slot_on_a_tile"] = slots_that_can_be_placed_on
 
-
-    elif game_action_container.game_action == 'use_tile':
+    elif game_action_container.game_action == 'use_a_tier':
         index_of_tile_in_use = game_action_container.required_data_for_action["index_of_tile_in_use"]
+        index_of_tier_in_use = game_action_container.required_data_for_action["index_of_tier_in_use"]
         tile_in_use = game_state["tiles"][index_of_tile_in_use]
-        tile_in_use.set_available_actions_for_use(game_state, game_action_container, available_client_actions)
-     
+        tile_in_use.set_available_actions_for_use(game_state, index_of_tier_in_use, game_action_container, available_client_actions)
 
-    elif game_action_container.game_action == 'react_with_tile':
-        index_of_tile_being_reacted_with = game_action_container.required_data_for_action["index_of_tile_being_reacted_with"]
-        tile_being_reacted_with = game_state["tiles"][index_of_tile_being_reacted_with]
-        tile_being_reacted_with.set_available_actions_for_reaction(game_state, game_action_container, available_client_actions)
-
+    elif game_action_container.game_action == 'choose_a_reaction_to_resolve':
+        available_client_actions['select_a_tier'] = game_action_container.tiers_to_resolve
     #must be an initial_decision
     else:
         available_client_actions['select_a_shape_in_storage'] = []
-        available_client_actions['select_a_tile'] = []
+        available_client_actions['select_a_tier'] = {}
         available_client_actions['pass'] = []
 
         for shape, amount in game_state["shapes_in_storage"][game_action_container.whose_action].items():
@@ -167,8 +178,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
                 available_client_actions["select_a_shape_in_storage"].append(shape)
 
         for tile_index, tile in enumerate(game_state["tiles"]):
-            if tile.is_useable(game_state):
-                available_client_actions['select_a_tile'].append(tile_index)
+            available_client_actions['select_a_tier'][tile_index] = tile.get_useable_tiers(game_state)
 
     return available_client_actions
 
@@ -213,7 +223,6 @@ def set_peak_power(game_state):
 
     # Set the calculated peak power in the game state
     game_state["peak_power"] = peak_power
-
 
 def count_sets_on_tile_for_color(tile, color,):
     shape_counts = {"circle": 0, "square": 0, "triangle": 0}

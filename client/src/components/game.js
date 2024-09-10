@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import ReactDOM from 'react-dom';
 import '../stylesheets/game.css';
 import Tile from './tile';
 import ShapesInStorage from './shapes_in_storage';
@@ -196,14 +195,28 @@ const Game = () => {
             sendRequest()
         }
     }
+
+    const handlePowerTierClick = (tile_index, tier_index) => {
+        console.log(tile_index)
+        console.log(tier_index)
+        clickSound.current.play();
+        if (availableActions.hasOwnProperty('select_a_tier')) {
+            request.current.client_action = "select_a_tier"
+            request.current[currentPieceOfDataToFill] = {}
+            request.current[currentPieceOfDataToFill].tier_index = tier_index
+            request.current[currentPieceOfDataToFill].tile_index = tile_index
+            sendRequest()
+        }
+    }
+
     const sendRequest = () => {
         socket.current.send(JSON.stringify(request.current))
         request.current = {'conversions': []}
     }
     
     useEffect(() => {
-        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
-        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
+        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         socket.current.onopen = () => {
             console.log("WebSocket connection established")
         }
@@ -217,7 +230,7 @@ const Game = () => {
                     addLog(`${data.message}`)
                     break 
                 case "initialize":
-                    clientColor.current = data.player_color 
+                    clientColor.current = data.player_color
                     break
                 case "update_game_state":
                     setGameState(data.game_state)
@@ -225,7 +238,6 @@ const Game = () => {
                 case "current_available_actions":
                     setAvailableActions(data.available_actions)
                     setcurrentPieceOfDataToFill(data.current_piece_of_data_to_fill_in_current_action)
-                    console.log(currentPieceOfDataToFill)
                     break
                 default:
                     addLog("Unknown action received")
@@ -266,7 +278,6 @@ const Game = () => {
             yourTurnSound.current.play();
         }
         oldAvailableActions.current = availableActions;
-        console.log(availableActions)
     }, [availableActions]);
 
     if (!gameState) {
@@ -331,17 +342,19 @@ const Game = () => {
               <Tile
                 key={tile_index}
                 name={tile.name}
+                minimum_power_to_rule={tile.minimum_power_to_rule}
                 type={tile.type}
                 red_power={tile.power_per_player.red}
                 blue_power={tile.power_per_player.blue}
                 description={tile.description}
-                is_on_cooldown={tile.is_on_cooldown}
+                power_tiers={tile.power_tiers}
                 slots_for_shapes={tile.slots_for_shapes}
                 tile_index={tile_index}
-                ruler={gameState.tiles[tile_index].ruler}
+                ruler={tile.ruler}
                 available_actions={availableActions}
                 onTileClick={() => handleTileClick(tile_index)}
                 onSlotClick={(slotIndex) => handleSlotClick(tile_index, slotIndex)}
+                onPowerTierClick={(tier_index) => handlePowerTierClick(tile_index, tier_index)}
               />
             ))}
           </div>

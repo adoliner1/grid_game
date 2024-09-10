@@ -4,7 +4,7 @@ import Square from './shapes/square'
 import Triangle from './shapes/triangle'
 import '../stylesheets/shapes_on_tile.css'
 
-const ShapesOnTile = ({ slots_for_shapes, tile_index, ruler, available_actions, onSlotClick}) => {
+const ShapesOnTile = ({ slots_for_shapes, tile_index, available_actions, onSlotClick}) => {
 
     const renderShape = (shape, color) => {
         switch (shape) {

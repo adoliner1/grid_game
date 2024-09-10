@@ -7,60 +7,42 @@ class Prince(Tile):
         super().__init__(
             name="Prince",
             type="Scorer",
-            description = f"At the __end of a round__, for each same-shape pair you have here, +2 points\n**Ruler, Most Shapes:** At the end of the game +3 points",
+            minimum_power_to_rule=3,
             number_of_slots=7,
+            description="At the __end of a round__, for each same-shape pair you have here, +1 point",
+            power_tiers=[
+                {
+                    "power_to_reach_tier": 7,
+                    "must_be_ruler": True,                    
+                    "description": "At the __end of a round__, for each same-shape pair you have here, +3 additional points",
+                    "is_on_cooldown": False,
+                    "has_a_cooldown": False,                   
+                },
+            ]            
         )
 
     def determine_ruler(self, game_state):
-        red_count = 0
-        blue_count = 0
+        return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
-        for slot in self.slots_for_shapes:
-            if slot:
-                if slot["color"] == "red":
-                    red_count += 1
-                elif slot["color"] == "blue":
-                    blue_count += 1
-        if red_count > blue_count:
-            self.ruler = 'red'
-            return 'red'
-        elif blue_count > red_count:
-            self.ruler = 'blue'
-            return 'blue'
-        self.ruler = None
-        return None
-
-    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state,):
-
-        shape_count = {
-            'red': {
-                'circle': 0,
-                'square': 0,
-                'triangle': 0
-            },
-            'blue': {
-                'circle': 0,
-                'square': 0,
-                'triangle': 0
-            }
-        }
-
-        for slot in self.slots_for_shapes:
-            if slot:
-                color = slot["color"]
-                shape = slot["shape"]
-                shape_count[color][shape] += 1
-
-        for color in ['red', 'blue']:
-            pairs = sum(count // 2 for count in shape_count[color].values())
-            points_earned = pairs * 2
-            game_state["points"][color] += points_earned
-
-            if points_earned > 0:
-                await send_clients_log_message(f"{color} player earned {points_earned} points from pairs of shapes on {self.name}")
-
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
-        if (ruler != None):
-            await send_clients_log_message(f"{self.name} gives 3 points to {ruler}")
-            game_state["points"][ruler] += 3
+        
+        for color in ['red', 'blue']:
+            shape_count = {'circle': 0, 'square': 0, 'triangle': 0}
+            for slot in self.slots_for_shapes:
+                if slot and slot["color"] == color:
+                    shape_count[slot["shape"]] += 1
+            
+            pairs = sum(count // 2 for count in shape_count.values())
+            
+            base_points = pairs
+            additional_points = 0
+            
+            if color == ruler and self.power_per_player[color] >= 7:
+                additional_points = pairs * 3
+            
+            total_points = base_points + additional_points
+            game_state["points"][color] += total_points
+            
+            if total_points > 0:
+                await send_clients_log_message(f"{color} player earned {total_points} points ({base_points} base + {additional_points} additional) from {pairs} pairs of shapes on {self.name}")

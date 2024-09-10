@@ -7,39 +7,50 @@ class Queen(Tile):
         super().__init__(
             name="Queen",
             type="Scorer",
-            description="**Ruler, Most Shapes, Minimum 2:** After a shape is ((placed)) here by the other player, if you are still the ruler, +2 points. At the end of the game, +7 points",
-            number_of_slots=7,
+            minimum_power_to_rule=3,
+            number_of_slots=5,
+            power_tiers=[
+                {
+                    "power_to_reach_tier": 3,
+                    "must_be_ruler": False,                    
+                    "description": "When the other player ((places)) a shape on a tile adjacent to Queen, +1 point",
+                    "is_on_cooldown": False,
+                    "has_a_cooldown": False,                    
+                },
+                {
+                    "power_to_reach_tier": 5,
+                    "must_be_ruler": True,                    
+                    "description": "Same as above, +2 additional points",
+                    "is_on_cooldown": False,
+                    "has_a_cooldown": False,                    
+                },
+            ]            
         )
 
     def determine_ruler(self, game_state):
-        red_shape_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
-        blue_shape_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
-        
-        if red_shape_count > blue_shape_count and red_shape_count >= 2:
-            self.ruler = 'red'
-            return 'red'
-        elif blue_shape_count > red_shape_count and blue_shape_count >= 2:
-            self.ruler = 'blue'
-            return 'blue'
-        self.ruler = None
-        return None
+        return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
     def setup_listener(self, game_state):
         game_state["listeners"]["on_place"][self.name] = self.on_place_effect
 
-    async def on_place_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+    async def on_place_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data):
         placer = data.get('placer')
         tile_index = data.get('index_of_tile_placed_at')
-        if tile_index != game_utilities.find_index_of_tile_by_name(game_state, self.name):
-            return
+        queen_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         
-        ruler = self.determine_ruler(game_state)
-        if ruler and placer != ruler:
-            game_state["points"][ruler] += 2
-            await send_clients_log_message(f"{ruler} earned 2 points as the ruler of {self.name}")
+        if not game_utilities.determine_if_directly_adjacent(tile_index, queen_index):
+            return
 
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+        other_player = 'red' if placer == 'blue' else 'blue'
         ruler = self.determine_ruler(game_state)
-        if ruler is not None:
-            await send_clients_log_message(f"{self.name} gives 7 points to {ruler}")
-            game_state["points"][ruler] += 8
+        other_player_power = self.power_per_player[other_player]
+
+        points_earned = 0
+        if other_player_power >= 3:
+            points_earned += 1
+        if ruler == other_player and other_player_power >= 5:
+            points_earned += 2
+
+        if points_earned > 0:
+            game_state["points"][other_player] += points_earned
+            await send_clients_log_message(f"{other_player} earned {points_earned} points from {self.name}")

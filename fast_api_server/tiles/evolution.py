@@ -7,30 +7,42 @@ class Evolution(Tile):
         super().__init__(
             name="Evolution",
             type="Producer/Giver/Scorer",
-            description=f"You may not ((place)) triangles here\nAt the __end of a round__, ^^burn^^ each shape here and [[receive]] the next most powerful shape. Triangles yield circles\n**Action:** ^^Burn^^ 3 of your triangles here to ++produce++ 4 circles and 8 points\n**Ruler, Most Shapes:** At the end of the game, -6 points",
+            minimum_power_to_rule=2,
+            description=f"You may not ((place)) triangles here\nAt the __end of a round__, ^^burn^^ each shape here and [[receive]] the next most powerful shape. Triangles yield circles",
             number_of_slots=7,
-            shapes_which_can_be_placed_on_this = ['circle', 'square']
+            shapes_which_can_be_placed_on_this = ['circle', 'square'],
+            power_tiers=[
+                {
+                    "power_to_reach_tier": 0,
+                    "must_be_ruler": False,                    
+                    "description": "**Action:** ^^Burn^^ 3 of your triangles here. +5 points and produce 3 circles",
+                    "is_on_cooldown": False,
+                    "has_a_cooldown": False,                    
+                    "data_needed_for_use": [],
+                },
+                {
+                    "power_to_reach_tier": 2,
+                    "must_be_ruler": True,                    
+                    "description": "At the __end of the game__, -5 points",
+                    "is_on_cooldown": False,
+                    "has_a_cooldown": False,                    
+                },
+            ]
         )
 
-    def is_useable(self, game_state):
+    def get_useable_tiers(self, game_state):
+        useable_tiers = []
         player_color = game_state["whose_turn_is_it"]
         triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == player_color and slot["shape"] == "triangle")
-        return triangle_count >= 3
+        if triangle_count >= 3:
+            useable_tiers.append(0)
+        
+        return useable_tiers
 
     def determine_ruler(self, game_state):
-        red_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
-        blue_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
+        return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
-        if red_count > blue_count:
-            self.ruler = 'red'
-            return 'red'
-        elif blue_count > red_count:
-            self.ruler = 'blue'
-            return 'blue'
-        self.ruler = None
-        return None
-
-    async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         player_color = game_action_container.whose_action
                 
@@ -44,11 +56,11 @@ class Evolution(Tile):
             if slot and slot["color"] == player_color and slot["shape"] == "triangle":
                 await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_utilities.find_index_of_tile_by_name(game_state, self.name), slot_index)
 
-        for _ in range(4):
+        for _ in range(3):
             await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, 1, 'circle', self.name, True)
 
-        game_state["points"][player_color] += 8
-        await send_clients_log_message(f"{player_color} gains 8 points from using {self.name}")
+        game_state["points"][player_color] += 5
+        await send_clients_log_message(f"{player_color} gains 5 points from using {self.name}")
 
         return True
 
@@ -77,4 +89,4 @@ class Evolution(Tile):
         ruler = self.determine_ruler(game_state)
         if ruler:
             await send_clients_log_message(f"{self.name} deducts 4 points from {ruler}")
-            game_state["points"][ruler] -= 6
+            game_state["points"][ruler] -= 5

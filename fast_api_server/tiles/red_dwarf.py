@@ -7,15 +7,33 @@ class RedDwarf(Tile):
         super().__init__(
             name="Red Dwarf",
             type="Tile-Mover",
-            description="**Action:** ^^Burn^^ one of your shapes here to swap the position of 2 tiles\n**Ruler: Most Shapes**",
+            minimum_power_to_rule=2,
             number_of_slots=3,
-            data_needed_for_use=["slot_to_burn_from_on_red_dwarf", "first_tile", "second_tile"]
+            power_tiers=[
+                {
+                    "power_to_reach_tier": 1,
+                    "must_be_ruler": False,                    
+                    "description": "**Action:** ^^Burn^^ one of your shapes here to swap the position of 2 tiles",
+                    "is_on_cooldown": False,
+                    "has_a_cooldown": False,                    
+                    "data_needed_for_use": ["slot_to_burn_from_on_red_dwarf", "first_tile", "second_tile"]
+                },
+            ]
         )
 
-    def is_useable(self, game_state):
-        return any(slot for slot in self.slots_for_shapes if slot and slot["color"] == game_state["whose_turn_is_it"])
+    def determine_ruler(self, game_state):
+        return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
-    def set_available_actions_for_use(self, game_state, game_action_container, available_actions):
+    def get_useable_tiers(self, game_state):
+        useable_tiers = []
+        whose_turn_is_it = game_state["whose_turn_is_it"]
+        
+        if self.power_per_player[whose_turn_is_it] >= 1 and any(slot for slot in self.slots_for_shapes if slot and slot["color"] == whose_turn_is_it):
+            useable_tiers.append(0)
+
+        return useable_tiers
+
+    def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
         
         if current_piece_of_data_to_fill == "slot_to_burn_from_on_red_dwarf":
@@ -30,24 +48,12 @@ class RedDwarf(Tile):
                 available_tiles.remove(first_tile)
             available_actions["select_a_tile"] = available_tiles
 
-    def determine_ruler(self, game_state):
-        red_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "red")
-        blue_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == "blue")
-
-        if red_count > blue_count:
-            self.ruler = 'red'
-            return 'red'
-        elif blue_count > red_count:
-            self.ruler = 'blue'
-            return 'blue'
-        self.ruler = None
-        return None
-
-    async def use_tile(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
-        
-        if not self.is_useable(game_state):
-            await send_clients_log_message(f"{self.name} cannot be used - no shapes to burn")
+        player = game_action_container.whose_action
+
+        if self.power_per_player[player] < self.power_tiers[tier_index]['power_to_reach_tier']:
+            await send_clients_log_message(f"{player} does not have enough power to use tier {tier_index} of {self.name}")
             return False
 
         slot_to_burn_from = game_action_container.required_data_for_action['slot_to_burn_from_on_red_dwarf']['slot_index']
@@ -62,7 +68,7 @@ class RedDwarf(Tile):
             await send_clients_log_message(f"Cannot swap a tile with itself using {self.name}")
             return False
 
-        if self.slots_for_shapes[slot_to_burn_from]["color"] != game_action_container.whose_action:
+        if self.slots_for_shapes[slot_to_burn_from]["color"] != player:
             await send_clients_log_message(f"Cannot burn another player's shape on {self.name}")
             return False
         
