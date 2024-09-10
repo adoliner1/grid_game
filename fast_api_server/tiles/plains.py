@@ -17,7 +17,7 @@ class Plains(Tile):
                     "must_be_ruler": False,                    
                     "description": "When a tile ++produces++ a shape, you may [[receive]] a circle at a tile adjacent to it",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,                    
+                    "has_a_cooldown": True,                    
                     "data_needed_for_use": ['tile_to_receive_shape']
                 },
                 {
@@ -25,7 +25,7 @@ class Plains(Tile):
                     "must_be_ruler": False,                    
                     "description": "Same as above but [[receive]] a square instead",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,                    
+                    "has_a_cooldown": True,                    
                     "data_needed_for_use": ['tile_to_receive_shape']
                 },
                 {
@@ -33,7 +33,7 @@ class Plains(Tile):
                     "must_be_ruler": True,                    
                     "description": "Same as above but [[receive]] a triangle instead",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,                    
+                    "has_a_cooldown": True,                    
                     "data_needed_for_use": ['tile_to_receive_shape']
                 },
             ]
@@ -83,16 +83,17 @@ class Plains(Tile):
             send_clients_log_message,
             send_clients_available_actions,
             send_clients_game_state,
-            ruler,
+            player,
             game_state["tiles"][tile_to_receive_shape],
             shape_to_receive
-        )    
+        )
+        self.power_tiers[tier_index]['is_on_cooldown'] = True    
         return True
 
     async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tier_index):
         producing_tile_name = game_action_container_stack[-1].data_from_event['producing_tile_name']
-        ruler = self.determine_ruler(game_state)
-        await send_clients_log_message(f"{ruler} may react with {self.name}")
+        reacting_player = game_action_container_stack[-1].whose_action
+        await send_clients_log_message(f"{reacting_player} may react with {self.name}")
 
         new_container = game_action_container.GameActionContainer(
             event=asyncio.Event(),
@@ -103,7 +104,7 @@ class Plains(Tile):
                 "index_of_tier_in_use": tier_index,
                 "producing_tile_index": game_utilities.find_index_of_tile_by_name(game_state, producing_tile_name)
             },
-            whose_action=ruler,
+            whose_action=reacting_player,
             is_a_reaction=True,
         )
 
