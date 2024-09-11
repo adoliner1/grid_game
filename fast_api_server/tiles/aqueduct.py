@@ -54,7 +54,7 @@ class Aqueduct(Tile):
             indices_of_tiles_where_user_has_presence = game_utilities.get_tile_indices_where_player_has_presence(game_state, game_action_container.whose_action)
             available_actions["select_a_tile"] = indices_of_tiles_where_user_has_presence
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action          
 
@@ -84,7 +84,7 @@ class Aqueduct(Tile):
 
         await send_clients_log_message(f"Using {self.name}")
 
-        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_aqueduct, slot_index_to_burn_shape_from_here)
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_aqueduct, slot_index_to_burn_shape_from_here)
         
         # Move as many shapes as possible from the source tile to the destination tile
         slots_to_fill = [i for i, slot in enumerate(game_state["tiles"][index_of_tile_to_move_shapes_to].slots_for_shapes) if not slot]
@@ -94,7 +94,7 @@ class Aqueduct(Tile):
         for _ in range(moves):
             slot_index_to_fill = slots_to_fill.pop(0)
             slot_index_to_move = shapes_to_move.pop(0)
-            await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shapes_from, slot_index_to_move, index_of_tile_to_move_shapes_to, slot_index_to_fill)
+            await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_move_shapes_from, slot_index_to_move, index_of_tile_to_move_shapes_to, slot_index_to_fill)
         
         await send_clients_log_message(f"Moved {moves} {color_of_shape_to_move} {shape_to_move}(s) from {game_state['tiles'][index_of_tile_to_move_shapes_from].name} to {game_state['tiles'][index_of_tile_to_move_shapes_to].name}")
         return True

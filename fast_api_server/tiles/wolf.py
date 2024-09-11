@@ -41,7 +41,7 @@ class Wolf(Tile):
         indices_of_adjacent_tiles = game_utilities.get_adjacent_tile_indices(game_utilities.find_index_of_tile_by_name(game_state, self.name))
         available_actions["select_a_tile"] = indices_of_adjacent_tiles
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         ruler = self.determine_ruler(game_state)
         
@@ -66,12 +66,12 @@ class Wolf(Tile):
 
         await send_clients_log_message(f"{self.name} is used")
         for _ in range(2):
-            await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'square')
+            await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'square')
         
         self.power_tiers[tier_index]["is_on_cooldown"] = True
         return True
 
-    async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         self.determine_power()
         red_power = self.power_per_player["red"]
         blue_power = self.power_per_player["blue"]
@@ -84,7 +84,7 @@ class Wolf(Tile):
             player_with_less_power = None
         
         if player_with_less_power:
-            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_with_less_power, 1, 'triangle', self.name, True)
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_with_less_power, 1, 'triangle', self.name, True)
             await send_clients_log_message(f"{player_with_less_power} produces 1 triangle from {self.name} at the start of the round (less power)")
 
         for tier in self.power_tiers:

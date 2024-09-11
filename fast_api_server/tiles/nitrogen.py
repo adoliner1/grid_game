@@ -38,7 +38,7 @@ class Nitrogen(Tile):
     def determine_ruler(self, game_state):
         return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
-    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         first_player = game_state["first_player"]
         second_player = game_utilities.get_other_player_color(first_player)
 
@@ -48,10 +48,10 @@ class Nitrogen(Tile):
             triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == player and slot["shape"] == "triangle")
             
             for _ in range(triangle_count):
-                await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player, self, 'square')
-                await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player, self, 'circle')
+                await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player, self, 'square')
+                await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player, self, 'circle')
             
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         player = game_action_container.whose_action
         
@@ -68,7 +68,7 @@ class Nitrogen(Tile):
         shapes_burned = {'circle': 0, 'square': 0, 'triangle': 0}
         for i, slot in enumerate(self.slots_for_shapes):
             if slot and slot["color"] == player and shapes_burned[slot["shape"]] < 1:
-                await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, nitrogen_tile_index, i)
+                await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, nitrogen_tile_index, i)
                 shapes_burned[slot["shape"]] += 1
                 if all(count == 1 for count in shapes_burned.values()):
                     break

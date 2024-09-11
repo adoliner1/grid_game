@@ -48,7 +48,7 @@ class RedDwarf(Tile):
                 available_tiles.remove(first_tile)
             available_actions["select_a_tile"] = available_tiles
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         player = game_action_container.whose_action
 
@@ -73,7 +73,7 @@ class RedDwarf(Tile):
             return False
         
         red_dwarf_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, red_dwarf_index, slot_to_burn_from)
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, red_dwarf_index, slot_to_burn_from)
         await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
 

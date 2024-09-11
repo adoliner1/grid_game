@@ -33,7 +33,7 @@ class Ash(Tile):
     def setup_listener(self, game_state):
         game_state["listeners"]["on_burn"][self.name] = self.on_burn_effect
 
-    async def on_burn_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data):
+    async def on_burn_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         index_of_tile_burned_at = data.get('index_of_tile_burned_at')
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)

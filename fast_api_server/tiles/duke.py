@@ -16,7 +16,7 @@ class Duke(Tile):
     def determine_ruler(self, game_state):
         return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         shape_counts = {
             'red': {'circle': 0, 'square': 0, 'triangle': 0},
             'blue': {'circle': 0, 'square': 0, 'triangle': 0}

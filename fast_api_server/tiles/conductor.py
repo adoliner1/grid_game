@@ -53,7 +53,7 @@ class Conductor(Tile):
                     slots_without_a_shape_per_tile[index] = slots_without_shapes
         available_actions["select_a_slot_on_a_tile"] = slots_without_a_shape_per_tile        
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]        
         if tier_index == 0:
             if self.power_per_player[game_action_container.whose_action] < 3:
@@ -105,14 +105,14 @@ class Conductor(Tile):
                 return False
 
         await send_clients_log_message(f"Reacting with tier {tier_index} of {self.name}")
-        await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index_from, slot_index_from, tile_index_to, slot_index_to)
+        await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index_from, slot_index_from, tile_index_to, slot_index_to)
         self.power_tiers[tier_index]['is_on_cooldown'] = True
         return True
 
     def setup_listener(self, game_state):
         game_state["listeners"]["on_receive"][self.name] = self.on_receive_effect
 
-    async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tier_index):
+    async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tier_index):
 
         receiver = game_action_container_stack[-1].data_from_event['receiver']
         index_of_slot_received_at = game_action_container_stack[-1].data_from_event['index_of_slot_received_at']
@@ -133,11 +133,10 @@ class Conductor(Tile):
         )
 
         game_action_container_stack.append(new_container)
-        await send_clients_available_actions(game_utilities.get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-        await send_clients_available_actions(game_utilities.get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+        await get_and_send_available_actions()
         await game_action_container_stack[-1].event.wait()
 
-    async def on_receive_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data):
+    async def on_receive_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         receiver = data.get('receiver')
         tiers_that_can_be_reacted_with = []
         
@@ -150,7 +149,7 @@ class Conductor(Tile):
         if tiers_that_can_be_reacted_with:
             reactions_by_player[receiver].tiers_to_resolve[game_utilities.find_index_of_tile_by_name(game_state, self.name)] = tiers_that_can_be_reacted_with            
 
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler:
             game_state["points"][ruler] += 2

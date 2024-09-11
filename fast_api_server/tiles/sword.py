@@ -51,7 +51,7 @@ class Sword(Tile):
                     slots_with_a_burnable_shape[index] = slots_with_shapes
             available_actions["select_a_slot_on_a_tile"] = slots_with_a_burnable_shape
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
         
@@ -85,8 +85,8 @@ class Sword(Tile):
             return False
         
         await send_clients_log_message(f"Using {self.name}")
-        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_sword, slot_index_to_burn_shape_from_here)
-        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_burn_shape_at, slot_index_to_burn_shape_at)
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_sword, slot_index_to_burn_shape_from_here)
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_shape_at, slot_index_to_burn_shape_at)
 
         self.power_tiers[tier_index]["is_on_cooldown"] = True
         return True

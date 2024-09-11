@@ -40,7 +40,7 @@ class Caves(Tile):
     def setup_listener(self, game_state):
         game_state["listeners"]["on_place"][self.name] = self.on_place_effect
 
-    async def on_place_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data):
+    async def on_place_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         placer = data.get('placer')
         shape = data.get('shape')
         index_of_tile_placed_at = data.get('index_of_tile_placed_at')
@@ -69,7 +69,7 @@ class Caves(Tile):
        
         await game_utilities.player_receives_a_shape_on_tile(
             game_state, game_action_container_stack, send_clients_log_message,
-            send_clients_available_actions, send_clients_game_state,
+            get_and_send_available_actions, send_clients_game_state,
             placer, tile_placed_at, shape_to_receive
         )
         

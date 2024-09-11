@@ -70,7 +70,7 @@ class Highway(Tile):
                     slots_without_a_shape[index] = slots_without_shapes
             available_actions["select_a_slot_on_a_tile"] = slots_without_a_shape
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
         
@@ -117,9 +117,9 @@ class Highway(Tile):
         await send_clients_log_message(f"Using tier {tier_index} of {self.name}")
 
         if tier_index == 0:
-            await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_highway, slot_index_to_burn_shape_from)
+            await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_highway, slot_index_to_burn_shape_from)
 
-        await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shape_from, slot_index_to_move_shape_from, index_of_tile_to_move_shape_to, slot_index_to_move_shape_to)
+        await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_move_shape_from, slot_index_to_move_shape_from, index_of_tile_to_move_shape_to, slot_index_to_move_shape_to)
 
         shape_moved = game_state['tiles'][index_of_tile_to_move_shape_to].slots_for_shapes[slot_index_to_move_shape_to]["shape"]
         color_of_shape_moved = game_state['tiles'][index_of_tile_to_move_shape_to].slots_for_shapes[slot_index_to_move_shape_to]["color"]

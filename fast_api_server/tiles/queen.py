@@ -33,7 +33,7 @@ class Queen(Tile):
     def setup_listener(self, game_state):
         game_state["listeners"]["on_place"][self.name] = self.on_place_effect
 
-    async def on_place_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data):
+    async def on_place_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         placer = data.get('placer')
         tile_index = data.get('index_of_tile_placed_at')
         queen_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)

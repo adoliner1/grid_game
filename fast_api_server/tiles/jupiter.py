@@ -43,7 +43,7 @@ class Jupiter(Tile):
 
         return useable_tiers
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
         
@@ -67,8 +67,8 @@ class Jupiter(Tile):
         
         await send_clients_log_message(f"Using {self.name} tier {tier_index}") 
         
-        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_shape_from)
-        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, user, 1, 'triangle', self.name)
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_shape_from)
+        await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, user, 1, 'triangle', self.name)
         
         self.power_tiers[tier_index]['is_on_cooldown'] = True
         return True

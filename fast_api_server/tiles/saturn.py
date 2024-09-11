@@ -48,7 +48,7 @@ class Saturn(Tile):
 
         return useable_tiers
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         player = game_action_container.whose_action
         player_power = self.power_per_player[player]
@@ -71,20 +71,20 @@ class Saturn(Tile):
         await send_clients_log_message(f"Using tier {tier_index} of {self.name}")
         saturn_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, 
-                                                         send_clients_log_message, send_clients_available_actions, 
+                                                         send_clients_log_message, get_and_send_available_actions, 
                                                          send_clients_game_state, saturn_index, triangle_slot)
 
         if tier_index == 0:
             await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, 
-                                                          send_clients_log_message, send_clients_available_actions, 
+                                                          send_clients_log_message, get_and_send_available_actions, 
                                                           send_clients_game_state, player, 1, 'square', self.name, True)
             await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, 
-                                                          send_clients_log_message, send_clients_available_actions, 
+                                                          send_clients_log_message, get_and_send_available_actions, 
                                                           send_clients_game_state, player, 1, 'circle', self.name, True)
         else:
             for _ in range(2):
                 await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, 
-                                                              send_clients_log_message, send_clients_available_actions, 
+                                                              send_clients_log_message, get_and_send_available_actions, 
                                                               send_clients_game_state, player, 1, 'square', self.name, True)
 
         self.power_tiers[tier_index]["is_on_cooldown"] = True

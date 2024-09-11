@@ -54,7 +54,7 @@ class Plains(Tile):
     def setup_listener(self, game_state):
         game_state["listeners"]["on_produce"][self.name] = self.on_produce_effect
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         player = game_action_container.whose_action
         ruler = self.determine_ruler(game_state)
@@ -81,7 +81,7 @@ class Plains(Tile):
             game_state,
             game_action_container_stack,
             send_clients_log_message,
-            send_clients_available_actions,
+            get_and_send_available_actions,
             send_clients_game_state,
             player,
             game_state["tiles"][tile_to_receive_shape],
@@ -90,7 +90,7 @@ class Plains(Tile):
         self.power_tiers[tier_index]['is_on_cooldown'] = True    
         return True
 
-    async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tier_index):
+    async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tier_index):
         producing_tile_name = game_action_container_stack[-1].data_from_event['producing_tile_name']
         reacting_player = game_action_container_stack[-1].whose_action
         await send_clients_log_message(f"{reacting_player} may react with {self.name}")
@@ -109,11 +109,10 @@ class Plains(Tile):
         )
 
         game_action_container_stack.append(new_container)
-        await send_clients_available_actions(game_utilities.get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-        await send_clients_available_actions(game_utilities.get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+        await get_and_send_available_actions()
         await game_action_container_stack[-1].event.wait()
 
-    async def on_produce_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data):
+    async def on_produce_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         producing_tile_name = data.get('producing_tile_name')
         producing_player = data.get('producing_player')
         ruler = self.determine_ruler(game_state)

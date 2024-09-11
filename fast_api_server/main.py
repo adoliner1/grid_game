@@ -133,7 +133,7 @@ async def disconnect_handler(connection: Dict):
 async def start_game(lobby_table: models.LobbyTable):
     db: Session = next(get_db())
     try:
-        game = models.Game(status="In Progress", player1_token=lobby_table.player1_token, player2_token=lobby_table.player2_token)
+        game = models.Game(status="Waiting to Start", player1_token=lobby_table.player1_token, player2_token=lobby_table.player2_token)
         db.add(game)
         db.commit()
         db.refresh(game)
@@ -152,7 +152,6 @@ async def start_game(lobby_table: models.LobbyTable):
                     "game_id": game_id,
                 })
         
-        asyncio.create_task(game_engines[game_id].start_game())
     finally:
         db.close()
 
@@ -170,7 +169,6 @@ async def websocket_game_endpoint(websocket: WebSocket):
 
         db: Session = next(get_db())
         game = db.query(models.Game).filter(models.Game.id == game_id).first()
-        db.close()
         
         if not game or game_id not in game_engines:
             await websocket.send_json({"error": "Game not found"})
@@ -201,17 +199,26 @@ async def websocket_game_endpoint(websocket: WebSocket):
         await websocket.send_json({
             "action": "initialize",
             "player_color": player_color
-        })        
-        await send_game_state(game_id, game_engine.game_state)
-        await game_engine.get_and_send_available_actions()
+        })
+
+        if game.status == "Waiting to Start" and count_connections_to_game_id(game_id, connections_to_games) == 2:
+            game.status = "In Progress"
+            db.commit()
+            asyncio.create_task(game_engines[game_id].start_game())
+        else:    
+            await send_game_state(game_id, game_engine.game_state)
+            await game_engine.get_and_send_available_actions()
         
         while True:
             data = await websocket.receive_json()
-            await game_engine.process_data_from_client(data, player_color)
+            asyncio.create_task(game_engine.process_data_from_client(data, player_color))
             
     except WebSocketDisconnect:
-        print(f"Player disconnected from game {game_id}")
-        connections_to_games[:] = [conn for conn in connections_to_games if conn["websocket"] != websocket]
+        if game_id:
+            print(f"Player disconnected from game {game_id}")
+        else:
+            print(f"Player disconnected")
+        connections_to_games[:] = [connection for connection in connections_to_games if connection["websocket"] != websocket]
 
 async def send_message(game_id: int, message: str):
     for connection in connections_to_games:
@@ -240,6 +247,9 @@ async def send_game_state_to_one_client(websocket: WebSocket, game_state: Dict):
         "action": "update_game_state",
         "game_state": json.loads(serialize_game_state(game_state))
     })
+
+def count_connections_to_game_id(game_id, connections_to_games):
+    return sum(1 for connection in connections_to_games if connection["game_id"] == game_id)
 
 def print_running_tasks():
     loop = asyncio.get_running_loop()

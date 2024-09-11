@@ -85,7 +85,7 @@ class Road(Tile):
                     slots_without_a_shape_per_tile[index] = slots_without_shapes
             available_actions["select_a_slot_on_a_tile"] = slots_without_a_shape_per_tile
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
         user_power = self.power_per_player[user]
@@ -122,7 +122,7 @@ class Road(Tile):
             return False
 
         await send_clients_log_message(f"Using tier {tier_index} of {self.name}")
-        await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index_from, slot_index_from, tile_index_to, slot_index_to)
+        await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index_from, slot_index_from, tile_index_to, slot_index_to)
         
         self.power_tiers[tier_index]["is_on_cooldown"] = True
         

@@ -20,7 +20,7 @@ class Ember(Tile):
     def setup_listener(self, game_state):
         game_state["listeners"]["on_burn"][self.name] = self.on_burn_effect
 
-    async def on_burn_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data):
+    async def on_burn_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         burned_shape = data.get('shape')
         burned_color = data.get('color')
 
@@ -29,14 +29,14 @@ class Ember(Tile):
             game_state, 
             game_action_container_stack, 
             send_clients_log_message, 
-            send_clients_available_actions, 
+            get_and_send_available_actions, 
             send_clients_game_state, 
             burned_color, 
             self, 
             burned_shape
         )
         
-    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         if all(slot is not None for slot in self.slots_for_shapes):
             red_count = sum(1 for slot in self.slots_for_shapes if slot["color"] == "red")
             blue_count = sum(1 for slot in self.slots_for_shapes if slot["color"] == "blue")

@@ -35,7 +35,7 @@ class Turbine(Tile):
         
         return useable_tiers
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
         peak_power = game_state["peak_power"][user]
@@ -52,19 +52,19 @@ class Turbine(Tile):
         if peak_power >= 14:
             await game_utilities.produce_shape_for_player(
                 game_state, game_action_container_stack, send_clients_log_message,
-                send_clients_available_actions, send_clients_game_state,
+                get_and_send_available_actions, send_clients_game_state,
                 user, 1, "triangle", self.name, True
             )
         elif peak_power >= 10:
             await game_utilities.produce_shape_for_player(
                 game_state, game_action_container_stack, send_clients_log_message,
-                send_clients_available_actions, send_clients_game_state,
+                get_and_send_available_actions, send_clients_game_state,
                 user, 1, "square", self.name, True
             )
         elif peak_power >= 6:
             await game_utilities.produce_shape_for_player(
                 game_state, game_action_container_stack, send_clients_log_message,
-                send_clients_available_actions, send_clients_game_state,
+                get_and_send_available_actions, send_clients_game_state,
                 user, 1, "circle", self.name, True
             )
         else:

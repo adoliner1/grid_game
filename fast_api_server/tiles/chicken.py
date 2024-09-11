@@ -38,7 +38,7 @@ class Chicken(Tile):
         indices_of_adjacent_tiles = game_utilities.get_adjacent_tile_indices(game_utilities.find_index_of_tile_by_name(game_state, self.name))
         available_actions["select_a_tile"] = indices_of_adjacent_tiles
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         ruler = self.determine_ruler(game_state)
         
@@ -66,10 +66,10 @@ class Chicken(Tile):
         
         game_state["points"][ruler] += 1
         await send_clients_log_message(f"{ruler} gained 1 point from using {self.name}")
-        await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'circle')
+        await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'circle')
         return True
 
-    async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):  
+    async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):  
         if self.power_per_player['red'] < self.power_per_player['blue']:
             player_with_less_power = 'red'
         elif self.power_per_player['blue'] < self.power_per_player['red']:
@@ -78,5 +78,5 @@ class Chicken(Tile):
             player_with_less_power = None
         
         if player_with_less_power:
-            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_with_less_power, 1, 'circle', self.name, True)
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_with_less_power, 1, 'circle', self.name, True)
             await send_clients_log_message(f"{player_with_less_power} produces 1 circle from {self.name} at the start of the round")

@@ -42,7 +42,7 @@ class Evolution(Tile):
     def determine_ruler(self, game_state):
         return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         player_color = game_action_container.whose_action
                 
@@ -54,17 +54,17 @@ class Evolution(Tile):
 
         for slot_index, slot in enumerate(self.slots_for_shapes):
             if slot and slot["color"] == player_color and slot["shape"] == "triangle":
-                await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_utilities.find_index_of_tile_by_name(game_state, self.name), slot_index)
+                await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, game_utilities.find_index_of_tile_by_name(game_state, self.name), slot_index)
 
         for _ in range(3):
-            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, 1, 'circle', self.name, True)
+            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, 1, 'circle', self.name, True)
 
         game_state["points"][player_color] += 5
         await send_clients_log_message(f"{player_color} gains 5 points from using {self.name}")
 
         return True
 
-    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         await send_clients_log_message(f"Applying end of round effect for {self.name}")
         
         for i in range(len(self.slots_for_shapes)):
@@ -73,7 +73,7 @@ class Evolution(Tile):
                 player_color = self.slots_for_shapes[i]["color"]
                 
                 # Burn the current shape
-                await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, game_utilities.find_index_of_tile_by_name(game_state, self.name), i)
+                await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, game_utilities.find_index_of_tile_by_name(game_state, self.name), i)
                 
                 # Produce the next most powerful shape
                 if current_shape == "circle":
@@ -83,9 +83,9 @@ class Evolution(Tile):
                 else:  # triangle
                     new_shape = "circle"
                 
-                await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, self, new_shape)
+                await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, self, new_shape)
 
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler:
             await send_clients_log_message(f"{self.name} deducts 4 points from {ruler}")

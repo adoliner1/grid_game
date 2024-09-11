@@ -47,7 +47,7 @@ class Wormhole(Tile):
                 available_tiles.remove(tile1_index)
             available_actions["select_a_tile"] = available_tiles
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
 

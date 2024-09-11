@@ -32,7 +32,7 @@ class SolarArray(Tile):
             useable_tiers.append(0)
         return useable_tiers
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         ruler = self.determine_ruler(game_state)
         if ruler != game_action_container.whose_action:
@@ -47,7 +47,7 @@ class SolarArray(Tile):
             if slot and slot["color"] == ruler:
                 await game_utilities.burn_shape_at_tile_at_index(
                     game_state, game_action_container_stack, send_clients_log_message,
-                    send_clients_available_actions, send_clients_game_state,
+                    get_and_send_available_actions, send_clients_game_state,
                     solar_array_index, i
                 )
                 shapes_burned += 1

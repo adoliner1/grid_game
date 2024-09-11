@@ -15,7 +15,7 @@ class Combinatorics(Tile):
     def determine_ruler(self, game_state):
         return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
-    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         first_player = game_state["first_player"]
         second_player = game_utilities.get_other_player_color(first_player)
 
@@ -32,7 +32,7 @@ class Combinatorics(Tile):
                     for _ in range(unique_pairs):
                         await game_utilities.produce_shape_for_player(
                             game_state, game_action_container_stack, send_clients_log_message, 
-                            send_clients_available_actions, send_clients_game_state, 
+                            get_and_send_available_actions, send_clients_game_state, 
                             color, 1, shape, self.name, True
                         )
                     total_produced += unique_pairs

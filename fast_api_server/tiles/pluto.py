@@ -47,7 +47,7 @@ class Pluto(Tile):
 
         return useable_tiers
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         player = game_action_container.whose_action
         ruler = self.determine_ruler(game_state)
@@ -81,13 +81,13 @@ class Pluto(Tile):
         for i in circles_to_burn[:circles_required]:
             await game_utilities.burn_shape_at_tile_at_index(
                 game_state, game_action_container_stack, send_clients_log_message, 
-                send_clients_available_actions, send_clients_game_state, 
+                get_and_send_available_actions, send_clients_game_state, 
                 game_utilities.find_index_of_tile_by_name(game_state, self.name), i
             )
 
         await game_utilities.produce_shape_for_player(
             game_state, game_action_container_stack, send_clients_log_message, 
-            send_clients_available_actions, send_clients_game_state, 
+            get_and_send_available_actions, send_clients_game_state, 
             player, 1, 'square', self.name, True
         )
 

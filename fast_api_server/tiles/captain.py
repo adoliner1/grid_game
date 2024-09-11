@@ -45,7 +45,7 @@ class Captain(Tile):
                     slots_with_a_burnable_shape[tile_index] = slots_with_shapes
         available_actions["select_a_slot_on_a_tile"] = slots_with_a_burnable_shape
 
-    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state):
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         player = game_action_container.whose_action
         ruler = self.determine_ruler(game_state)
@@ -75,7 +75,7 @@ class Captain(Tile):
             return False
 
         await send_clients_log_message(f"Reacting with tier {tier_index} of {self.name}")
-        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_burn_shape, slot_index_to_burn_shape)
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_shape, slot_index_to_burn_shape)
         
         points_gained = 3 if tier_index == 1 else 1
         game_state["points"][player] += points_gained
@@ -87,7 +87,7 @@ class Captain(Tile):
     def setup_listener(self, game_state):
         game_state["listeners"]["on_receive"][self.name] = self.on_receive_effect
 
-    async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tier_index):
+    async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tier_index):
         receiver = game_action_container_stack[-1].data_from_event['receiver']
         index_of_tile_received_at = game_action_container_stack[-1].data_from_event['index_of_tile_received_at']
         await send_clients_log_message(f"{receiver} may react with {self.name}")
@@ -106,11 +106,10 @@ class Captain(Tile):
         )
 
         game_action_container_stack.append(new_container)
-        await send_clients_available_actions(game_utilities.get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-        await send_clients_available_actions(game_utilities.get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+        await get_and_send_available_actions()
         await game_action_container_stack[-1].event.wait()
 
-    async def on_receive_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data):
+    async def on_receive_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         receiver = data.get('receiver')
         index_of_tile_received_at = data.get('index_of_tile_received_at')
 

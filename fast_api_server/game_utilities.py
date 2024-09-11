@@ -3,7 +3,7 @@ import game_action_container
 import game_constants
 
 #async
-async def produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, amount, shape_type, calling_entity_name, calling_entity_is_a_tile=False):
+async def produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, amount, shape_type, calling_entity_name, calling_entity_is_a_tile=False):
 
     game_state["shapes_in_storage"][player_color][shape_type] += amount
 
@@ -13,10 +13,10 @@ async def produce_shape_for_player(game_state, game_action_container_stack, send
         await send_clients_log_message(f" {player_color} produced {amount} {player_color}_{shape_type}")
 
     if calling_entity_is_a_tile: 
-        await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_produce", amount_produced=amount, producing_player=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
+        await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_produce", amount_produced=amount, producing_player=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
 
 
-async def place_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
+async def place_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
     tile_to_place_on = game_state["tiles"][tile_index]
     old_shape =  tile_to_place_on.slots_for_shapes[slot_index]
     tile_to_place_on.slots_for_shapes[slot_index] = {'shape': shape, 'color': color}
@@ -27,9 +27,9 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
     await send_clients_log_message(f"{color} placed a {color}_{shape} on {tile_to_place_on.name}")
     if old_shape:
         await send_clients_log_message(f"this trumped a {old_shape['color']}_{old_shape['shape']}")
-    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_place", placer=color, shape=shape, index_of_tile_placed_at=tile_index, slot_index_placed_at=slot_index)
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_place", placer=color, shape=shape, index_of_tile_placed_at=tile_index, slot_index_placed_at=slot_index)
 
-async def player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, tile, shape_type):
+async def player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, tile, shape_type):
     if None not in tile.slots_for_shapes:
         await send_clients_log_message(f"{player_color} cannot receive a {shape_type} on {tile.name}, no empty slots")
         return
@@ -43,9 +43,9 @@ async def player_receives_a_shape_on_tile(game_state, game_action_container_stac
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
 
-    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_receive", receiver=player_color, shape=shape_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_receive", receiver=player_color, shape=shape_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
 
-async def move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
+async def move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
     shape_to_move = game_state["tiles"][from_tile_index].slots_for_shapes[from_slot_index]
     
     if shape_to_move is None:
@@ -62,11 +62,11 @@ async def move_shape_between_tiles(game_state, game_action_container_stack, send
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_move", shape=shape_to_move["shape"], from_tile_index=from_tile_index, to_tile_index=to_tile_index)
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_move", shape=shape_to_move["shape"], from_tile_index=from_tile_index, to_tile_index=to_tile_index)
 
     return True
 
-async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index):
+async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index):
     tile = game_state["tiles"][tile_index]
     shape = tile.slots_for_shapes[slot_index]["shape"]
     color = tile.slots_for_shapes[slot_index]["color"]
@@ -77,10 +77,10 @@ async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, s
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
 
-    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_burn", burner=game_action_container_stack[-1].whose_action, shape=shape, color=color, index_of_tile_burned_at=tile_index)
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_burn", burner=game_action_container_stack[-1].whose_action, shape=shape, color=color, index_of_tile_burned_at=tile_index)
 
 
-async def call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, event_type, **data):
+async def call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, event_type, **data):
     reactions_by_player = {"red":   game_action_container.GameActionContainer(
                                     event=asyncio.Event(),
                                     game_action="choose_a_reaction_to_resolve",
@@ -100,7 +100,7 @@ async def call_listener_functions_for_event_type(game_state, game_action_contain
 
 
     for _, listener_function in game_state["listeners"][event_type].items():
-        await listener_function(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, reactions_by_player, **data)
+        await listener_function(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data)
         determine_power_levels(game_state)
         update_presence(game_state)
         determine_rulers(game_state)
@@ -113,8 +113,7 @@ async def call_listener_functions_for_event_type(game_state, game_action_contain
         if reactions_by_player[player].tiers_to_resolve:
             await send_clients_log_message(f"{player} must choose order to resolve reactions in")
             game_action_container_stack.append(reactions_by_player[player])
-            await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "red"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-            await send_clients_available_actions(get_available_client_actions(game_state, game_action_container_stack[-1], "blue"), game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+            await get_and_send_available_actions()
             await game_action_container_stack[-1].event.wait()
 
 #sync

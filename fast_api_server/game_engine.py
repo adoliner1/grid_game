@@ -18,22 +18,26 @@ class GameEngine:
         self.game_state = self.create_new_game_state()
         self.send_clients_log_message = None
         self.send_clients_game_state = None
-        self.send_clients_available_actions = None
+        self.send_available_actions = None
         self.listeners = {"on_place": {}, "start_of_round": {}, "end_of_round": {}, "on_produce": {}}
         self.game_has_ended = False
         self.game_action_container_stack: List[game_action_container.GameActionContainer] = []
         self.game_action_container_stack.append(self.create_initial_decision_game_action_container())
         self.round_just_ended = False
-        self.action_queue = asyncio.Queue()
 
     def set_websocket_callbacks(self, send_clients_log_message, send_clients_game_state, send_clients_available_actions):
         self.send_clients_log_message = send_clients_log_message
         self.send_clients_game_state = send_clients_game_state
-        self.send_clients_available_actions = send_clients_available_actions
+        self.send_available_actions = send_clients_available_actions
 
     async def start_game(self):
         await self.start_round()
         await self.run_game_loop()
+
+    async def get_and_send_available_actions(self):
+        top_of_game_action_stack = self.game_action_container_stack[-1]
+        await self.send_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for="red"), top_of_game_action_stack.get_next_piece_of_data_to_fill(), "red")
+        await self.send_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for="blue"), top_of_game_action_stack.get_next_piece_of_data_to_fill(), "blue")    
 
     #whenever we're in this loop, it means an initial (turn starting) decision needs to be made
     async def run_game_loop(self):
@@ -57,11 +61,9 @@ class GameEngine:
                         await self.send_clients_log_message(f"{other_player_color} has passed, turn remains with {self.game_state['whose_turn_is_it']}")
                         self.game_action_container_stack[-1].whose_action = self.game_state["whose_turn_is_it"]
 
-            top_of_game_action_stack = self.game_action_container_stack[-1]
             await self.send_clients_game_state(self.game_state)
-            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for="red"), top_of_game_action_stack.get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for="blue"), top_of_game_action_stack.get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
-            await top_of_game_action_stack.event.wait()
+            await self.get_and_send_available_actions()
+            await self.game_action_container_stack[-1].event.wait()
 
     #populates the data in the action at the top of the stack with the decision from the client
     #executes the action if it's ready and sends new available actions otherwise
@@ -112,7 +114,7 @@ class GameEngine:
         elif self.game_action_container_stack[-1].game_action == "choose_a_reaction_to_resolve":
             tile_index = data['tier_to_react_with']['tile_index']
             tier_index = data['tier_to_react_with']['tier_index']
-            await self.game_state['tiles'][tile_index].create_append_and_send_available_actions_for_container(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state, tier_index)            
+            await self.game_state['tiles'][tile_index].create_append_and_send_available_actions_for_container(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tier_index)            
             
             reactions_to_resolve_container = self.game_action_container_stack[-1]
             #nothing more to resolve. we can pop it and set it
@@ -146,8 +148,7 @@ class GameEngine:
                 self.game_action_container_stack.pop().event.set() #this is the old initial decision container. pop it off (we'll make a new one in the main loop).
 
         else:
-            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="red"), next_piece_of_data_to_fill, player_color_to_send_to="red")
-            await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), next_piece_of_data_to_fill, player_color_to_send_to="blue")    
+            await self.get_and_send_available_actions()
 
     #only ever executing top of stack.. don't need to pass container?
     async def execute_game_action(self, game_action_container):
@@ -159,7 +160,7 @@ class GameEngine:
                 tile = self.game_state["tiles"][game_action_container.required_data_for_action["index_of_tile_in_use"]]
                 tier_index = game_action_container.required_data_for_action["index_of_tier_in_use"]
                 # if use tile returns false, the action failed, so don't update the rest of the game state
-                if not await tile.use_a_tier(self.game_state, tier_index, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state):
+                if not await tile.use_a_tier(self.game_state, tier_index, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state):
                     return False
             case 'pass':
                 if not await self.player_passes(game_action_container.whose_action):
@@ -319,7 +320,7 @@ class GameEngine:
 
         self.game_state["shapes_in_storage"][color_of_player_placing][shape_type] -= 1
 
-        await game_utilities.place_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state, tile_index, slot_index, shape_type, color_of_player_placing)
+        await game_utilities.place_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index, slot_index, shape_type, color_of_player_placing)
 
         game_utilities.determine_rulers(self.game_state)
         return True
@@ -367,12 +368,12 @@ class GameEngine:
         self.game_state['player_has_passed']['red'] = False
         self.game_state['player_has_passed']['blue'] = False
         for tile in self.game_state["tiles"]:
-            await tile.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
+            await tile.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
             for tier in tile.power_tiers:
                 tier['is_on_cooldown'] = False
 
         for _, listener_function in self.game_state["listeners"]["start_of_round"].items():
-                await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  
+                await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
 
         #give base income
         await self.give_base_income_to_players()
@@ -382,7 +383,7 @@ class GameEngine:
         await self.send_clients_log_message("Giving base income")
         for player_color in game_constants.player_colors:
             for shape, amount in game_constants.base_income:
-                await game_utilities.produce_shape_for_player(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state, player_color, amount, shape, None)
+                await game_utilities.produce_shape_for_player(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, player_color, amount, shape, None)
 
     async def player_passes(self, player_color):
         if self.game_state["whose_turn_is_it"] != player_color:
@@ -405,10 +406,10 @@ class GameEngine:
         await self.send_clients_log_message(f"both players have passed, ending round")
         self.round_just_ended = True
         for tile in self.game_state["tiles"]:
-            await tile.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
+            await tile.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
 
         for _, listener_function in self.game_state["listeners"]["end_of_round"].items():
-            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  
+            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
 
         game_utilities.determine_rulers(self.game_state)
 
@@ -435,10 +436,10 @@ class GameEngine:
 
     async def end_game(self):
         for tile in self.game_state["tiles"]:
-            await tile.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)
+            await tile.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
 
         for _, listener_function in self.game_state["listeners"]["end_game"].items():
-            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.send_clients_available_actions, self.send_clients_game_state)  
+            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
 
         await self.send_clients_game_state(self.game_state)
         await self.send_clients_log_message(f"Final Score: Red: {self.game_state['points']['red']} Blue: {self.game_state['points']['blue']}")
