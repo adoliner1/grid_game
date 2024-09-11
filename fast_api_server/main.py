@@ -145,16 +145,10 @@ async def send_clients_new_log_message(message):
 
 async def send_player_colors_to_clients():
     for player in current_players:
-        if player["color"] == "blue":
-            await player["websocket"].send_json({
-                "action": "initialize", 
-                "player_color": "blue"
-            })
-        else:
-            await player["websocket"].send_json({
-                "action": "initialize", 
-                "player_color": "red"
-            })
+        await player["websocket"].send_json({
+            "action": "initialize", 
+            "player_color": player["color"]
+        })
 
 async def send_clients_new_game_state(game_state):
     for player in current_players:
