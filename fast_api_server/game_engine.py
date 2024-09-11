@@ -311,8 +311,8 @@ class GameEngine:
             await self.send_clients_log_message("Cannot place this shape here")
             return False    
 
-        if slot is not None:
-            await self.send_clients_log_message("Cannot place on this slot, it's not empty")
+        if slot and not (game_constants.shape_power[slot['shape']] < game_constants.shape_power[shape_type] and color_of_player_placing == slot['color']):
+            await self.send_clients_log_message("Cannot place on this slot, it's not empty or contains one of your weaker shapes")
             return False
 
         if self.game_state["shapes_in_storage"][color_of_player_placing][shape_type] <= 0:

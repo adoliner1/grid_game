@@ -7,7 +7,7 @@ class Aqueduct(Tile):
         super().__init__(
             name="Aqueduct",
             type="Mover",
-            number_of_slots=3,
+            number_of_slots=5,
             minimum_power_to_rule=2,
             power_tiers=[
                 {
@@ -67,51 +67,34 @@ class Aqueduct(Tile):
         color_of_shape_to_move = game_state['tiles'][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from]["color"]
 
         if not user == self.determine_ruler(game_state):
-            if not self.slots_for_shapes[slot_index_to_burn_shape_from_here]:
-                await send_clients_log_message(f"Tried to use {self.name} but chose an empty slot to burn from")
-                return False
-            
-            if self.slots_for_shapes[slot_index_to_burn_shape_from_here]["color"] != game_action_container.whose_action:
-                await send_clients_log_message(f"Tried to use {self.name} but chose a shape owned by opponent to burn")
-                return False
-
-            if game_state["tiles"][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from] is None:
-                await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no shape to move from {game_state['tiles'][index_of_tile_to_move_shapes_from].name}")
-                return False
-
-            await send_clients_log_message(f"Using {self.name}")
-
-            await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_aqueduct, slot_index_to_burn_shape_from_here)
-            
-            # Move as many shapes as possible from the source tile to the destination tile
-            slots_to_fill = [i for i, slot in enumerate(game_state["tiles"][index_of_tile_to_move_shapes_to].slots_for_shapes) if not slot]
-            shapes_to_move = [i for i, slot in enumerate(game_state["tiles"][index_of_tile_to_move_shapes_from].slots_for_shapes) if slot and slot["shape"] == shape_to_move and slot["color"] == color_of_shape_to_move]
-
-            moves = min(len(slots_to_fill), len(shapes_to_move))
-            for _ in range(moves):
-                slot_index_to_fill = slots_to_fill.pop(0)
-                slot_index_to_move = shapes_to_move.pop(0)
-                await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shapes_from, slot_index_to_move, index_of_tile_to_move_shapes_to, slot_index_to_fill)
-            
-            await send_clients_log_message(f"Moved {moves} {color_of_shape_to_move} {shape_to_move}(s) from {game_state['tiles'][index_of_tile_to_move_shapes_from].name} to {game_state['tiles'][index_of_tile_to_move_shapes_to].name}")
-            return True
+            await send_clients_log_message(f"Tried to use {self.name} but not the ruler")
+            return False
+             
+        if not self.slots_for_shapes[slot_index_to_burn_shape_from_here]:
+            await send_clients_log_message(f"Tried to use {self.name} but chose an empty slot to burn from")
+            return False
         
-        else:
-            if game_state["tiles"][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from] is None:
-                await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no shape to move from {game_state['tiles'][index_of_tile_to_move_shapes_from].name}")
-                return False
+        if self.slots_for_shapes[slot_index_to_burn_shape_from_here]["color"] != game_action_container.whose_action:
+            await send_clients_log_message(f"Tried to use {self.name} but chose a shape owned by opponent to burn")
+            return False
 
-            await send_clients_log_message(f"Using {self.name}")
-            
-            # Move as many shapes as possible from the source tile to the destination tile
-            slots_to_fill = [i for i, slot in enumerate(game_state["tiles"][index_of_tile_to_move_shapes_to].slots_for_shapes) if not slot]
-            shapes_to_move = [i for i, slot in enumerate(game_state["tiles"][index_of_tile_to_move_shapes_from].slots_for_shapes) if slot and slot["shape"] == shape_to_move and slot["color"] == color_of_shape_to_move]
+        if game_state["tiles"][index_of_tile_to_move_shapes_from].slots_for_shapes[slot_index_to_move_shapes_from] is None:
+            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no shape to move from {game_state['tiles'][index_of_tile_to_move_shapes_from].name}")
+            return False
 
-            moves = min(len(slots_to_fill), len(shapes_to_move))
-            for _ in range(moves):
-                slot_index_to_fill = slots_to_fill.pop(0)
-                slot_index_to_move = shapes_to_move.pop(0)
-                await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shapes_from, slot_index_to_move, index_of_tile_to_move_shapes_to, slot_index_to_fill)
-            
-            await send_clients_log_message(f"Moved {moves} {color_of_shape_to_move} {shape_to_move}(s) from {game_state['tiles'][index_of_tile_to_move_shapes_from].name} to {game_state['tiles'][index_of_tile_to_move_shapes_to].name}")
-            return True
+        await send_clients_log_message(f"Using {self.name}")
+
+        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_aqueduct, slot_index_to_burn_shape_from_here)
+        
+        # Move as many shapes as possible from the source tile to the destination tile
+        slots_to_fill = [i for i, slot in enumerate(game_state["tiles"][index_of_tile_to_move_shapes_to].slots_for_shapes) if not slot]
+        shapes_to_move = [i for i, slot in enumerate(game_state["tiles"][index_of_tile_to_move_shapes_from].slots_for_shapes) if slot and slot["shape"] == shape_to_move and slot["color"] == color_of_shape_to_move]
+
+        moves = min(len(slots_to_fill), len(shapes_to_move))
+        for _ in range(moves):
+            slot_index_to_fill = slots_to_fill.pop(0)
+            slot_index_to_move = shapes_to_move.pop(0)
+            await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, index_of_tile_to_move_shapes_from, slot_index_to_move, index_of_tile_to_move_shapes_to, slot_index_to_fill)
+        
+        await send_clients_log_message(f"Moved {moves} {color_of_shape_to_move} {shape_to_move}(s) from {game_state['tiles'][index_of_tile_to_move_shapes_from].name} to {game_state['tiles'][index_of_tile_to_move_shapes_to].name}")
+        return True

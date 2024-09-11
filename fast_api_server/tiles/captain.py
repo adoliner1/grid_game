@@ -14,7 +14,7 @@ class Captain(Tile):
                 {
                     "power_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "**Reaction:** After you [[receive]] a shape at a tile, you may ^^burn^^ a shape at a tile adjacent to that tile. Gain 1 point if you do.",
+                    "description": "**Reaction:** After you [[receive]] a shape at a tile, you may ^^burn^^ a shape at a tile adjacent to that tile, +1 point",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "data_needed_for_use": ['slot_and_tile_to_burn_shape'],
@@ -22,7 +22,7 @@ class Captain(Tile):
                 {
                     "power_to_reach_tier": 5,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** Same as above but gain 3 points",
+                    "description": "**Reaction:** Same as above but +3 points",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "data_needed_for_use": ['slot_and_tile_to_burn_shape'],

@@ -18,12 +18,15 @@ async def produce_shape_for_player(game_state, game_action_container_stack, send
 
 async def place_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
     tile_to_place_on = game_state["tiles"][tile_index]
+    old_shape =  tile_to_place_on.slots_for_shapes[slot_index]
     tile_to_place_on.slots_for_shapes[slot_index] = {'shape': shape, 'color': color}
     determine_power_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
     await send_clients_log_message(f"{color} placed a {color}_{shape} on {tile_to_place_on.name}")
+    if old_shape:
+        await send_clients_log_message(f"this trumped a {old_shape['color']}_{old_shape['shape']}")
     await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_place", placer=color, shape=shape, index_of_tile_placed_at=tile_index, slot_index_placed_at=slot_index)
 
 async def player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, player_color, tile, shape_type):
@@ -41,7 +44,6 @@ async def player_receives_a_shape_on_tile(game_state, game_action_container_stac
     await send_clients_game_state(game_state)
 
     await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, "on_receive", receiver=player_color, shape=shape_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
-
 
 async def move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
     shape_to_move = game_state["tiles"][from_tile_index].slots_for_shapes[from_slot_index]
@@ -156,7 +158,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
 
     if game_action_container.game_action == 'place_shape_on_tile_slot':
         shape_type_to_place = game_action_container.required_data_for_action["shape_type_to_place"]
-        slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, shape_type_to_place)
+        slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, shape_type_to_place, game_action_container.whose_action)
         available_client_actions["select_a_slot_on_a_tile"] = slots_that_can_be_placed_on
 
     elif game_action_container.game_action == 'use_a_tier':
@@ -314,7 +316,7 @@ def find_max_unique_pairs(remaining_shapes, current_pairs):
         return max_pairs
 
 #returns a dict where the keys are tile indices and the associated list are the indices of the slots on that tile that can be placed on
-def get_tile_slots_that_can_be_placed_on(game_state, shape_type):
+def get_tile_slots_that_can_be_placed_on(game_state, shape_type, color):
     
     tile_slots_that_can_be_placed_on = {}
 
@@ -322,7 +324,7 @@ def get_tile_slots_that_can_be_placed_on(game_state, shape_type):
         slots_for_tile = []
         if shape_type in tile.shapes_which_can_be_placed_on_this:
             for slot_index, slot in enumerate(tile.slots_for_shapes):
-                if slot is None:
+                if slot is None or (game_constants.shape_power[slot['shape']] < game_constants.shape_power[shape_type] and color == slot['color']):
                     slots_for_tile.append(slot_index)
             if slots_for_tile:
                 tile_slots_that_can_be_placed_on[tile_index] = slots_for_tile
