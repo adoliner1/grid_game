@@ -7,18 +7,22 @@ from game_engine import GameEngine
 from round_bonuses import *
 import json
 import copy
+import uuid
 import asyncio
 
 app = FastAPI()
-connected_clients: List[Dict] = []
-current_players = []
-game_engine = None
+connections_in_the_lobby: List[Dict] = []
+connections_to_games: List[Dict] = []
+game_engines = {}
 
 @app.websocket("/ws/lobby/")
 async def websocket_endpoint(websocket: WebSocket):
+    global connections_in_the_lobby
     await websocket.accept()
-    connection = {"websocket": websocket, "lobby_table_id": None}
-    connected_clients.append(connection)
+    player_token = generate_player_token()
+    connection = {"websocket": websocket, "lobby_table_id": None, "player_token": player_token}
+    connections_in_the_lobby.append(connection)
+    await websocket.send_json({"player_token": player_token})
     try:
         while True:
             data = await websocket.receive_json()
@@ -26,7 +30,7 @@ async def websocket_endpoint(websocket: WebSocket):
             if action == "create_lobby_table":
                 await create_lobby_table(websocket, data, connection)
             elif action == "join_lobby_table":
-                await join_lobby_table(websocket, data)
+                await join_lobby_table(websocket, data, connection)
             elif action == "fetch_lobby_tables":
                 await fetch_lobby_tables(websocket)
     except WebSocketDisconnect:
@@ -34,137 +38,208 @@ async def websocket_endpoint(websocket: WebSocket):
 
 async def create_lobby_table(websocket: WebSocket, data: Dict, connection: Dict):
     db: Session = next(get_db())
-    table_name = data.get("name", "New Lobby Table")
-    new_lobby_table = models.LobbyTable(name=table_name, status="Waiting")
-    db.add(new_lobby_table)
-    db.commit()
-    db.refresh(new_lobby_table)
-    connection["lobby_table_id"] = new_lobby_table.id
-    await notify_clients()
+    try:
+        table_name = data.get("name", "New Lobby Table")
+        new_lobby_table = models.LobbyTable(name=table_name, status="Waiting", player1_token=connection["player_token"])
+        db.add(new_lobby_table)
+        db.commit()
+        db.refresh(new_lobby_table)
+        connection["lobby_table_id"] = new_lobby_table.id
+        await notify_clients()
+    finally:
+        db.close()
 
-async def join_lobby_table(websocket: WebSocket, data: Dict):
+async def join_lobby_table(websocket: WebSocket, data: Dict, connection: Dict):
     db: Session = next(get_db())
-    table_id = data.get("lobby_table_id")
-    player_name = data.get("player_name")
-    lobby_table = db.query(models.LobbyTable).filter(models.LobbyTable.id == table_id).first()
-    if not lobby_table:
-        await websocket.send_json({"error": "Lobby table not found"})
-        return
-    
-    player = db.query(models.Player).filter(models.Player.name == player_name).first()
-    if not player:
-        player = models.Player(name=player_name, lobby_table_id=table_id)
-        db.add(player)
+    try:
+        table_id = data.get("lobby_table_id")
+        player_token = connection["player_token"]
+       
+        lobby_table = db.query(models.LobbyTable).filter(models.LobbyTable.id == table_id).first()
+        if not lobby_table:
+            await websocket.send_json({"error": "Lobby table not found"})
+            return
+       
+        if lobby_table.player1_token and lobby_table.player2_token:
+            await websocket.send_json({"error": "Lobby table is full"})
+            return
+        if not lobby_table.player1_token:
+            lobby_table.player1_token = player_token
+        else:
+            lobby_table.player2_token = player_token
+            lobby_table.status = "Full"
+       
         db.commit()
-        db.refresh(player)
-    else:
-        player.lobby_table_id = table_id
-        db.commit()
-    await notify_clients()
+       
+        connection["lobby_table_id"] = table_id
+       
+        if lobby_table.status == "Full":
+            await start_game(lobby_table)
+        else:
+            await notify_clients()
+    finally:
+        db.close()
 
 async def fetch_lobby_tables(websocket: WebSocket):
     db: Session = next(get_db())
-    lobby_tables = db.query(models.LobbyTable).all()
-    lobby_tables_data = [
-        {
-            "id": lobby_table.id,
-            "name": lobby_table.name,
-            "status": lobby_table.status,
-            "players": [{"id": player.id, "name": player.name} for player in lobby_table.players]
-        }
-        for lobby_table in lobby_tables
-    ]
-    await websocket.send_json({"lobby_tables": lobby_tables_data})
+    try:
+        lobby_tables = db.query(models.LobbyTable).all()
+        lobby_tables_data = [
+            {
+                "id": lobby_table.id,
+                "name": lobby_table.name,
+                "status": lobby_table.status,
+                "players": [lobby_table.player1_token, lobby_table.player2_token]
+            }
+            for lobby_table in lobby_tables
+        ]
+        await websocket.send_json({"lobby_tables": lobby_tables_data})
+    finally:
+        db.close()
 
 async def notify_clients():
     db: Session = next(get_db())
-    lobby_tables = db.query(models.LobbyTable).all()
-    lobby_tables_data = [
-        {
-            "id": lobby_table.id,
-            "name": lobby_table.name,
-            "status": lobby_table.status,
-            "players": [{"id": player.id, "name": player.name} for player in lobby_table.players]
-        }
-        for lobby_table in lobby_tables
-    ]
-    message = {"lobby_tables": lobby_tables_data}
-    for client in connected_clients:
-        await client["websocket"].send_json(message)
+    try:
+        lobby_tables = db.query(models.LobbyTable).all()
+        lobby_tables_data = [
+            {
+                "id": lobby_table.id,
+                "name": lobby_table.name,
+                "status": lobby_table.status,
+                "players": [lobby_table.player1_token, lobby_table.player2_token]
+            }
+            for lobby_table in lobby_tables
+        ]
+        message = {"lobby_tables": lobby_tables_data}
+        for client in connections_in_the_lobby:
+            await client["websocket"].send_json(message)
+    finally:
+        db.close()
 
 async def disconnect_handler(connection: Dict):
-    connected_clients.remove(connection)
+    connections_in_the_lobby.remove(connection)
     db: Session = next(get_db())
-    lobby_table_id = connection.get("lobby_table_id")
-    if lobby_table_id:
-        lobby_table = db.query(models.LobbyTable).filter(models.LobbyTable.id == lobby_table_id).first()
-        if lobby_table:
-            db.delete(lobby_table)
-            db.commit()
-        await notify_clients()
+    try:
+        lobby_table_id = connection.get("lobby_table_id")
+        if lobby_table_id:
+            lobby_table = db.query(models.LobbyTable).filter(models.LobbyTable.id == lobby_table_id).first()
+            if lobby_table:
+                db.delete(lobby_table)
+                db.commit()
+            await notify_clients()
+    finally:
+        db.close()
+
+async def start_game(lobby_table: models.LobbyTable):
+    db: Session = next(get_db())
+    try:
+        game = models.Game(status="In Progress", player1_token=lobby_table.player1_token, player2_token=lobby_table.player2_token)
+        db.add(game)
+        db.commit()
+        db.refresh(game)
+        game_id = game.id
+        game_engines[game_id] = GameEngine()
+        game_engines[game_id].set_websocket_callbacks(
+            lambda msg: send_message(game_id, msg),
+            lambda state: send_game_state(game_id, state),
+            lambda actions, data, color: send_available_actions(game_id, actions, data, color)
+        )
+        
+        for client in connections_in_the_lobby:
+            if client["lobby_table_id"] == lobby_table.id:
+                await client["websocket"].send_json({
+                    "action": "start_game",
+                    "game_id": game_id,
+                })
+        
+        asyncio.create_task(game_engines[game_id].start_game())
+    finally:
+        db.close()
+
+def generate_player_token():
+    return str(uuid.uuid4())
 
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
-    global game_engine, current_players
-
+    global connections_to_games, game_engines
     await websocket.accept()
-    if len(current_players) >= 2:
-        await websocket.send_json({
-            "action": "error",
-            "message": "Game is full"
-        })
-        await websocket.close()
-        return
-
-    player_color = "blue" if current_players else "red"
-    current_players.append({"websocket": websocket, "color": player_color})
-
-    if len(current_players) == 2:
-        await send_player_colors_to_clients()
-        game_engine = GameEngine()
-        game_engine.set_websocket_callbacks(send_clients_new_log_message, send_clients_new_game_state, send_available_actions_to_client)
-        asyncio.create_task(game_engine.start_game())
-
     try:
+        auth_data = await websocket.receive_json()
+        player_token = auth_data.get("player_token")
+        game_id = int(auth_data.get("game_id"))
+
+        db: Session = next(get_db())
+        game = db.query(models.Game).filter(models.Game.id == game_id).first()
+        db.close()
+        
+        if not game or game_id not in game_engines:
+            await websocket.send_json({"error": "Game not found"})
+            await websocket.close()
+            return
+        
+        game_engine = game_engines[game_id]
+
+        if game.player1_token == player_token:
+            player_color = "red"
+        elif game.player2_token == player_token:
+            player_color = "blue"
+        else:
+            await websocket.send_json({"error": "Unauthorized access"})
+            await websocket.close()
+            return
+        
+        connection = {
+            "websocket": websocket,
+            "game_id": game_id,
+            "player_token": player_token,
+            "player_color": player_color
+        }
+        connections_to_games.append(connection)
+        
+        print(f"Player {player_color} connected to game {game_id}")
+
+        await websocket.send_json({
+            "action": "initialize",
+            "player_color": player_color
+        })        
+        await send_game_state(game_id, game_engine.game_state)
+        await game_engine.get_and_send_available_actions()
+        
         while True:
             data = await websocket.receive_json()
-            asyncio.create_task(game_engine.process_data_from_client(data, player_color))
-
+            await game_engine.process_data_from_client(data, player_color)
+            
     except WebSocketDisconnect:
-        current_players = [p for p in current_players if p["websocket"] != websocket]
-        print(f"{player_color} player disconnected")
-        if not current_players:
-            game_engine = None
+        print(f"Player disconnected from game {game_id}")
+        connections_to_games[:] = [conn for conn in connections_to_games if conn["websocket"] != websocket]
 
-async def send_clients_new_log_message(message):
-        for player in current_players:
-            await player["websocket"].send_json({
-                "action": "message", 
-                "message": message
+async def send_message(game_id: int, message: str):
+    for connection in connections_to_games:
+        if connection["game_id"] == game_id:
+            await connection["websocket"].send_json({"action": "message", "message": message})
+
+async def send_game_state(game_id: int, game_state: Dict):
+    for connection in connections_to_games:
+        if connection["game_id"] == game_id:
+            await connection["websocket"].send_json({
+                "action": "update_game_state",
+                "game_state": json.loads(serialize_game_state(game_state))
             })
 
-async def send_player_colors_to_clients():
-    for player in current_players:
-        await player["websocket"].send_json({
-            "action": "initialize", 
-            "player_color": player["color"]
-        })
-
-async def send_clients_new_game_state(game_state):
-    for player in current_players:
-        await player["websocket"].send_json({
-            "action": "update_game_state",
-            "game_state": json.loads(serialize_game_state(game_state))
-        })
-
-async def send_available_actions_to_client(available_actions, current_piece_of_data_to_fill_in_current_action, player_color_to_send_to):
-    for player in current_players:
-        if player["color"] == player_color_to_send_to:
-            await player["websocket"].send_json({
+async def send_available_actions(game_id: int, available_actions: list, current_data: str, player_color_to_send_to: str):
+    for connection in connections_to_games:
+        if connection["game_id"] == game_id and connection["player_color"] == player_color_to_send_to:
+            await connection["websocket"].send_json({
                 "action": "current_available_actions",
                 "available_actions": available_actions,
-                "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
+                "current_piece_of_data_to_fill_in_current_action": current_data
             })
+
+async def send_game_state_to_one_client(websocket: WebSocket, game_state: Dict):
+    await websocket.send_json({
+        "action": "update_game_state",
+        "game_state": json.loads(serialize_game_state(game_state))
+    })
 
 def print_running_tasks():
     loop = asyncio.get_running_loop()
@@ -173,7 +248,7 @@ def print_running_tasks():
 
 def serialize_game_state(game_state):
     serialized_game_state = copy.deepcopy(game_state)
-    del serialized_game_state['listeners'] #delete listeners, it's a server only piece of game_state
+    del serialized_game_state['listeners']
     serialized_game_state["tiles"] = [tile.serialize() for tile in game_state["tiles"]]
     serialized_game_state["round_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["round_bonuses"]]
     return json.dumps(serialized_game_state)

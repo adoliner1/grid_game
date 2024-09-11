@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../stylesheets/lobby.css';
 
 function Lobby() {
-  const [playerName, setPlayerName] = useState('');
-  const [newPlayerName, setNewPlayerName] = useState('');
   const [lobbyTables, setLobbyTables] = useState([]);
   const [newLobbyTableName, setNewLobbyTableName] = useState('');
+  const [error, setError] = useState('');
   const socket = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     socket.current = new WebSocket('ws://localhost:8000/ws/lobby/');
-
+    
     socket.current.onopen = () => {
       console.log('WebSocket connection established');
       socket.current.send(JSON.stringify({ action: 'fetch_lobby_tables' }));
@@ -18,8 +19,17 @@ function Lobby() {
 
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.lobby_tables) {
+      if (data.player_token) {
+        localStorage.setItem('player_token', data.player_token);
+      } else if (data.lobby_tables) {
         setLobbyTables(data.lobby_tables);
+      } else if (data.action === 'start_game') {
+        // Store the game ID in localStorage
+        localStorage.setItem('game_id', data.game_id);
+        // Navigate to the game page
+        navigate(`/game`);
+      } else if (data.error) {
+        setError(data.error);
       }
     };
 
@@ -28,31 +38,21 @@ function Lobby() {
         socket.current.close();
       }
     };
-  }, []);
-
-  const handleSetPlayerName = () => {
-    setPlayerName(newPlayerName);
-  };
+  }, [navigate]);
 
   const handleCreateLobbyTable = () => {
     socket.current.send(JSON.stringify({ action: 'create_lobby_table', name: newLobbyTableName }));
+    setNewLobbyTableName('');
   };
 
   const handleJoinLobbyTable = (lobbyTableId) => {
-    socket.current.send(JSON.stringify({ action: 'join_lobby_table', lobby_table_id: lobbyTableId, player_name: playerName }));
+    socket.current.send(JSON.stringify({ action: 'join_lobby_table', lobby_table_id: lobbyTableId }));
   };
 
   return (
     <div className='lobby-div'>
-      <span>Current Player: {playerName}</span>
-      <input
-        type="text"
-        value={newPlayerName}
-        onChange={(e) => setNewPlayerName(e.target.value)}
-      />
-      <button onClick={handleSetPlayerName}>Set Player Name</button>
-
       <h2>Lobby Tables</h2>
+      {error && <p className="error">{error}</p>}
       <input
         type="text"
         placeholder="New Lobby Table Name"
@@ -60,7 +60,6 @@ function Lobby() {
         onChange={(e) => setNewLobbyTableName(e.target.value)}
       />
       <button onClick={handleCreateLobbyTable}>Create Lobby Table</button>
-
       <table>
         <thead>
           <tr>
@@ -75,9 +74,11 @@ function Lobby() {
             <tr key={lobbyTable.id}>
               <td>{lobbyTable.name}</td>
               <td>{lobbyTable.status}</td>
-              <td>{lobbyTable.players.map(player => player.name).join(', ')}</td>
+              <td>{lobbyTable.players.filter(Boolean).length} / 2</td>
               <td>
-                <button onClick={() => handleJoinLobbyTable(lobbyTable.id)}>Join</button>
+                {lobbyTable.status !== 'Full' && (
+                  <button onClick={() => handleJoinLobbyTable(lobbyTable.id)}>Join</button>
+                )}
               </td>
             </tr>
           ))}

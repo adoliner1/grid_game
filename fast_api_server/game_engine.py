@@ -94,14 +94,12 @@ class GameEngine:
             elif self.game_action_container_stack[-1].is_a_reaction:
                 await self.send_clients_log_message(f"Resetting current action")
                 self.reset_resettable_values(self.game_action_container_stack[-1].required_data_for_action)
-                await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="red"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-                await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+                self.get_and_send_available_actions()
             #game action pushed from an initial decision, we can just remove it entirely and then resend available actions for the initial decision
             else:
                 await self.send_clients_log_message(f"Resetting current action")
                 self.game_action_container_stack.pop()
-                await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="red"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="red")
-                await self.send_clients_available_actions(game_utilities.get_available_client_actions(self.game_state, self.game_action_container_stack[-1], player_color_to_get_actions_for="blue"), self.game_action_container_stack[-1].get_next_piece_of_data_to_fill(), player_color_to_send_to="blue")
+                await self.get_and_send_available_actions()
             return
         if self.game_action_container_stack[-1].game_action == "initial_decision":
             new_game_action_container = self.create_new_game_action_container_from_initial_decision(data)
