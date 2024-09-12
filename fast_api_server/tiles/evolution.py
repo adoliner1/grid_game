@@ -88,5 +88,5 @@ class Evolution(Tile):
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler:
-            await send_clients_log_message(f"{self.name} deducts 4 points from {ruler}")
+            await send_clients_log_message(f"{self.name} deducts 5 points from {ruler}")
             game_state["points"][ruler] -= 5
