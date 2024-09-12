@@ -47,8 +47,7 @@ class Plains(Tile):
         producing_tile_index = game_action_container.required_data_for_action.get('producing_tile_index')
         if producing_tile_index is not None:
             adjacent_tiles = game_utilities.get_adjacent_tile_indices(producing_tile_index)
-            plains_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-            available_tiles = [tile_index for tile_index in adjacent_tiles if tile_index != plains_index]
+            available_tiles = [tile_index for tile_index in adjacent_tiles]
             available_actions["select_a_tile"] = available_tiles
 
     def setup_listener(self, game_state):

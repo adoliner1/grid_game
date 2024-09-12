@@ -15,7 +15,6 @@ async def produce_shape_for_player(game_state, game_action_container_stack, send
     if calling_entity_is_a_tile: 
         await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_produce", amount_produced=amount, producing_player=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
 
-
 async def place_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
     tile_to_place_on = game_state["tiles"][tile_index]
     old_shape =  tile_to_place_on.slots_for_shapes[slot_index]
@@ -116,6 +115,18 @@ async def call_listener_functions_for_event_type(game_state, game_action_contain
             await get_and_send_available_actions()
             await game_action_container_stack[-1].event.wait()
 
+        #clean up reactions used by first player
+        for tile_index, tier_indices in list(reactions_by_player[second_player].tiers_to_resolve.items()):
+            tiers_to_remove = []
+            for tier_index in tier_indices:
+                if game_state['tiles'][tile_index].power_tiers[tier_index]['is_on_cooldown']:
+                    tiers_to_remove.append(tier_index)
+            
+            for tier_index in tiers_to_remove:
+                reactions_by_player[second_player].tiers_to_resolve[tile_index].remove(tier_index)
+            
+            if not reactions_by_player[second_player].tiers_to_resolve[tile_index]:
+                del reactions_by_player[second_player].tiers_to_resolve[tile_index]
 #sync
 def has_presence(tile, color):
     """

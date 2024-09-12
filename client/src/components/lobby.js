@@ -11,6 +11,7 @@ function Lobby() {
 
   useEffect(() => {
     socket.current = new WebSocket('ws://localhost:8000/ws/lobby/');
+    //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/lobby/`)
     
     socket.current.onopen = () => {
       console.log('WebSocket connection established');

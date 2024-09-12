@@ -1,3 +1,5 @@
+/* PROD
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Lobby from './components/lobby';
@@ -17,3 +19,22 @@ const App = () => {
 };
 
 export default App;
+*/
+
+import React from 'react';
+import Lobby from './components/lobby'
+import Game from './components/game';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+
+const App = () => {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <Game gameId="1" />
+      </header>
+    </div>
+  );
+};
+
+export default App;
+

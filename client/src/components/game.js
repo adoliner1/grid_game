@@ -224,18 +224,19 @@ const Game = () => {
             return;
         }
 
-
-        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/${game_id`)
+        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
         socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         socket.current.onopen = () => {
-            console.log("WebSocket connection established");
-            // Send the player token for authentication
+            console.log("WebSocket connection established"); }
+            // Send the player token for authentication - PROD
+
+            /*
             socket.current.send(JSON.stringify({
                 action: "authenticate",
                 player_token: player_token,
                 game_id: game_id
             }));
-        };
+        };*/ 
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data)
             switch (data.action) {
