@@ -3,17 +3,6 @@ import game_action_container
 import game_constants
 
 #async
-async def produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, amount, shape_type, calling_entity_name, calling_entity_is_a_tile=False):
-
-    game_state["shapes_in_storage"][player_color][shape_type] += amount
-
-    if calling_entity_name:
-        await send_clients_log_message(f" {calling_entity_name} produced {amount} {player_color}_{shape_type} for {player_color}")
-    else:
-        await send_clients_log_message(f" {player_color} produced {amount} {player_color}_{shape_type}")
-
-    if calling_entity_is_a_tile: 
-        await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_produce", amount_produced=amount, producing_player=player_color, shape=shape_type, producing_tile_name=calling_entity_name)
 
 async def place_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
     tile_to_place_on = game_state["tiles"][tile_index]
@@ -27,6 +16,14 @@ async def place_shape_on_tile(game_state, game_action_container_stack, send_clie
     if old_shape:
         await send_clients_log_message(f"this trumped a {old_shape['color']}_{old_shape['shape']}")
     await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_place", placer=color, shape=shape, index_of_tile_placed_at=tile_index, slot_index_placed_at=slot_index)
+
+async def place_leader_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, color):
+    game_state['location_of_leaders'][color] = tile_index
+    determine_power_levels(game_state)
+    update_presence(game_state)
+    determine_rulers(game_state)
+    await send_clients_game_state(game_state)
+    await send_clients_log_message(f"{color} placed their leader on {game_state['tiles'][tile_index].name}")
 
 async def player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, tile, shape_type):
     if None not in tile.slots_for_shapes:
@@ -171,6 +168,14 @@ def get_available_client_actions(game_state, game_action_container, player_color
         slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, shape_type_to_place, game_action_container.whose_action)
         available_client_actions["select_a_slot_on_a_tile"] = slots_that_can_be_placed_on
 
+    elif game_action_container.game_action == 'initial_circle_placement':
+        slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, 'circle', game_action_container.whose_action)
+        available_client_actions["select_a_slot_on_a_tile"] = slots_that_can_be_placed_on
+
+    elif game_action_container.game_action == 'initial_leader_placement':
+        slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, 'circle', game_action_container.whose_action)
+        available_client_actions["select_a_tile"] = game_constants.all_tile_indices
+
     elif game_action_container.game_action == 'use_a_tier':
         index_of_tile_in_use = game_action_container.required_data_for_action["index_of_tile_in_use"]
         index_of_tier_in_use = game_action_container.required_data_for_action["index_of_tier_in_use"]
@@ -181,13 +186,8 @@ def get_available_client_actions(game_state, game_action_container, player_color
         available_client_actions['select_a_tier'] = game_action_container.tiers_to_resolve
     #must be an initial_decision
     else:
-        available_client_actions['select_a_shape_in_storage'] = []
         available_client_actions['select_a_tier'] = {}
         available_client_actions['pass'] = []
-
-        for shape, amount in game_state["shapes_in_storage"][game_action_container.whose_action].items():
-            if amount > 0:
-                available_client_actions["select_a_shape_in_storage"].append(shape)
 
         for tile_index, tile in enumerate(game_state["tiles"]):
             available_client_actions['select_a_tier'][tile_index] = tile.get_useable_tiers(game_state)

@@ -29,7 +29,7 @@ html, body {
   font-size: clamp(2px, 1vw, 12px)
 }
 
-.pass-and-do-not-react-buttons {
+.action-buttons {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
@@ -133,97 +133,10 @@ svg.selectable:active {
   padding: 5px;
 }
 
-/* Text colors */
 .red-text {
   color: red;
 }
 
 .blue-text {
   color: blue;
-}
-
-.red-powerups { 
-  border: 2px solid red
-}
-
-.blue-powerups { 
-  border: 2px solid blue
-}
-
-/* Powerup styles */
-.powerup-container {
-  display: flex;
-  margin: 5px 0;
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
-}
-
-.powerup-description {
-  flex: 1;
-  margin-right: 20px;
-}
-
-.selectable-powerup {
-  border: 2px solid gold;
-  cursor: pointer;
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
-  transition: border-color 0.3s ease; /* Smooth transition for border color change */
-}
-
-.selectable-powerup:hover {
-  border-color: black;
-}
-
-.powerup-container > * {
-  box-sizing: border-box;
-}
-
-.red-powerups { 
-  border: 2px solid red
-}
-
-.blue-powerups { 
-  border: 2px solid blue
-}
-
-/* Modal styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  max-width: 80%;
-  max-height: 80%;
-  overflow-y: auto;
-  z-index: 1001;
-}
-
-.modal-close {
-  float: right;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.powerups {
-  display: flex;
-  justify-content: space-between;
-}
-
-.red-powerups, .blue-powerups {
-  flex: 1;
-  padding: 10px;
-  box-sizing: border-box;
 }

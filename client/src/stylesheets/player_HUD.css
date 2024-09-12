@@ -1,0 +1,21 @@
+/* shapes_in_storage.css */
+.player-info {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 2px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.points-presence-stamina-peak-power-row {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 2px;
+    flex-direction: row;
+}
+
+.player-has-passed {
+    background-color: #d3d3d3;
+}

@@ -11,7 +11,6 @@ import asyncio
 import round_bonuses
 from tiles.tile import Tile
 
-
 class GameEngine:
 
     def __init__(self):
@@ -32,12 +31,51 @@ class GameEngine:
 
     async def start_game(self):
         await self.start_round()
+        await self.perform_initial_placements()
         await self.run_game_loop()
+
+    async def perform_initial_placements(self):
+        await self.send_clients_log_message(f"players must make their initial placements")  
+        await self.send_clients_game_state(self.game_state)
+        for number_of_initial_circles_placed in range(4):
+            player = 'red' if number_of_initial_circles_placed % 2 == 0 else 'blue'
+            await self.send_clients_log_message(f"{player} must place a circle")            
+            action = game_action_container.GameActionContainer(
+                event=asyncio.Event(),
+                game_action="initial_circle_placement",
+                required_data_for_action={
+                    'tile_slot_to_place_on': {}
+                },
+                whose_action=player
+            )
+
+            self.game_action_container_stack.append(action)
+            await self.get_and_send_available_actions()
+            await self.game_action_container_stack[-1].event.wait()
+            await self.send_clients_game_state(self.game_state)
+
+        for player in game_constants.player_colors:
+            await self.send_clients_log_message(f"{player} must place their leader")
+            action = game_action_container.GameActionContainer(
+                event=asyncio.Event(),
+                game_action="initial_leader_placement",
+                required_data_for_action={
+                    'tile_index_to_place_on': {}
+                },
+                whose_action=player
+            )
+
+            self.game_action_container_stack.append(action)
+            await self.get_and_send_available_actions()
+            await self.game_action_container_stack[-1].event.wait()  
+            await self.send_clients_game_state(self.game_state)    
 
     async def get_and_send_available_actions(self):
         top_of_game_action_stack = self.game_action_container_stack[-1]
-        await self.send_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for="red"), top_of_game_action_stack.get_next_piece_of_data_to_fill(), "red")
-        await self.send_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for="blue"), top_of_game_action_stack.get_next_piece_of_data_to_fill(), "blue")    
+        for player in game_constants.player_colors:
+            await self.send_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for=player),
+                                              top_of_game_action_stack.get_next_piece_of_data_to_fill(),
+                                              player)
 
     #whenever we're in this loop, it means an initial (turn starting) decision needs to be made
     async def run_game_loop(self):
@@ -71,9 +109,8 @@ class GameEngine:
         if self.game_action_container_stack[-1].whose_action != player_color:
             await self.send_clients_log_message(f"{player_color} tried to take action but it's not their action to take")
             return
-        await self.perform_conversions(player_color, data["conversions"])
 
-        if data['client_action'] == "do_not_react":     
+        if data['client_action'] == "do_not_react":    
             if not self.game_action_container_stack[-1].is_a_reaction:
                 await self.send_clients_log_message(f"{player_color} chose not to react but it's not a reaction on top of the stack")
             else:
@@ -103,7 +140,36 @@ class GameEngine:
                 self.game_action_container_stack.pop()
                 await self.get_and_send_available_actions()
             return
-        if self.game_action_container_stack[-1].game_action == "initial_decision":
+
+        if self.game_action_container_stack[-1].game_action == "initial_circle_placement":
+            await game_utilities.place_shape_on_tile(self.game_state,
+                                              self.game_action_container_stack,
+                                                self.send_clients_log_message,
+                                                  self.get_and_send_available_actions,
+                                                    self.send_clients_game_state, 
+                                                     data['tile_slot_to_place_on']['tile_index'],
+                                                       data['tile_slot_to_place_on']['slot_index'],
+                                                         'circle',
+                                                           player_color)
+            
+            self.game_action_container_stack.pop().event.set()
+            await self.send_clients_game_state(self.game_state)            
+            return
+        
+        elif self.game_action_container_stack[-1].game_action == "initial_leader_placement":
+            await game_utilities.place_leader_on_tile(self.game_state,
+                                              self.game_action_container_stack,
+                                                self.send_clients_log_message,
+                                                  self.get_and_send_available_actions,
+                                                    self.send_clients_game_state, 
+                                                     data['tile_index_to_place_on'],
+                                                        player_color)
+            
+            self.game_action_container_stack.pop().event.set()
+            await self.send_clients_game_state(self.game_state)            
+            return
+            
+        elif self.game_action_container_stack[-1].game_action == "initial_decision":
             new_game_action_container = self.create_new_game_action_container_from_initial_decision(data)
             if new_game_action_container:
                 self.game_action_container_stack.append(new_game_action_container)
@@ -124,7 +190,7 @@ class GameEngine:
                 #so it would erroneously execute the action that spawned the reactions again if we were to let it keep running
                 return
 
-        #should be use a tier    
+        #should be ongoing use a tier
         else:
             data_key = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
             self.game_action_container_stack[-1].required_data_for_action[data_key] = data[data_key]
@@ -153,9 +219,6 @@ class GameEngine:
     #only ever executing top of stack.. don't need to pass container?
     async def execute_game_action(self, game_action_container):
         match game_action_container.game_action:
-            case 'place_shape_on_tile_slot':
-                if not await self.execute_place_shape_on_tile_slot_action(game_action_container):
-                    return False
             case 'use_a_tier':
                 tile = self.game_state["tiles"][game_action_container.required_data_for_action["index_of_tile_in_use"]]
                 tier_index = game_action_container.required_data_for_action["index_of_tier_in_use"]
@@ -169,7 +232,7 @@ class GameEngine:
         #if we fail before here... we need to reset some data in required data i think
         self.game_action_container_stack.pop()
         await self.send_clients_game_state(self.game_state)
-        return True    
+        return True
 
     def create_new_game_action_container_from_initial_decision(self, data):
         match data['client_action']:
@@ -180,16 +243,7 @@ class GameEngine:
                     required_data_for_action={},
                     whose_action=self.game_state['whose_turn_is_it']
                 )
-            case 'select_a_shape_in_storage':
-                return game_action_container.GameActionContainer(
-                    event=asyncio.Event(),
-                    game_action="place_shape_on_tile_slot",
-                    required_data_for_action={
-                        "shape_type_to_place": data['initial_data_passed_along_with_choice'],
-                        "tile_slot_to_place_on": {}
-                    },
-                    whose_action=self.game_state['whose_turn_is_it']
-                )
+
             case 'select_a_tier':
                 tile_index = data['initial_data_passed_along_with_choice']['tile_index']
                 tier_index = data['initial_data_passed_along_with_choice']['tier_index']
@@ -253,10 +307,6 @@ class GameEngine:
 
         game_state = {
             "round": 0,
-            "shapes_in_storage": {
-                "red": { "circle": 0, "square": 0, "triangle": 0 },
-                "blue": { "circle": 0, "square": 0, "triangle": 0 }
-            },
             "points": {
                 "red": 0,
                 "blue": 0
@@ -272,6 +322,14 @@ class GameEngine:
             "player_has_passed": {
                 "red": False,
                 "blue": False
+            },
+            "stamina": {
+                "red": 3,
+                "blue": 3
+            },
+            "location_of_leaders" :{
+                "red": None,
+                "blue": None,                
             },
             "tiles": [tile() for tile in chosen_tiles],
             "whose_turn_is_it": "red",
@@ -294,71 +352,6 @@ class GameEngine:
                 whose_action="red",
             )
 
-    async def execute_place_shape_on_tile_slot_action(self, game_action_container):
-        tile_index = game_action_container.required_data_for_action["tile_slot_to_place_on"]["tile_index"]
-        slot_index = game_action_container.required_data_for_action["tile_slot_to_place_on"]["slot_index"]
-        shape_type = game_action_container.required_data_for_action["shape_type_to_place"]
-        color_of_player_placing = game_action_container.whose_action
-        tile = self.game_state["tiles"][tile_index]
-        slot = tile.slots_for_shapes[slot_index]
-        
-        if self.game_state["whose_turn_is_it"] != color_of_player_placing:
-            await self.send_clients_log_message("Not your turn")
-            return False
-
-        if shape_type not in tile.shapes_which_can_be_placed_on_this:
-            await self.send_clients_log_message("Cannot place this shape here")
-            return False    
-
-        if slot and not (game_constants.shape_power[slot['shape']] < game_constants.shape_power[shape_type] and color_of_player_placing == slot['color']):
-            await self.send_clients_log_message("Cannot place on this slot, it's not empty or contains one of your weaker shapes")
-            return False
-
-        if self.game_state["shapes_in_storage"][color_of_player_placing][shape_type] <= 0:
-            await self.send_clients_log_message(f"No {shape_type}s in storage")
-            return False
-
-        self.game_state["shapes_in_storage"][color_of_player_placing][shape_type] -= 1
-
-        await game_utilities.place_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index, slot_index, shape_type, color_of_player_placing)
-
-        game_utilities.determine_rulers(self.game_state)
-        return True
-
-    async def perform_conversions(self, player_color, conversions):
-        for conversion in conversions:
-                match conversion:
-                    case "circle to square":
-                        if self.game_state["shapes_in_storage"][player_color]["circle"] >= 3:
-                            self.game_state["shapes_in_storage"][player_color]["circle"] -= 3
-                            self.game_state["shapes_in_storage"][player_color]["square"] += 1
-                            await self.send_clients_log_message(f"{player_color} converts 3 circles to a square")
-                        else:
-                            await self.send_clients_log_message(f"{player_color} tries to convert 3 circles to a square but doesn't have enough circles")
-                    case "square to triangle":
-                        if self.game_state["shapes_in_storage"][player_color]["square"] >= 3:
-                            self.game_state["shapes_in_storage"][player_color]["square"] -= 3
-                            self.game_state["shapes_in_storage"][player_color]["triangle"] += 1
-                            await self.send_clients_log_message(f"{player_color} converts 3 squares to a triangle")
-                        else:
-                            await self.send_clients_log_message(f"{player_color} tries to convert 3 squares to a triangle but doesn't have enough squares")
-
-                    case "triangle to square":
-                        if self.game_state["shapes_in_storage"][player_color]["triangle"] >= 1:
-                            self.game_state["shapes_in_storage"][player_color]["triangle"] -= 1
-                            self.game_state["shapes_in_storage"][player_color]["square"] += 1
-                            await self.send_clients_log_message(f"{player_color} converts 1 triangle to a square")
-                        else:
-                            await self.send_clients_log_message(f"{player_color} tries to convert a triangle to a square but doesn't have enough triangles")
-
-                    case "square to circle":
-                        if self.game_state["shapes_in_storage"][player_color]["square"] >= 1:
-                            self.game_state["shapes_in_storage"][player_color]["square"] -= 1
-                            self.game_state["shapes_in_storage"][player_color]["circle"] += 1
-                            await self.send_clients_log_message(f"{player_color} converts 1 square to 1 circle")
-                        else:
-                            await self.send_clients_log_message(f"{player_color} tries to convert a square to a circle but doesn't have enough squares")
-
     async def start_round(self):
         await self.send_clients_log_message("Starting new round")
         round = self.game_state["round"] 
@@ -375,15 +368,7 @@ class GameEngine:
         for _, listener_function in self.game_state["listeners"]["start_of_round"].items():
                 await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
 
-        #give base income
-        await self.give_base_income_to_players()
         game_utilities.determine_rulers(self.game_state)
-
-    async def give_base_income_to_players(self):
-        await self.send_clients_log_message("Giving base income")
-        for player_color in game_constants.player_colors:
-            for shape, amount in game_constants.base_income:
-                await game_utilities.produce_shape_for_player(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, player_color, amount, shape, None)
 
     async def player_passes(self, player_color):
         if self.game_state["whose_turn_is_it"] != player_color:

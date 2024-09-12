@@ -14,12 +14,19 @@ const Tile = ({
     is_on_cooldown,
     slots_for_shapes,
     tile_index,
+    location_of_leaders,
     ruler,
     available_actions,
     onTileClick,
     onSlotClick,
     onPowerTierClick,
 }) => {
+
+    const meeple = (color) => (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill={color}>
+            <path d="M12 2C8.7 2 6 4.7 6 8c0 1.3.5 2.5 1.3 3.5l-.6 3.1C6.4 15.6 7 17 8 17h8c1 0 1.6-1.4 1.3-2.4l-.6-3.1C17.5 10.5 18 9.3 18 8c0-3.3-2.7-6-6-6z"/>
+        </svg>
+    );
 
     const isSelectableTier = (tier_index) => {
         console.log(available_actions)
@@ -45,18 +52,19 @@ const Tile = ({
           .replace(/\b(action|reaction)\b/gi, '<u>$1</u>')  // Underline action and reaction
           .replace(/\n/g, '<br><br>')  // New line
       }
-      
 
     return (
         <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'} ${is_on_cooldown ? 'tile-on-cooldown' : ''}`} onClick={tileClickHandler}>
         <div className="tile-header">
-        <div className={`ruler-crown-in-header ${ruler ? `ruler-crown-${ruler}` : ''}`}>
-            <svg className="crown-icon" viewBox="0 0 24 24" width="24" height="24">
-                <path fill="currentColor" d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z" />
-            </svg>
-            {minimum_power_to_rule}
-        </div>
+            <div className={`ruler-crown-in-header ${ruler ? `ruler-crown-${ruler}` : ''}`}>
+                <svg className="crown-icon" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="currentColor" d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z" />
+                </svg>
+                {minimum_power_to_rule}
+            </div>
+            <div className='red-leader-here'>{location_of_leaders.red === tile_index && meeple('red')} </div>
             <h3 className='tile-name'>{name}</h3>
+            <div className='blue-leader-here'>{location_of_leaders.blue === tile_index && meeple('blue')} </div>
             <span className="tile-type">{type}</span>
         </div>
             {description && (<p className="tile-description" dangerouslySetInnerHTML={{ __html: parseCustomMarkup(description) }}></p>)}
