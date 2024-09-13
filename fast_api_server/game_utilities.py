@@ -163,14 +163,9 @@ def get_available_client_actions(game_state, game_action_container, player_color
     
     available_client_actions = {}
 
-    if game_action_container.game_action == 'place_shape_on_tile_slot':
-        shape_type_to_place = game_action_container.required_data_for_action["shape_type_to_place"]
-        slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, shape_type_to_place, game_action_container.whose_action)
-        available_client_actions["select_a_slot_on_a_tile"] = slots_that_can_be_placed_on
-
-    elif game_action_container.game_action == 'initial_circle_placement':
+    if game_action_container.game_action == 'initial_circle_placement':
         slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, 'circle', game_action_container.whose_action)
-        available_client_actions["select_a_slot_on_a_tile"] = slots_that_can_be_placed_on
+        available_client_actions["select_a_slot"] = slots_that_can_be_placed_on
 
     elif game_action_container.game_action == 'initial_leader_placement':
         slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, 'circle', game_action_container.whose_action)
@@ -182,17 +177,99 @@ def get_available_client_actions(game_state, game_action_container, player_color
         tile_in_use = game_state["tiles"][index_of_tile_in_use]
         tile_in_use.set_available_actions_for_use(game_state, index_of_tier_in_use, game_action_container, available_client_actions)
 
+    elif game_action_container.game_action == 'move':
+        available_client_actions["select_a_tile"] = get_adjacent_tile_indices(game_state['location_of_leaders'][game_action_container.whose_action])
+
+    elif game_action_container.game_action == 'recruit':
+        if game_action_container.get_next_piece_of_data_to_fill() == 'shape_type_to_recruit':
+            available_client_actions['select_a_shape_in_the_HUD'] = get_shapes_that_can_be_recruited(game_state, game_action_container.whose_action)
+        else:
+            shape_to_recruit = game_action_container.required_data_for_action['shape_type_to_recruit']
+            tiles_within_recruiting_range = get_tiles_within_recruiting_range(game_state, shape_to_recruit, game_action_container.whose_action)
+            available_client_actions['select_a_slot'] = get_tile_slots_that_can_be_recruited_on(game_state, shape_to_recruit, game_action_container.whose_action, tiles_within_recruiting_range)
+
+    elif game_action_container.game_action == 'exile':
+        if game_action_container.get_next_piece_of_data_to_fill() == 'tile_slot_to_exile_from':
+            tiles_within_exiling_range = get_tiles_within_exiling_range(game_state, game_action_container.whose_action)
+            available_client_actions['select_a_slot'] = get_tile_slots_that_can_be_exiled(game_state, game_action_container.whose_action, tiles_within_exiling_range)
+        else:
+            adjacent_tile_indices = get_adjacent_tile_indices(game_action_container.required_data_for_action["tile_slot_to_exile_from"]["tile_index"])
+            adjacent_tile_indices_with_empty_slots = [tile_index for tile_index in adjacent_tile_indices if None in game_state['tiles'][tile_index].slots_for_shapes]
+            available_client_actions['select_a_tile'] = adjacent_tile_indices_with_empty_slots
+
     elif game_action_container.game_action == 'choose_a_reaction_to_resolve':
         available_client_actions['select_a_tier'] = game_action_container.tiers_to_resolve
-    #must be an initial_decision
-    else:
-        available_client_actions['select_a_tier'] = {}
-        available_client_actions['pass'] = []
 
+    #giving actions for the initial_decision
+    else:
+        available_client_actions['pass'] = []
+        available_client_actions['move'] = []
+        available_client_actions['recruit'] = []
+        available_client_actions['exile'] = []
+
+        available_client_actions['select_a_tier'] = {}
         for tile_index, tile in enumerate(game_state["tiles"]):
             available_client_actions['select_a_tier'][tile_index] = tile.get_useable_tiers(game_state)
 
     return available_client_actions
+
+def calculate_exiling_range(game_state, player_color):
+    pass
+
+def calculate_exiling_costs(game_state, player_color):
+    pass
+
+def get_tiles_within_exiling_range(game_state, player_color):
+    calculate_exiling_range(game_state, player_color)
+    exile_range = game_state['exile_range'][player_color]
+    location_of_leader = game_state['location_of_leaders'][player_color]
+    tiles_in_range = []
+
+    leader_row = location_of_leader // game_constants.grid_size
+    leader_col = location_of_leader % game_constants.grid_size
+
+    for row in range(game_constants.grid_size):
+        for col in range(game_constants.grid_size):
+            distance = abs(row - leader_row) + abs(col - leader_col)
+            
+            if distance <= exile_range:
+                tile_index = row * game_constants.grid_size + col
+                tiles_in_range.append(tile_index)
+    
+    return tiles_in_range
+
+def calculate_recruiting_range(game_state, shape, player_color):
+    pass
+
+def calculate_recruiting_costs(game_state, player_color):
+    pass
+
+def get_tiles_within_recruiting_range(game_state, shape_to_recruit, player_color):
+    calculate_recruiting_range(game_state, shape_to_recruit, player_color)
+    recruit_range = game_state['recruit_range'][player_color]
+    location_of_leader = game_state['location_of_leaders'][player_color]
+    tiles_in_range = []
+
+    leader_row = location_of_leader // game_constants.grid_size
+    leader_col = location_of_leader % game_constants.grid_size
+
+    for row in range(game_constants.grid_size):
+        for col in range(game_constants.grid_size):
+            distance = abs(row - leader_row) + abs(col - leader_col)
+            
+            if distance <= recruit_range:
+                tile_index = row * game_constants.grid_size + col
+                tiles_in_range.append(tile_index)
+    
+    return tiles_in_range
+
+def get_shapes_that_can_be_recruited(game_state, player_color):
+    calculate_recruiting_costs(game_state, player_color)
+    shapes_that_can_be_recruited = []
+    for shape in game_constants.shapes:
+        if game_state['costs_to_recruit'][player_color][shape] <= game_state['stamina'][player_color]:
+            shapes_that_can_be_recruited.append(shape)
+    return shapes_that_can_be_recruited
 
 def get_other_player_color(player_color):
     return 'blue' if player_color == 'red' else 'red'
@@ -324,6 +401,38 @@ def find_max_unique_pairs(remaining_shapes, current_pairs):
                 max_pairs = max(max_pairs, pairs_count)
     
         return max_pairs
+
+def get_tile_slots_that_can_be_recruited_on(game_state, shape_type, color, tile_indices):
+    
+    tile_slots_that_can_be_recruited_on = {}
+
+    for tile_index in tile_indices:
+        slots_for_tile = []
+        tile = game_state['tiles'][tile_index]
+        if shape_type in tile.shapes_which_can_be_placed_on_this:
+            for slot_index, slot in enumerate(tile.slots_for_shapes):
+                if slot is None or (game_constants.shape_power[slot['shape']] < game_constants.shape_power[shape_type] and color == slot['color']):
+                    slots_for_tile.append(slot_index)
+            if slots_for_tile:
+                tile_slots_that_can_be_recruited_on[tile_index] = slots_for_tile
+    
+    return tile_slots_that_can_be_recruited_on
+
+def get_tile_slots_that_can_be_exiled(game_state, color, tile_indices):
+    
+    calculate_exiling_costs(game_state, color)
+    tile_slots_that_can_be_exiled = {}
+
+    for tile_index in tile_indices:
+        slots_for_tile = []
+        tile = game_state['tiles'][tile_index]
+        for slot_index, slot in enumerate(tile.slots_for_shapes):
+            if slot is not None and game_state['costs_to_exile'][color][slot['shape']] <= game_state['stamina'][color]:
+                slots_for_tile.append(slot_index)
+        if slots_for_tile:
+            tile_slots_that_can_be_exiled[tile_index] = slots_for_tile
+    
+    return tile_slots_that_can_be_exiled
 
 #returns a dict where the keys are tile indices and the associated list are the indices of the slots on that tile that can be placed on
 def get_tile_slots_that_can_be_placed_on(game_state, shape_type, color):

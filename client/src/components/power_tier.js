@@ -1,5 +1,6 @@
 import React from 'react';
 import '../stylesheets/power_tier.css'
+import Tooltip from './tooltip';
 
 const PowerTier = ({
   tier,
@@ -28,17 +29,21 @@ const PowerTier = ({
   }
 
   const cooldown_clock = (
-    <svg className="cooldown-icon" viewBox="0 0 24 24" width="12" height="12">
-      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
-      <path d="M12 6v6l4 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
+    <Tooltip text="Once per Round">
+      <svg className="cooldown-icon" viewBox="0 0 24 24" width="12" height="12">
+        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+        <path d="M12 6v6l4 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    </Tooltip>
+  );
 
   const crown = (
-    <svg className={`crown-icon ${getCrownClass()}`} viewBox="0 0 24 24" width="12" height="12">
+    <Tooltip text="Must be Ruler">
+      <svg className={`crown-icon ${getCrownClass()}`} viewBox="0 0 24 24" width="12" height="12">
         <path fill="currentColor" d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z" />
-    </svg>
-  )
+      </svg>
+    </Tooltip>
+  );
 
   const Indicator = ({ color }) => (
     <svg width="10" height="2" viewBox="0 0 10 2">
@@ -53,7 +58,9 @@ const PowerTier = ({
     >
       <div className='power-tier-indicators-and-requirements'>
           <div className="ruler-tier"> {tier.must_be_ruler ? crown : null} </div>
-          <div className="power-requirement-at-tier">{tier.power_to_reach_tier}</div>
+          <Tooltip text="Power to Reach Tier">
+            <div className="power-requirement-at-tier">{tier.power_to_reach_tier}</div>
+          </Tooltip>
           <div className="has_a_cooldown">{tier.has_a_cooldown ? cooldown_clock : null}</div>
           <div className="player-indicators-for-power-tiers">
             {redAtThisLevel && <Indicator color="red" />}

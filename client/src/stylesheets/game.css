@@ -15,7 +15,7 @@ html, body {
   margin: 0;
   padding: 1vh 1vw;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* Info section */
@@ -26,7 +26,8 @@ html, body {
   flex-direction: column;
   margin-right: 5px;
   overflow-y: auto;
-  font-size: clamp(2px, 1vw, 12px)
+  font-size: clamp(2px, 1vw, 12px);
+  position: relative;
 }
 
 .action-buttons {
@@ -139,4 +140,53 @@ svg.selectable:active {
 
 .blue-text {
   color: blue;
+}
+
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+  z-index: 1000;
+}
+
+.tooltip-text {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1001;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+.game-container {
+  position: relative;
+  z-index: 1;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.info_section {
+  overflow: visible !important;
+}
+
+#root {
+  isolation: isolate;
 }

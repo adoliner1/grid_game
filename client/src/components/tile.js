@@ -2,6 +2,7 @@ import React from 'react'
 import '../stylesheets/tile.css'
 import ShapesOnTile from './shapes_on_tile'
 import PowerTier from './power_tier'
+import Tooltip from './tooltip';
 
 const Tile = ({
     name,
@@ -23,10 +24,11 @@ const Tile = ({
 }) => {
 
     const meeple = (color) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill={color}>
-            <path d="M12 2C8.7 2 6 4.7 6 8c0 1.3.5 2.5 1.3 3.5l-.6 3.1C6.4 15.6 7 17 8 17h8c1 0 1.6-1.4 1.3-2.4l-.6-3.1C17.5 10.5 18 9.3 18 8c0-3.3-2.7-6-6-6z"/>
-        </svg>
-    );
+        <Tooltip text={`${color} Leader`}>
+            <svg width="20" height="24" viewBox="0 0 24 28" fill={color}>
+                <path d="M12 2C8.7 2 6 4.7 6 8c0 1.3.5 2.5 1.3 3.5l-.6 3.1C6.4 15.6 7 17 8 17h8c1 0 1.6-1.4 1.3-2.4l-.6-3.1C17.5 10.5 18 9.3 18 8c0-3.3-2.7-6-6-6z"/>
+            </svg>
+        </Tooltip> )
 
     const isSelectableTier = (tier_index) => {
         console.log(available_actions)
@@ -57,9 +59,11 @@ const Tile = ({
         <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'} ${is_on_cooldown ? 'tile-on-cooldown' : ''}`} onClick={tileClickHandler}>
         <div className="tile-header">
             <div className={`ruler-crown-in-header ${ruler ? `ruler-crown-${ruler}` : ''}`}>
+            <Tooltip text="Power Needed to Rule">
                 <svg className="crown-icon" viewBox="0 0 24 24" width="24" height="24">
                     <path fill="currentColor" d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z" />
                 </svg>
+            </Tooltip>
                 {minimum_power_to_rule}
             </div>
             <div className='red-leader-here'>{location_of_leaders.red === tile_index && meeple('red')} </div>

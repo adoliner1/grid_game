@@ -49,6 +49,15 @@ const Game = () => {
         sendRequest()
     }
 
+    const handleShapeInHUDClick = (shape_type) => {
+        if (availableActions.hasOwnProperty('select_a_shape_in_the_HUD')) {
+            clickSound.current.play();
+            request.current.client_action = 'select_a_shape_in_the_HUD'
+            request.current[currentPieceOfDataToFill] = shape_type
+            sendRequest()
+        }
+    }
+
     const handleMoveButtonClick = () => {
         if (availableActions.hasOwnProperty('move')) {
             clickSound.current.play();
@@ -84,8 +93,8 @@ const Game = () => {
 
     const handleSlotClick = (tile_index, slot_index) => {
         clickSound.current.play();
-        if (availableActions.hasOwnProperty('select_a_slot_on_a_tile')) {
-            request.current.client_action = "select_a_slot_on_a_tile"
+        if (availableActions.hasOwnProperty('select_a_slot')) {
+            request.current.client_action = "select_a_slot"
             request.current[currentPieceOfDataToFill] = {}
             request.current[currentPieceOfDataToFill].slot_index = slot_index
             request.current[currentPieceOfDataToFill].tile_index = tile_index
@@ -219,6 +228,9 @@ const Game = () => {
               stamina={gameState.stamina.red}
               peak_power={gameState.peak_power.red}
               available_actions={availableActions}
+              costs_to_exile={gameState.costs_to_exile.red}
+              costs_to_recruit={gameState.costs_to_recruit.red}
+              onShapeClick={handleShapeInHUDClick}
             />
             <PlayerHUD 
               player_color="blue" 
@@ -230,6 +242,9 @@ const Game = () => {
               stamina={gameState.stamina.blue}
               peak_power={gameState.peak_power.blue}
               available_actions={availableActions}
+              costs_to_exile={gameState.costs_to_exile.blue}
+              costs_to_recruit={gameState.costs_to_recruit.blue}
+              onShapeClick={handleShapeInHUDClick}
             />
             <div className="action-buttons">
                 <button onClick={handlePassButtonClick} disabled={!availableActions.hasOwnProperty('pass')} className={availableActions.hasOwnProperty('pass') ? 'btn-enabled' : 'btn-disabled'} >
