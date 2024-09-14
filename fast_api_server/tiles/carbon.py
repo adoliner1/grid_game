@@ -9,24 +9,16 @@ class Carbon(Tile):
             type="Giver/Scorer",
             description="At the __end of a round__, for each circle you have here, [[receive]] another circle here",
             number_of_slots=9,
-            minimum_power_to_rule=1,            
+            minimum_power_to_rule=3,            
             power_tiers=[
                 {
-                    "power_to_reach_tier": 0,
-                    "must_be_ruler": False,                    
+                    "power_to_reach_tier": 3,
+                    "must_be_ruler": True,                    
                     "description": "**Action:** ^^Burn^^ 3 of your circles here to [[receive]] a triangle here",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
                     "data_needed_for_use": [],
-                },
-                {
-                    "power_to_reach_tier": 6,
-                    "must_be_ruler": True,                    
-                    "description": "**Action:** ^^Burn^^ 3 of your circles here to [[receive]] a triangle here. +3 points if you do.",
-                    "is_on_cooldown": False,
-                    "has_a_cooldown": False,
-                    "data_needed_for_use": [],
-                },                
+                },              
             ]      
         )
 
@@ -36,10 +28,8 @@ class Carbon(Tile):
         number_of_circles_current_player_has_here = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "circle" and slot["color"] == whose_turn_is_it)
         ruler = self.determine_ruler(game_state)
 
-        if number_of_circles_current_player_has_here >= 3:
+        if number_of_circles_current_player_has_here >= 3 and ruler == whose_turn_is_it and self.power_per_player[whose_turn_is_it] >= self.power_tiers[0]['power_to_reach_tier']:
             useable_tiers.append(0)
-            if ruler == whose_turn_is_it and self.power_per_player[whose_turn_is_it] >= 6:
-                useable_tiers.append(1)
 
         return useable_tiers
 
@@ -66,14 +56,8 @@ class Carbon(Tile):
         if circle_count < 3:
             await send_clients_log_message(f"Not enough circles to burn on {self.name}")
             return False
-
-        if tier_index == 1:
-            ruler = self.determine_ruler(game_state)
-            if player != ruler or self.power_per_player[player] < 6:
-                await send_clients_log_message(f"Cannot use tier 1 of {self.name}. Must be ruler with at least 6 power.")
-                return False
         
-        await send_clients_log_message(f"{self.name} tier {tier_index} is used")
+        await send_clients_log_message(f"{self.name} is used")
         circles_burned = 0
         for index, slot in enumerate(self.slots_for_shapes):
             if slot and slot["shape"] == "circle" and slot["color"] == player:
@@ -87,9 +71,4 @@ class Carbon(Tile):
             return False
         
         await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player, self, 'triangle')
-        
-        if tier_index == 1:
-            game_state["points"][player] += 3
-            await send_clients_log_message(f"{player} gains 3 points from using tier 1 of {self.name}")
-
         return True

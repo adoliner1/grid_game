@@ -13,22 +13,22 @@ class Maestro(Tile):
             number_of_slots=5,
             power_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "power_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "**Reaction:** Once per round, after you [[receive]] a shape, you may move it to a tile adjacent to the tile you [[received]] it at",
+                    "description": "**Reaction:** After you [[receive]] a shape, you may move it to a tile adjacent to the tile you [[received]] it at",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,                     
                     "data_needed_for_use": ['slot_and_tile_to_move_shape_to']
                 },
                 {
-                    "power_to_reach_tier": 7,
+                    "power_to_reach_tier": 6,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** Same as above but no cooldown",
+                    "description": "**Reaction:** Same as above (this tier has no cooldown though)",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,                     
                     "data_needed_for_use": ['slot_and_tile_to_move_shape_to']
                 },
-            ]     
+            ]
         )
 
     def determine_ruler(self, game_state):
@@ -51,7 +51,7 @@ class Maestro(Tile):
         ruler = self.determine_ruler(game_state)
         
         if tier_index == 0:
-            if self.power_per_player[game_action_container.whose_action] < 3:
+            if self.power_per_player[game_action_container.whose_action] < self.power_tiers[tier_index]['power_to_reach_tier']:
                 await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, not enough power")
                 return False
             
@@ -62,12 +62,7 @@ class Maestro(Tile):
         elif tier_index == 1:
             if game_action_container.whose_action != ruler:
                 await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, not the ruler")
-                return False
-            
-            if self.power_per_player[game_action_container.whose_action] < 7: 
-                await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, not enough power")
-                return False
-            
+                return False    
 
         slot_index_from = game_action_container.required_data_for_action['slot_and_tile_to_move_shape_from']['slot_index']
         tile_index_from = game_action_container.required_data_for_action['slot_and_tile_to_move_shape_from']['tile_index']
@@ -123,10 +118,10 @@ class Maestro(Tile):
         receiver = data.get('receiver')
         tiers_that_can_be_reacted_with = []
         
-        if not self.power_tiers[0]['is_on_cooldown'] and self.power_per_player[receiver] >= 3:
+        if not self.power_tiers[0]['is_on_cooldown'] and self.power_per_player[receiver] >= self.power_tiers[0]['power_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(0)
         
-        if not self.power_tiers[1]['is_on_cooldown'] and self.power_per_player[receiver] >= 7 and self.determine_ruler(game_state) == receiver:
+        if not self.power_tiers[1]['is_on_cooldown'] and self.determine_ruler(game_state) == receiver:
             tiers_that_can_be_reacted_with.append(1)
         
         if tiers_that_can_be_reacted_with:

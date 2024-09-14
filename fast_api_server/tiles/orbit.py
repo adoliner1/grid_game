@@ -7,13 +7,13 @@ class Orbit(Tile):
         super().__init__(
             name="Orbit",
             type="Tile-Mover",
-            minimum_power_to_rule=2,
-            number_of_slots=3,
+            minimum_power_to_rule=3,
+            number_of_slots=5,
             power_tiers=[
                 {
-                    "power_to_reach_tier": 2,
+                    "power_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** Choose a tile. Rotate the row that tile is in left once",
+                    "description": "**Action:** Choose a tile. Shift the row that tile is in left once",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,                     
                     "data_needed_for_use": ["tile_to_shift_row"]
@@ -34,7 +34,7 @@ class Orbit(Tile):
         return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
-        available_actions["select_a_tile"] = list(range(len(game_state["tiles"])))
+        available_actions["select_a_tile"] = game_constants.all_tile_indices
 
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]

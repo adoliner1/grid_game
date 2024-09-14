@@ -13,7 +13,7 @@ class Conductor(Tile):
             minimum_power_to_rule=3,
             power_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "power_to_reach_tier": 2,
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** After you [[receive]] a shape, you may move it to a tile adjacent to Conductor",
                     "is_on_cooldown": False,
@@ -21,14 +21,14 @@ class Conductor(Tile):
                     "data_needed_for_use": ['tile_to_move_shape_to']
                 },
                 {
-                    "power_to_reach_tier": 6,
+                    "power_to_reach_tier": 5,
                     "must_be_ruler": True,                    
                     "description": "**Reaction:** Same as above but you may move it anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,                    
                     "data_needed_for_use": ['tile_to_move_shape_to']
                 },
-            ]            
+            ]
         )
 
     def determine_ruler(self, game_state):
@@ -56,7 +56,7 @@ class Conductor(Tile):
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]        
         if tier_index == 0:
-            if self.power_per_player[game_action_container.whose_action] < 3:
+            if self.power_per_player[game_action_container.whose_action] < self.power_tiers[tier_index]['power_to_reach_tier']:
                 await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, not enough power")
                 return False
             
@@ -83,7 +83,7 @@ class Conductor(Tile):
                 return False
             
         elif tier_index == 1:
-            if self.power_per_player[game_action_container.whose_action] != self.determine_ruler(game_state):
+            if game_action_container.whose_action != self.determine_ruler(game_state):
                 await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, not the ruler")
                 return False
             
@@ -140,17 +140,11 @@ class Conductor(Tile):
         receiver = data.get('receiver')
         tiers_that_can_be_reacted_with = []
         
-        if not self.power_tiers[0]['is_on_cooldown'] and self.power_per_player[receiver] >= 3:
+        if not self.power_tiers[0]['is_on_cooldown'] and self.power_per_player[receiver] >= self.power_tiers[0]['power_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(0)
         
-        if not self.power_tiers[1]['is_on_cooldown'] and self.power_per_player[receiver] >= 6 and self.determine_ruler(game_state) == receiver:
+        if not self.power_tiers[1]['is_on_cooldown'] and self.determine_ruler(game_state) == receiver:
             tiers_that_can_be_reacted_with.append(1)
         
         if tiers_that_can_be_reacted_with:
             reactions_by_player[receiver].tiers_to_resolve[game_utilities.find_index_of_tile_by_name(game_state, self.name)] = tiers_that_can_be_reacted_with            
-
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
-        ruler = self.determine_ruler(game_state)
-        if ruler:
-            game_state["points"][ruler] += 2
-            await send_clients_log_message(f"{ruler} gains 2 points at the end of the game from {self.name}")

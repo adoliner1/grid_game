@@ -18,7 +18,7 @@ class GameEngine:
         self.send_clients_log_message = None
         self.send_clients_game_state = None
         self.send_available_actions = None
-        self.listeners = {"on_place": {}, "start_of_round": {}, "end_of_round": {}, "on_produce": {}}
+        #self.listeners = {"on_place": {}, "start_of_round": {}, "end_of_round": {}, "on_produce": {}}
         self.game_has_ended = False
         self.game_action_container_stack: List[game_action_container.GameActionContainer] = []
         self.game_action_container_stack.append(self.create_initial_decision_game_action_container())
@@ -149,7 +149,7 @@ class GameEngine:
             return
 
         if self.game_action_container_stack[-1].game_action == "initial_circle_placement":
-            await game_utilities.place_shape_on_tile(self.game_state,
+            await game_utilities.recruit_shape_on_tile(self.game_state,
                                               self.game_action_container_stack,
                                                 self.send_clients_log_message,
                                                   self.get_and_send_available_actions,
@@ -205,7 +205,15 @@ class GameEngine:
         #figure out if we need to have the client make another decision, or if we're ready to execute the action.
         #execute it if we're ready. If it was a reaction, we need to remove that tile from the reactions to resolve and reset the tier to react with in case there are more
 
+        #need to do specific checks for exiling here so we can short-circuit it if necessary
         next_piece_of_data_to_fill = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
+        if self.game_action_container_stack[-1].game_action == "exile" and next_piece_of_data_to_fill == 'tile_to_exile_to':
+            adjacent_tile_indices = game_utilities.get_adjacent_tile_indices(self.game_action_container_stack[-1].required_data_for_action["tile_slot_to_exile_from"]["tile_index"])
+            adjacent_tile_indices_with_empty_slots = [tile_index for tile_index in adjacent_tile_indices if None in self.game_state['tiles'][tile_index].slots_for_shapes]
+            if not adjacent_tile_indices_with_empty_slots:
+                self.game_action_container_stack[-1].required_data_for_action['tile_to_exile_to'] = "NO_AVAILABLE_EXILE_SLOTS"
+                next_piece_of_data_to_fill = None
+
         if not next_piece_of_data_to_fill:
             action_to_execute = self.game_action_container_stack[-1]
             await self.execute_game_action(action_to_execute)
@@ -251,14 +259,18 @@ class GameEngine:
         return True
 
     async def player_takes_move_action(self, game_action_container):
+        mover = game_action_container.whose_action
         tile_index_to_move_to = game_action_container.required_data_for_action['tile_index_to_move_to']
-        location_of_players_leader = self.game_state['location_of_leaders'][game_action_container.whose_action]
-        tile_indices_adjacent_to_leader = game_utilities. get_adjacent_tile_indices(location_of_players_leader)
+        tile_index_of_players_leader = game_utilities.get_tile_index_of_leader(self.game_state, mover)
+        tile_indices_adjacent_to_leader = game_utilities.get_adjacent_tile_indices(tile_index_of_players_leader)
+        tile_of_players_leader = self.game_state['tiles'][tile_index_of_players_leader]
+        tile_to_move_to = self.game_state['tiles'][tile_index_to_move_to]
         if not tile_index_to_move_to in tile_indices_adjacent_to_leader:
             await self.send_clients_log_message(f"Chose a non-adjacent tile to move to")           
             return False
 
-        self.game_state['location_of_leaders'][game_action_container.whose_action] = tile_index_to_move_to
+        tile_of_players_leader.leaders_here[mover] = False
+        tile_to_move_to.leaders_here[mover] = True
         return True
     
     async def player_takes_recruit_action(self, game_action_container):
@@ -277,7 +289,7 @@ class GameEngine:
             await self.send_clients_log_message("Not in range of that tile")
             return False               
 
-        if shape_type not in tile.shapes_which_can_be_placed_on_this:
+        if shape_type not in tile.shapes_which_can_be_recruited_to_this:
             await self.send_clients_log_message("Cannot recruit this shape here")
             return False    
 
@@ -291,8 +303,7 @@ class GameEngine:
         
 
         self.game_state['stamina'][color_of_player_recruiting] -= self.game_state['costs_to_recruit'][color_of_player_recruiting][shape_type]
-        await game_utilities.place_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index, slot_index, shape_type, color_of_player_recruiting)
-
+        await game_utilities.recruit_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index, slot_index, shape_type, color_of_player_recruiting)
         game_utilities.determine_rulers(self.game_state)
         return True
      
@@ -300,7 +311,7 @@ class GameEngine:
         tile_index_to_exile_from = game_action_container.required_data_for_action["tile_slot_to_exile_from"]["tile_index"]
         slot_index_to_exile_from = game_action_container.required_data_for_action["tile_slot_to_exile_from"]["slot_index"]
         tile_index_to_exile_to = game_action_container.required_data_for_action["tile_to_exile_to"]
-        tile_to_exile_to = self.game_state['tiles'][tile_index_to_exile_to]
+        tile_to_exile_to = None if tile_index_to_exile_to=='NO_AVAILABLE_EXILE_SLOTS' else self.game_state['tiles'][tile_index_to_exile_to]
         tile_to_exile_from = self.game_state['tiles'][tile_index_to_exile_from]
         slot_to_exile_from = tile_to_exile_from.slots_for_shapes[slot_index_to_exile_from]
         color_of_player_exiling = game_action_container.whose_action
@@ -319,7 +330,11 @@ class GameEngine:
 
         exiled_shape = slot_to_exile_from
         tile_to_exile_from.slots_for_shapes[slot_index_to_exile_from] = None
-        await game_utilities.player_receives_a_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, exiled_shape['color'], tile_to_exile_to ,exiled_shape['shape'])
+
+        if tile_index_to_exile_to == 'NO_AVAILABLE_EXILE_SLOTS':
+            await self.send_clients_log_message("Nowhere for the exile to find a home. They are lost")
+        else:
+            await game_utilities.player_receives_a_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, exiled_shape['color'], tile_to_exile_to ,exiled_shape['shape'])
         return True
 
     def create_new_game_action_container_from_initial_decision(self, data):
@@ -443,8 +458,8 @@ class GameEngine:
                 "blue": False
             },
             "stamina": {
-                "red": 3,
-                "blue": 3
+                "red": 999,
+                "blue": 999,
             },
             "recruit_range": {
                 "red": 0,
@@ -454,10 +469,6 @@ class GameEngine:
                 "red": 0,
                 "blue": 0                
             },
-            "location_of_leaders" :{
-                "red": None,
-                "blue": None,                
-            },
             "costs_to_recruit" :{
                 "red": game_constants.starting_cost_to_recruit,
                 "blue": game_constants.starting_cost_to_recruit,  
@@ -466,11 +477,15 @@ class GameEngine:
                 "red": game_constants.starting_cost_to_exile,
                 "blue": game_constants.starting_cost_to_exile,  
             },
+            "movement": {
+                "red": game_constants.starting_movement,
+                "blue": game_constants.starting_movement,                
+            },
             "tiles": [tile() for tile in chosen_tiles],
             "whose_turn_is_it": "red",
             "first_player": "red",
             "round_bonuses": chosen_round_bonuses,
-            "listeners": {"on_place": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
+            "listeners": {"on_recruit": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
         }
 
         for tile in game_state["tiles"]:
@@ -503,6 +518,10 @@ class GameEngine:
         for _, listener_function in self.game_state["listeners"]["start_of_round"].items():
                 await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
 
+        stamina_to_give = game_constants.stamina_given_at_start_of_round[round]
+        await self.send_clients_log_message(f"Giving {stamina_to_give} stamina to each player for the start of the round")        
+        for player in game_constants.player_colors:
+            self.game_state['stamina'][player] += stamina_to_give
         game_utilities.determine_rulers(self.game_state)
 
     async def player_passes(self, player_color):

@@ -6,20 +6,19 @@ class Wolf(Tile):
     def __init__(self):
         super().__init__(
             name="Wolf",
-            type="Producer/Giver",
-            minimum_power_to_rule=2,
+            type="Stamina/Giver",
             number_of_slots=5,
-            description="The player with less power here ++produces++ 1 triangle at the __start of a round__",
+            minimum_power_to_rule=3,
             power_tiers=[
                 {
-                    "power_to_reach_tier": 2,
-                    "must_be_ruler": True,
-                    "description": "**Action:** [[Receive]] 2 squares at an adjacent tile",
+                    "power_to_reach_tier": 3,
+                    "must_be_ruler": True,                    
+                    "description": "**Action:** [[Receive]] a square at an adjacent tile. Your opponent gets +2 stamina",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                     
-                    "data_needed_for_use": ["tile_to_receive_shapes_at"]
-                },
-            ],
+                    "data_needed_for_use": ["tile_to_receive_shapes_at"],
+                    "has_a_cooldown": True,                    
+                },                
+            ],      
         )
 
     def determine_ruler(self, game_state):
@@ -27,14 +26,9 @@ class Wolf(Tile):
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
-        whose_turn_is_it = game_state["whose_turn_is_it"]
-        ruler = self.determine_ruler(game_state)
-        
-        if (ruler == whose_turn_is_it and 
-            self.power_per_player[whose_turn_is_it] >= 2 and 
-            not self.power_tiers[0]["is_on_cooldown"]):
+        current_player = game_state["whose_turn_is_it"]
+        if not self.power_tiers[0]["is_on_cooldown"] and self.determine_ruler(game_state) == current_player:
             useable_tiers.append(0)
-        
         return useable_tiers
 
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
@@ -44,7 +38,7 @@ class Wolf(Tile):
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         ruler = self.determine_ruler(game_state)
-        
+                                                                     
         if not ruler:
             await send_clients_log_message(f"No ruler determined for {self.name}, cannot use")
             return False
@@ -53,39 +47,21 @@ class Wolf(Tile):
             await send_clients_log_message(f"Only the ruler can use {self.name}")
             return False
 
-        if self.power_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"{self.name} is on cooldown")
+        if self.power_tiers[0]['is_on_cooldown']:
+            await send_clients_log_message(f"{self.name} is on cooldown and cannot be used this round")
             return False
 
         index_of_tile_to_receive_shapes_on = game_action_container.required_data_for_action['tile_to_receive_shapes_at']
         tile_to_receive_shapes_on = game_state['tiles'][index_of_tile_to_receive_shapes_on]
-        
+       
         if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_shapes_on, game_utilities.find_index_of_tile_by_name(game_state, self.name)):
             await send_clients_log_message(f"Chose non-adjacent tile while using {self.name}")
             return False
 
         await send_clients_log_message(f"{self.name} is used")
-        for _ in range(2):
-            await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'square')
-        
-        self.power_tiers[tier_index]["is_on_cooldown"] = True
+        self.power_tiers[0]['is_on_cooldown'] = True
+        await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'square')
+        other_player = game_utilities.get_other_player_color(ruler)
+        await send_clients_log_message(f"{other_player} gets +2 stamina")
+        game_state['stamina'][other_player] += 2
         return True
-
-    async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
-        self.determine_power()
-        red_power = self.power_per_player["red"]
-        blue_power = self.power_per_player["blue"]
-        
-        if red_power < blue_power:
-            player_with_less_power = 'red'
-        elif blue_power < red_power:
-            player_with_less_power = 'blue'
-        else:
-            player_with_less_power = None
-        
-        if player_with_less_power:
-            await game_utilities.produce_shape_for_player(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_with_less_power, 1, 'triangle', self.name, True)
-            await send_clients_log_message(f"{player_with_less_power} produces 1 triangle from {self.name} at the start of the round (less power)")
-
-        for tier in self.power_tiers:
-            tier["is_on_cooldown"] = False

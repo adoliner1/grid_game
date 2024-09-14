@@ -151,18 +151,7 @@ class CirclesPerPresence(RoundBonus):
             presence = game_state["presence"][player]
             
             await send_clients_log_message(f"Round bonus gives circles for presence:")
-            for _ in range (math.floor(presence / 2)):
-                await game_utilities.produce_shape_for_player(
-                    game_state,
-                    game_action_container_stack,
-                    send_clients_log_message,
-                    send_clients_available_actions,
-                    send_clients_game_state,
-                    player,
-                    1,
-                    "circle",
-                    self.name
-                )
+
 
 class CirclesPerPeakPower(RoundBonus):
     def __init__(self):
@@ -180,18 +169,7 @@ class CirclesPerPeakPower(RoundBonus):
         await send_clients_log_message(f"Round bonus gives circles for peak power:")
         for player in [first_player, second_player]:
             peak_power = game_state["peak_power"][player]
-            for _ in range (math.floor(peak_power / 2)):
-                await game_utilities.produce_shape_for_player(
-                    game_state,
-                    game_action_container_stack,
-                    send_clients_log_message,
-                    send_clients_available_actions,
-                    send_clients_game_state,
-                    player,
-                    1,
-                    "circle",
-                    self.name
-                )
+
             
 class CirclesForLongestChain(RoundBonus):
     def __init__(self):
@@ -212,18 +190,7 @@ class CirclesForLongestChain(RoundBonus):
             longest_chain = longest_chains[player_color]
             
             await send_clients_log_message(f"Round bonus gives circles for longest chain:")
-            for _ in range(longest_chain):
-                await game_utilities.produce_shape_for_player(
-                    game_state,
-                    game_action_container_stack,
-                    send_clients_log_message,
-                    send_clients_available_actions,
-                    send_clients_game_state,
-                    player,
-                    1,
-                    "circle",
-                    self.name
-                )
+
 
 class PointsForLongestChain(RoundBonus):
     def __init__(self):

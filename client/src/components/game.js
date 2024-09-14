@@ -278,7 +278,7 @@ const Game = () => {
                 power_tiers={tile.power_tiers}
                 slots_for_shapes={tile.slots_for_shapes}
                 tile_index={tile_index}
-                location_of_leaders = {gameState.location_of_leaders}
+                leaders_here = {tile.leaders_here}
                 ruler={tile.ruler}
                 available_actions={availableActions}
                 onTileClick={() => handleTileClick(tile_index)}

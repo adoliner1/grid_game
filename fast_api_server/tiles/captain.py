@@ -9,20 +9,20 @@ class Captain(Tile):
         super().__init__(
             name="Captain",
             type="Attacker/Scorer",
-            minimum_power_to_rule=2,
+            minimum_power_to_rule=3,
             power_tiers=[
                 {
-                    "power_to_reach_tier": 2,
+                    "power_to_reach_tier": 4,
                     "must_be_ruler": False,                    
-                    "description": "**Reaction:** After you [[receive]] a shape at a tile, you may ^^burn^^ a shape at a tile adjacent to that tile, +1 point",
+                    "description": "**Reaction:** After you [[receive]] a shape at a tile, you may ^^burn^^ any shape at a tile adjacent to that tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "data_needed_for_use": ['slot_and_tile_to_burn_shape'],
                 },
                 {
-                    "power_to_reach_tier": 5,
+                    "power_to_reach_tier": 6,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** Same as above but +3 points",
+                    "description": "**Reaction:** Same as above but +2 points when you do",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "data_needed_for_use": ['slot_and_tile_to_burn_shape'],
@@ -77,9 +77,10 @@ class Captain(Tile):
         await send_clients_log_message(f"Reacting with tier {tier_index} of {self.name}")
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_shape, slot_index_to_burn_shape)
         
-        points_gained = 3 if tier_index == 1 else 1
-        game_state["points"][player] += points_gained
-        await send_clients_log_message(f"{player} gains {points_gained} points from using {self.name}")
+        if tier_index == 1:
+            points_gained = 2
+            game_state["points"][player] += points_gained
+            await send_clients_log_message(f"{player} gains {points_gained} points from using {self.name}")
 
         self.power_tiers[tier_index]["is_on_cooldown"] = True
         return True
@@ -117,9 +118,9 @@ class Captain(Tile):
         ruler = self.determine_ruler(game_state)
         player_power = self.power_per_player[receiver]
 
-        if not self.power_tiers[0]["is_on_cooldown"] and player_power >= 2:
+        if not self.power_tiers[0]["is_on_cooldown"] and player_power >= self.power_tiers[0]['power_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(0)
-        if not self.power_tiers[1]["is_on_cooldown"] and player_power >= 5 and receiver == ruler:
+        if not self.power_tiers[1]["is_on_cooldown"] and player_power >= self.power_tiers[1]['power_to_reach_tier'] and receiver == ruler:
             tiers_that_can_be_reacted_with.append(1)
 
         if tiers_that_can_be_reacted_with:

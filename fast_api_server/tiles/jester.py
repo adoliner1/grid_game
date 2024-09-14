@@ -19,7 +19,6 @@ class Jester(Tile):
                     "has_a_cooldown": False,                     
                 },
             ]            
-
         )
 
     def determine_ruler(self, game_state):

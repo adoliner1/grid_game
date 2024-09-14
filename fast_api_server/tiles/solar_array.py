@@ -7,7 +7,7 @@ class SolarArray(Tile):
         super().__init__(
             name="Solar Array",
             type="Scorer",
-            minimum_power_to_rule=2,
+            minimum_power_to_rule=3,
             number_of_slots=5,
             power_tiers=[
                 {
@@ -28,7 +28,7 @@ class SolarArray(Tile):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         ruler = self.determine_ruler(game_state)
-        if ruler == whose_turn_is_it and self.power_per_player[whose_turn_is_it] >= 3 and not self.power_tiers[0]["is_on_cooldown"]:
+        if ruler == whose_turn_is_it and not self.power_tiers[0]["is_on_cooldown"]:
             useable_tiers.append(0)
         return useable_tiers
 

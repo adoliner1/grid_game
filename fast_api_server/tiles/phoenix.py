@@ -126,13 +126,13 @@ class Phoenix(Tile):
         
         tiers_that_can_be_reacted_with = []
 
-        if not self.power_tiers[0]['is_on_cooldown'] and self.power_per_player[color_burned] >= 3:
+        if not self.power_tiers[0]['is_on_cooldown'] and self.power_per_player[color_burned] >= self.power_tiers[0]['power_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(0)
 
-        if not self.power_tiers[1]['is_on_cooldown'] and self.power_per_player[color_burned] >= 5:
+        if not self.power_tiers[1]['is_on_cooldown'] and self.power_per_player[color_burned] >= self.power_tiers[1]['power_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(1)
 
-        if not self.power_tiers[2]['is_on_cooldown'] and self.power_per_player[color_burned] >= 7 and self.determine_ruler(game_state) == color_burned:
+        if not self.power_tiers[2]['is_on_cooldown'] and self.determine_ruler(game_state) == color_burned:
             tiers_that_can_be_reacted_with.append(2)
         
         if tiers_that_can_be_reacted_with:

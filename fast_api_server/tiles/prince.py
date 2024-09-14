@@ -12,7 +12,7 @@ class Prince(Tile):
             description="At the __end of a round__, for each same-shape pair you have here, +1 point",
             power_tiers=[
                 {
-                    "power_to_reach_tier": 7,
+                    "power_to_reach_tier": 5,
                     "must_be_ruler": True,                    
                     "description": "At the __end of a round__, for each same-shape pair you have here, +3 additional points",
                     "is_on_cooldown": False,
@@ -38,7 +38,7 @@ class Prince(Tile):
             base_points = pairs
             additional_points = 0
             
-            if color == ruler and self.power_per_player[color] >= 7:
+            if color == ruler and self.power_per_player[color] >= self.power_tiers[0]['power_to_reach_tier']:
                 additional_points = pairs * 3
             
             total_points = base_points + additional_points

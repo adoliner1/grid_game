@@ -15,7 +15,7 @@ const Tile = ({
     is_on_cooldown,
     slots_for_shapes,
     tile_index,
-    location_of_leaders,
+    leaders_here,
     ruler,
     available_actions,
     onTileClick,
@@ -66,9 +66,9 @@ const Tile = ({
             </Tooltip>
                 {minimum_power_to_rule}
             </div>
-            <div className='red-leader-here'>{location_of_leaders.red === tile_index && meeple('red')} </div>
+            <div className='red-leader-here'>{leaders_here.red && meeple('red')} </div>
             <h3 className='tile-name'>{name}</h3>
-            <div className='blue-leader-here'>{location_of_leaders.blue === tile_index && meeple('blue')} </div>
+            <div className='blue-leader-here'>{leaders_here.blue && meeple('blue')} </div>
             <span className="tile-type">{type}</span>
         </div>
             {description && (<p className="tile-description" dangerouslySetInnerHTML={{ __html: parseCustomMarkup(description) }}></p>)}

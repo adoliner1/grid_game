@@ -9,9 +9,9 @@ class Ember(Tile):
             type="Scorer",
             minimum_power_to_rule=3,
             power_tiers=[],
-            description=f"You may not ((place)) here\nWhen a shape is ^^burned^^ on a tile, the owner [[receives]] a copy of it here\nAt the __end of a round__, if Ember is full, remove all the shapes. +6 points to whichever player had more",
+            description=f"You may not ((recruit)) here\nWhen a shape is ^^burned^^ on a tile, the owner [[receives]] a copy of it here\nAt the __end of a round__, if Ember is full, remove all the shapes. +6 points to whichever player had more",
             number_of_slots=11,
-            shapes_which_can_be_placed_on_this=[]
+            shapes_which_can_be_recruited_to_this=[]
         )
 
     def determine_ruler(self, game_state):

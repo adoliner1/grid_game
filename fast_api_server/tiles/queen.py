@@ -11,14 +11,14 @@ class Queen(Tile):
             number_of_slots=5,
             power_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "power_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "When the other player ((places)) a shape on a tile adjacent to Queen, +1 point",
+                    "description": "When your opponent ((recruits)) a shape on an adjacent tile, +1 point",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,                    
                 },
                 {
-                    "power_to_reach_tier": 5,
+                    "power_to_reach_tier": 4,
                     "must_be_ruler": True,                    
                     "description": "Same as above, +2 additional points",
                     "is_on_cooldown": False,
@@ -31,17 +31,17 @@ class Queen(Tile):
         return super().determine_ruler(game_state, self.minimum_power_to_rule)
 
     def setup_listener(self, game_state):
-        game_state["listeners"]["on_place"][self.name] = self.on_place_effect
+        game_state["listeners"]["on_recruit"][self.name] = self.on_recruit_effect
 
-    async def on_place_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
-        placer = data.get('placer')
-        tile_index = data.get('index_of_tile_placed_at')
+    async def on_recruit_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
+        recruiter = data.get('recruiter')
+        tile_index = data.get('index_of_tile_recruited_at')
         queen_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         
         if not game_utilities.determine_if_directly_adjacent(tile_index, queen_index):
             return
 
-        other_player = 'red' if placer == 'blue' else 'blue'
+        other_player = 'red' if recruiter == 'blue' else 'blue'
         ruler = self.determine_ruler(game_state)
         other_player_power = self.power_per_player[other_player]
 

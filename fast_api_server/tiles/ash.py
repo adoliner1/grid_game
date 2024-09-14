@@ -13,7 +13,7 @@ class Ash(Tile):
                 {
                     "power_to_reach_tier": 3,
                     "must_be_ruler": False,
-                    "description": "After any shape is ^^burned^^ on a tile, if you're present there, +2 points",
+                    "description": "After one of your shapes is ^^burned^^ on a tile, if you're still present there, +2 points",
                     "is_on_cooldown": False,
                     "has_cooldown": False,
                 },
@@ -35,13 +35,16 @@ class Ash(Tile):
 
     async def on_burn_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         index_of_tile_burned_at = data.get('index_of_tile_burned_at')
+        tile_burned_at = game_state['tiles'][index_of_tile_burned_at]
+        color = data.get('color')
+        shape = data.get('shape')
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
+        self.determine_power()        
         ruler = self.determine_ruler(game_state)
-       
         for player in [first_player, second_player]:
             player_power = self.power_per_player[player]
-            if player_power >= 3 and game_utilities.has_presence(game_state["tiles"][index_of_tile_burned_at], player):
+            if player_power >= 3 and game_utilities.has_presence(tile_burned_at, player) and color == player:
                 points_gained = 3 if player == ruler else 2
                 game_state["points"][player] += points_gained
-                await send_clients_log_message(f"{player} gains {points_gained} points from {self.name} due to a shape being burned on {game_state['tiles'][index_of_tile_burned_at].name}")
+                await send_clients_log_message(f"{player} gains {points_gained} points from {self.name} due to their {color}_{shape} being burned on {tile_burned_at.name}")

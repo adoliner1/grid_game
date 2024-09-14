@@ -18,7 +18,7 @@ class Waterfalls(Tile):
                     "has_a_cooldown": False,                    
                 },
                 {
-                    "power_to_reach_tier": 7,
+                    "power_to_reach_tier": 5,
                     "must_be_ruler": True,
                     "description": "At the __end of a round__, +2 points per tile you're present at",
                     "is_on_cooldown": False,
@@ -36,9 +36,9 @@ class Waterfalls(Tile):
         
         for player in [first_player, second_player]:
             player_power = self.power_per_player[player]
-            if player_power >= 3:
+            if player_power >= self.power_tiers[0]['power_to_reach_tier']:
                 tiles_present_at = sum(1 for tile in game_state["tiles"] if game_utilities.has_presence(tile, player))
-                points_per_tile = 2 if player_power >= 7 else 1
+                points_per_tile = 2 if player_power >= self.power_tiers[1]['power_to_reach_tier'] else 1
                 points_awarded = tiles_present_at * points_per_tile
                 game_state["points"][player] += points_awarded
                 await send_clients_log_message(f"{player} gains {points_awarded} points from {self.name} for being present at {tiles_present_at} tiles with {player_power} power")

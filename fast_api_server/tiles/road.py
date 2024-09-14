@@ -11,7 +11,7 @@ class Road(Tile):
             number_of_slots=7,
             power_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "power_to_reach_tier": 2,
                     "must_be_ruler": False,
                     "description": "**Action:** Choose a shape at an adjacent tile. Move it anywhere",
                     "is_on_cooldown": False,
@@ -19,7 +19,7 @@ class Road(Tile):
                     "data_needed_for_use": ["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
                 {
-                    "power_to_reach_tier": 7,
+                    "power_to_reach_tier": 5,
                     "must_be_ruler": False,
                     "description": "**Action:** Same as above but choose a shape at an adjacent tile or anywhere you're present",
                     "is_on_cooldown": False,
@@ -27,7 +27,7 @@ class Road(Tile):
                     "data_needed_for_use": ["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
                 {
-                    "power_to_reach_tier": 9,
+                    "power_to_reach_tier": 7,
                     "must_be_ruler": True,
                     "description": "**Action:** Same as above but choose any shape",
                     "is_on_cooldown": False,

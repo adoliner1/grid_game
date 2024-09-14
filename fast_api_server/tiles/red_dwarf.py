@@ -28,7 +28,7 @@ class RedDwarf(Tile):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         
-        if self.power_per_player[whose_turn_is_it] >= 1 and any(slot for slot in self.slots_for_shapes if slot and slot["color"] == whose_turn_is_it):
+        if self.power_per_player[whose_turn_is_it] >= self.power_tiers[0]['power_to_reach_tier'] and any(slot for slot in self.slots_for_shapes if slot and slot["color"] == whose_turn_is_it):
             useable_tiers.append(0)
 
         return useable_tiers

@@ -12,18 +12,10 @@ class Spear(Tile):
             power_tiers=[
                 {
                     "power_to_reach_tier": 3,
-                    "must_be_ruler": False,
-                    "description": "**Action:** ^^Burn^^ one of your shapes here, -2 points, then ^^burn^^ a shape at a tile you're present at",
+                    "must_be_ruler": True,
+                    "description": "**Action:** ^^Burn^^ one of your shapes here, then ^^burn^^ a shape at a tile you're present at",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,                  
-                    "data_needed_for_use": ["slot_to_burn_shape_from", "slot_and_tile_to_burn_shape_at"]
-                },
-                {
-                    "power_to_reach_tier": 5,
-                    "must_be_ruler": True,
-                    "description": "**Action:** Same as above but don't lose points",
-                    "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
                     "data_needed_for_use": ["slot_to_burn_shape_from", "slot_and_tile_to_burn_shape_at"]
                 },
             ]
@@ -38,10 +30,10 @@ class Spear(Tile):
         player_power = self.power_per_player[whose_turn_is_it]
         ruler = self.determine_ruler(game_state)
 
-        if player_power >= 3 and not self.power_tiers[0]["is_on_cooldown"]:
+        if (player_power >= self.power_tiers[0]["power_to_reach_tier"] and 
+            not self.power_tiers[0]["is_on_cooldown"] and 
+            whose_turn_is_it == ruler):
             useable_tiers.append(0)
-        if player_power >= 5 and ruler == whose_turn_is_it and not self.power_tiers[1]["is_on_cooldown"]:
-            useable_tiers.append(1)
 
         return useable_tiers
 
@@ -54,19 +46,11 @@ class Spear(Tile):
             available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_that_can_be_burned_from}
         elif current_piece_of_data_to_fill == "slot_and_tile_to_burn_shape_at":
             slots_with_a_burnable_shape = {}
-            if tier_index == 1:
-                # Ruler with 5+ power can choose any shape anywhere
-                for index, tile in enumerate(game_state["tiles"]):
+            for index, tile in enumerate(game_state["tiles"]):
+                if game_utilities.has_presence(tile, user):
                     slots_with_shapes = [i for i, slot in enumerate(tile.slots_for_shapes) if slot]
                     if slots_with_shapes:
                         slots_with_a_burnable_shape[index] = slots_with_shapes
-            else:
-                # Non-ruler or ruler using tier 0 can only choose shapes at tiles where they're present
-                for index, tile in enumerate(game_state["tiles"]):
-                    if game_utilities.has_presence(tile, user):
-                        slots_with_shapes = [i for i, slot in enumerate(tile.slots_for_shapes) if slot]
-                        if slots_with_shapes:
-                            slots_with_a_burnable_shape[index] = slots_with_shapes
             
             available_actions["select_a_slot_on_a_tile"] = slots_with_a_burnable_shape
 
@@ -84,8 +68,8 @@ class Spear(Tile):
             await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
             return False
 
-        if tier_index == 1 and user != ruler:
-            await send_clients_log_message(f"Only the ruler can use tier 1 of {self.name}")
+        if user != ruler:
+            await send_clients_log_message(f"Only the ruler can use tier {tier_index} of {self.name}")
             return False
 
         index_of_spear = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -93,7 +77,7 @@ class Spear(Tile):
         slot_index_to_burn_shape_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape_at']['slot_index']
         index_of_tile_to_burn_shape_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_shape_at']['tile_index']
 
-        if tier_index == 0 and not game_utilities.has_presence(game_state["tiles"][index_of_tile_to_burn_shape_at], user):
+        if not game_utilities.has_presence(game_state["tiles"][index_of_tile_to_burn_shape_at], user):
             await send_clients_log_message(f"Tried to use {self.name} but chose a tile where they're not present")
             return False
 
@@ -112,10 +96,6 @@ class Spear(Tile):
         await send_clients_log_message(f"Using tier {tier_index} of {self.name}")
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_spear, slot_index_to_burn_shape_from_here)
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_shape_at, slot_index_to_burn_shape_at)
-
-        if tier_index == 0:
-            game_state["points"][user] -= 2
-            await send_clients_log_message(f"{user} loses 2 points for using tier 0 of {self.name}")
 
         self.power_tiers[tier_index]["is_on_cooldown"] = True
         return True

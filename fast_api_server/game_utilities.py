@@ -2,23 +2,30 @@ import asyncio
 import game_action_container
 import game_constants
 
-#async
-
-async def place_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
-    tile_to_place_on = game_state["tiles"][tile_index]
-    old_shape =  tile_to_place_on.slots_for_shapes[slot_index]
-    tile_to_place_on.slots_for_shapes[slot_index] = {'shape': shape, 'color': color}
+async def recruit_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
+    tile_to_recruit_on = game_state["tiles"][tile_index]
+    old_shape =  tile_to_recruit_on.slots_for_shapes[slot_index]
+    tile_to_recruit_on.slots_for_shapes[slot_index] = {'shape': shape, 'color': color}
     determine_power_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    await send_clients_log_message(f"{color} placed a {color}_{shape} on {tile_to_place_on.name}")
+    await send_clients_log_message(f"{color} recruited a {color}_{shape} at {tile_to_recruit_on.name}")
     if old_shape:
-        await send_clients_log_message(f"this trumped a {old_shape['color']}_{old_shape['shape']}")
-    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_place", placer=color, shape=shape, index_of_tile_placed_at=tile_index, slot_index_placed_at=slot_index)
+        await send_clients_log_message(f"this replaced a {old_shape['color']}_{old_shape['shape']}")
+    await call_listener_functions_for_event_type(game_state,
+                                                  game_action_container_stack,
+                                                    send_clients_log_message,
+                                                      get_and_send_available_actions,
+                                                        send_clients_game_state,
+                                                          "on_recruit",
+                                                            recruiter=color,
+                                                              shape=shape,
+                                                                index_of_tile_recruited_at=tile_index,
+                                                                  slot_index_recruited_at=slot_index)
 
 async def place_leader_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, color):
-    game_state['location_of_leaders'][color] = tile_index
+    game_state['tiles'][tile_index].leaders_here[color] = True
     determine_power_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
@@ -125,18 +132,24 @@ async def call_listener_functions_for_event_type(game_state, game_action_contain
             if not reactions_by_player[second_player].tiers_to_resolve[tile_index]:
                 del reactions_by_player[second_player].tiers_to_resolve[tile_index]
 #sync
+def get_tile_index_of_leader(game_state, color):
+    for tile_index, tile in enumerate(game_state['tiles']):
+        if tile.leaders_here[color]:
+            return tile_index
+
 def has_presence(tile, color):
     """
-    Check if a player has at least one shape on a given tile.
-    
+    Check if a player has at least one shape or a leader on a given tile.
+   
     :param tile: The tile to check
     :param color: The color of the player ("red" or "blue")
-    :return: True if the player has at least one shape on the tile, False otherwise
+    :return: True if the player has at least one shape or a leader on the tile, False otherwise
     """
-    return any(
-        slot is not None and slot["color"] == color
-        for slot in tile.slots_for_shapes
+    return (
+        any(slot is not None and slot["color"] == color for slot in tile.slots_for_shapes)
+        or tile.leaders_here[color]
     )
+
 
 def update_presence(game_state):
     """
@@ -168,7 +181,6 @@ def get_available_client_actions(game_state, game_action_container, player_color
         available_client_actions["select_a_slot"] = slots_that_can_be_placed_on
 
     elif game_action_container.game_action == 'initial_leader_placement':
-        slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, 'circle', game_action_container.whose_action)
         available_client_actions["select_a_tile"] = game_constants.all_tile_indices
 
     elif game_action_container.game_action == 'use_a_tier':
@@ -178,7 +190,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
         tile_in_use.set_available_actions_for_use(game_state, index_of_tier_in_use, game_action_container, available_client_actions)
 
     elif game_action_container.game_action == 'move':
-        available_client_actions["select_a_tile"] = get_adjacent_tile_indices(game_state['location_of_leaders'][game_action_container.whose_action])
+        available_client_actions["select_a_tile"] = get_adjacent_tile_indices(get_tile_index_of_leader(game_state, game_action_container.whose_action))
 
     elif game_action_container.game_action == 'recruit':
         if game_action_container.get_next_piece_of_data_to_fill() == 'shape_type_to_recruit':
@@ -222,7 +234,7 @@ def calculate_exiling_costs(game_state, player_color):
 def get_tiles_within_exiling_range(game_state, player_color):
     calculate_exiling_range(game_state, player_color)
     exile_range = game_state['exile_range'][player_color]
-    location_of_leader = game_state['location_of_leaders'][player_color]
+    location_of_leader = get_tile_index_of_leader(game_state, player_color)
     tiles_in_range = []
 
     leader_row = location_of_leader // game_constants.grid_size
@@ -230,8 +242,7 @@ def get_tiles_within_exiling_range(game_state, player_color):
 
     for row in range(game_constants.grid_size):
         for col in range(game_constants.grid_size):
-            distance = abs(row - leader_row) + abs(col - leader_col)
-            
+            distance = abs(row - leader_row) + abs(col - leader_col) 
             if distance <= exile_range:
                 tile_index = row * game_constants.grid_size + col
                 tiles_in_range.append(tile_index)
@@ -247,7 +258,7 @@ def calculate_recruiting_costs(game_state, player_color):
 def get_tiles_within_recruiting_range(game_state, shape_to_recruit, player_color):
     calculate_recruiting_range(game_state, shape_to_recruit, player_color)
     recruit_range = game_state['recruit_range'][player_color]
-    location_of_leader = game_state['location_of_leaders'][player_color]
+    location_of_leader = get_tile_index_of_leader(game_state, player_color)
     tiles_in_range = []
 
     leader_row = location_of_leader // game_constants.grid_size
@@ -409,7 +420,7 @@ def get_tile_slots_that_can_be_recruited_on(game_state, shape_type, color, tile_
     for tile_index in tile_indices:
         slots_for_tile = []
         tile = game_state['tiles'][tile_index]
-        if shape_type in tile.shapes_which_can_be_placed_on_this:
+        if shape_type in tile.shapes_which_can_be_recruited_to_this:
             for slot_index, slot in enumerate(tile.slots_for_shapes):
                 if slot is None or (game_constants.shape_power[slot['shape']] < game_constants.shape_power[shape_type] and color == slot['color']):
                     slots_for_tile.append(slot_index)
@@ -441,7 +452,7 @@ def get_tile_slots_that_can_be_placed_on(game_state, shape_type, color):
 
     for tile_index, tile in enumerate(game_state["tiles"]):
         slots_for_tile = []
-        if shape_type in tile.shapes_which_can_be_placed_on_this:
+        if shape_type in tile.shapes_which_can_be_recruited_to_this:
             for slot_index, slot in enumerate(tile.slots_for_shapes):
                 if slot is None or (game_constants.shape_power[slot['shape']] < game_constants.shape_power[shape_type] and color == slot['color']):
                     slots_for_tile.append(slot_index)

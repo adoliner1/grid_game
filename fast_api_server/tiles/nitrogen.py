@@ -6,20 +6,20 @@ class Nitrogen(Tile):
     def __init__(self):
         super().__init__(
             name="Nitrogen",
-            type="Giver/Scorer",
-            minimum_power_to_rule=2,
+            type="Giver/Stamina",
+            minimum_power_to_rule=3,
             description="At the __end of a round__, for each triangle you have here, [[receive]] a square and a circle here",
             number_of_slots=11,
             power_tiers=[
                 {
                     "power_to_reach_tier": 0,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ one of your sets here for +4 points",
+                    "description": "**Action:** ^^Burn^^ one of your sets here for +5 stamina",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,                     
                     "data_needed_for_use": [],
                 },            
-            ]      
+            ]
         )
 
     def get_useable_tiers(self, game_state):
@@ -75,7 +75,8 @@ class Nitrogen(Tile):
         
         await send_clients_log_message(f"{player} burns a set on {self.name}")
         
-        game_state["points"][player] += 4
-        await send_clients_log_message(f"{player} gains 4 points from burning a set on {self.name}")
+        stamina_to_gain = 5
+        game_state["stamina"][player] += stamina_to_gain
+        await send_clients_log_message(f"{player} gains {stamina_to_gain} stamina from burning a set on {self.name}")
 
         return True

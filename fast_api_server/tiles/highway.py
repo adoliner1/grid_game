@@ -11,7 +11,7 @@ class Highway(Tile):
             number_of_slots=5,
             power_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "power_to_reach_tier": 2,
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ one of your shapes here to move a shape on a tile to another tile",
                     "is_on_cooldown": False,
@@ -19,7 +19,7 @@ class Highway(Tile):
                     "data_needed_for_use": ["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
                 {
-                    "power_to_reach_tier": 7,
+                    "power_to_reach_tier": 5,
                     "must_be_ruler": True,                    
                     "description": "**Action:** Same as above but don't burn a shape",
                     "is_on_cooldown": False,
@@ -35,10 +35,10 @@ class Highway(Tile):
     def get_useable_tiers(self, game_state):
         current_player = game_state['whose_turn_is_it']
         useable_tiers = []
-        if self.power_per_player[current_player] >= 3 and not self.power_tiers[0]['is_on_cooldown'] and game_utilities.has_presence(self, current_player):
+        if self.power_per_player[current_player] >= self.power_tiers[0]['power_to_reach_tier'] and not self.power_tiers[0]['is_on_cooldown'] and game_utilities.has_presence(self, current_player):
             useable_tiers.append(0)
 
-        if self.power_per_player[current_player] >= 7 and not self.power_tiers[1]['is_on_cooldown'] and self.determine_ruler == current_player:
+        if not self.power_tiers[1]['is_on_cooldown'] and self.determine_ruler == current_player:
             useable_tiers.append(1)
 
         return useable_tiers
@@ -78,7 +78,7 @@ class Highway(Tile):
             await send_clients_log_message(f"Tried to use {self.name} but it's on cooldown")
             return False
         
-        if self.power_per_player[user] < 3:
+        if self.power_per_player[user] < self.power_tiers[tier_index]['power_to_reach_tier']:
             await send_clients_log_message(f"Not enough power on {self.name} to use")
             return False    
 
@@ -101,10 +101,6 @@ class Highway(Tile):
                 if not self.slots_for_shapes[slot_index_to_burn_shape_from]:
                     await send_clients_log_message(f"Tried to use {self.name} but not the ruler")
                     return False
-                
-            if self.power_per_player[user] < 7:
-                await send_clients_log_message(f"Not enough power on {self.name} to use")
-                return False    
 
         if game_state["tiles"][index_of_tile_to_move_shape_from].slots_for_shapes[slot_index_to_move_shape_from] is None:
             await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no shape to move from {game_state['tiles'][index_of_tile_to_move_shape_from].name}")

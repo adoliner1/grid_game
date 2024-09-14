@@ -2,7 +2,7 @@ import game_utilities
 import game_constants
 
 class Tile:
-    def __init__(self, name, type, number_of_slots, power_tiers=[], minimum_power_to_rule=0, description=None, data_needed_for_use=[], is_on_cooldown=False, shapes_which_can_be_placed_on_this=["circle", "square", "triangle"]):
+    def __init__(self, name, type, number_of_slots, power_tiers=[], minimum_power_to_rule=0, description=None, data_needed_for_use=[], is_on_cooldown=False, shapes_which_can_be_recruited_to_this=["circle", "square", "triangle"]):
         self.name = name
         self.type = type
         self.description = description
@@ -13,7 +13,8 @@ class Tile:
         self.power_modifiers = []
         self.ruler = None
         self.power_per_player = {"red": 0, "blue": 0}
-        self.shapes_which_can_be_placed_on_this=shapes_which_can_be_placed_on_this
+        self.shapes_which_can_be_recruited_to_this=shapes_which_can_be_recruited_to_this
+        self.leaders_here = {"red": False, "blue": False}
 
     def determine_ruler(self, game_state, minimum_power_needed_to_rule=0):
         self.determine_power()
@@ -27,10 +28,8 @@ class Tile:
         return None
 
     def determine_power(self):
-        # Initialize power for both colors
         new_power_per_player = {"red": 0, "blue": 0}
 
-        # Calculate power from shapes b
         for slot in self.slots_for_shapes:
             if slot is not None:
                 color = slot["color"]
@@ -43,6 +42,10 @@ class Tile:
             amount_of_power = modifier["amount_of_power"]
             new_power_per_player[affected_color] += amount_of_power
 
+        for color in game_constants.player_colors:
+            if self.leaders_here[color]:
+                new_power_per_player[color] += game_constants.leader_power
+         
         # Set the calculated power
         self.power_per_player = new_power_per_player
 
@@ -81,6 +84,7 @@ class Tile:
             "minimum_power_to_rule": self.minimum_power_to_rule,
             "description": self.description,
             "power_per_player": self.power_per_player,
+            "leaders_here": self.leaders_here,
             "slots_for_shapes": self.slots_for_shapes,
             "ruler": self.ruler,
         } 
