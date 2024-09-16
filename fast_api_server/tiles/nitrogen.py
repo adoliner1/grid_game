@@ -16,7 +16,8 @@ class Nitrogen(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ one of your sets here for +5 stamina",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,                     
+                    "has_a_cooldown": False,
+                    "leader_must_be_present": False,                      
                     "data_needed_for_use": [],
                 },            
             ]

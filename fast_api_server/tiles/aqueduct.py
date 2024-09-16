@@ -16,6 +16,7 @@ class Aqueduct(Tile):
                     "description": "**Action:** ^^Burn^^ one of your shapes here. Choose a shape at a tile you're present at. Move as many of that shape type and color as possible to another tile you're present at",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
+                    "leader_must_be_present": False, 
                     "data_needed_for_use": ["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_move_shapes_from", "tile_to_move_shapes_to"]
                 },
             ]

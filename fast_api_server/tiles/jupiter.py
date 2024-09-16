@@ -15,7 +15,8 @@ class Jupiter(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ one of your squares here for +3 stamina",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,   
+                    "leader_must_be_present": False,                  
                     "data_needed_for_use": [],
                 },
                 {
@@ -23,7 +24,8 @@ class Jupiter(Tile):
                     "must_be_ruler": True,                    
                     "description": "**Action:** ^^Burn^^ one of your circles here for +3 stamina",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,   
+                    "leader_must_be_present": False,                  
                     "data_needed_for_use": [],
                 },
             ]

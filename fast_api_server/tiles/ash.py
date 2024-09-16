@@ -15,6 +15,7 @@ class Ash(Tile):
                     "must_be_ruler": False,
                     "description": "After one of your shapes is ^^burned^^ on a tile, if you're still present there, +2 points",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_cooldown": False,
                 },
                 {
@@ -22,6 +23,7 @@ class Ash(Tile):
                     "must_be_ruler": True,
                     "description": "+3 points instead",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_cooldown": False,
                 },
             ]

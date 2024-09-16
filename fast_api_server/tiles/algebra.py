@@ -15,6 +15,7 @@ class Algebra(Tile):
                     "must_be_ruler": False,                    
                     "description": "At the __start of a round__, +1 stamina",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_cooldown": False,
                 },
                 {
@@ -22,6 +23,7 @@ class Algebra(Tile):
                     "must_be_ruler": True,                     
                     "description": "At the __start of a round__, +1 stamina",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_cooldown": False,
                 }
             ]

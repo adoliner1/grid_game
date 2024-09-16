@@ -15,7 +15,8 @@ class SolarArray(Tile):
                     "must_be_ruler": True,
                     "description": "**Action:** ^^Burn^^ all your shapes here. If you burned 2 or more and your peak power is:\n **>= 6:** +3 points\n**>= 10:** +7 points\n**>= 14:** +12 points",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,                 
+                    "has_a_cooldown": False,  
+                    "leader_must_be_present": False,                
                     "data_needed_for_use": []
                 },
             ]

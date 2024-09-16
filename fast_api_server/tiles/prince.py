@@ -16,6 +16,7 @@ class Prince(Tile):
                     "must_be_ruler": True,                    
                     "description": "At the __end of a round__, for each same-shape pair you have here, +3 additional points",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_a_cooldown": False,                   
                 },
             ]            

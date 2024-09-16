@@ -15,7 +15,8 @@ class Orbit(Tile):
                     "must_be_ruler": True,                    
                     "description": "**Action:** Choose a tile. Shift the row that tile is in left once",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                     
+                    "has_a_cooldown": True,    
+                    "leader_must_be_present": False,                  
                     "data_needed_for_use": ["tile_to_shift_row"]
                 },
             ]      

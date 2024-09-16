@@ -24,10 +24,10 @@ const Tile = ({
 }) => {
 
     const meeple = (color) => (
-        <Tooltip text={`${color} Leader`}>
-            <svg width="20" height="24" viewBox="0 0 24 28" fill={color}>
-                <path d="M12 2C8.7 2 6 4.7 6 8c0 1.3.5 2.5 1.3 3.5l-.6 3.1C6.4 15.6 7 17 8 17h8c1 0 1.6-1.4 1.3-2.4l-.6-3.1C17.5 10.5 18 9.3 18 8c0-3.3-2.7-6-6-6z"/>
-            </svg>
+        <Tooltip text={`${color.charAt(0).toUpperCase() + color.slice(1)} Leader`}>
+          <svg width="20" height="24" viewBox="0 0 24 28" fill={color}>
+            <path d="M12 2C8.7 2 6 4.7 6 8c0 1.3.5 2.5 1.3 3.5l-.6 3.1C6.4 15.6 7 17 8 17h8c1 0 1.6-1.4 1.3-2.4l-.6-3.1C17.5 10.5 18 9.3 18 8c0-3.3-2.7-6-6-6z"/>
+          </svg>
         </Tooltip> )
 
     const isSelectableTier = (tier_index) => {

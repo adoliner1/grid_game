@@ -15,7 +15,8 @@ class Pluto(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ 2 circles here for +4 stamina",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,   
+                    "leader_must_be_present": False,                  
                     "data_needed_for_use": []
                 },
                 {
@@ -23,7 +24,8 @@ class Pluto(Tile):
                     "must_be_ruler": True,                    
                     "description": "**Action:** ^^Burn^^ 1 circle here for +4 stamina",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,      
+                    "leader_must_be_present": False,               
                     "data_needed_for_use": [],
                 },
             ]

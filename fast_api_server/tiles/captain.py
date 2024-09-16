@@ -17,6 +17,7 @@ class Captain(Tile):
                     "description": "**Reaction:** After you [[receive]] a shape at a tile, you may ^^burn^^ any shape at a tile adjacent to that tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
+                    "leader_must_be_present": False, 
                     "data_needed_for_use": ['slot_and_tile_to_burn_shape'],
                 },
                 {
@@ -25,6 +26,7 @@ class Captain(Tile):
                     "description": "**Reaction:** Same as above but +2 points when you do",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
+                    "leader_must_be_present": False, 
                     "data_needed_for_use": ['slot_and_tile_to_burn_shape'],
                 },                       
             ],            

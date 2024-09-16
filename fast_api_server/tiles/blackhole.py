@@ -2,21 +2,21 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Wormhole(Tile):
+class Blackhole(Tile):
     def __init__(self):
         super().__init__(
-            name="Wormhole",
+            name="Blackhole",
             type="Tile-Mover",
             minimum_power_to_rule=3,
-            number_of_slots=5,
+            number_of_slots=3,
             power_tiers=[
                 {
-                    "power_to_reach_tier": 4,
+                    "power_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "**Action:** Swap the position of two tiles",
+                    "description": "**Action:** Pay 1 stamina to swap the position of two tiles",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
-                    "leader_must_be_present": False, 
+                    "has_a_cooldown": True,
+                    "leader_must_be_present": True,                   
                     "data_needed_for_use": ["tile1", "tile2"]
                 },
             ]
@@ -32,7 +32,7 @@ class Wormhole(Tile):
        
         if (self.power_per_player[whose_turn_is_it] >= self.power_tiers[0]['power_to_reach_tier'] and
             not self.power_tiers[0]["is_on_cooldown"] and
-            whose_turn_is_it == ruler):
+            whose_turn_is_it == ruler) and self.leaders_here[ruler] and game_state['stamina'][whose_turn_is_it] > 0:
                 useable_tiers.append(0)
        
         return useable_tiers
@@ -64,6 +64,14 @@ class Wormhole(Tile):
         if user != ruler:
             await send_clients_log_message(f"Only the ruler can use {self.name}")
             return False
+        
+        if not self.leaders_here[user]:
+            await send_clients_log_message(f"Leader isn't present")
+            return False
+        
+        if not game_state['stamina'][user] > 0:
+            await send_clients_log_message(f"Not enough stamina to use {self.name}")
+            return False              
 
         tile1_index = game_action_container.required_data_for_action['tile1']
         tile2_index = game_action_container.required_data_for_action['tile2']
@@ -76,9 +84,9 @@ class Wormhole(Tile):
             await send_clients_log_message(f"Cannot select the same tile twice for {self.name}")
             return False
 
-        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
+        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}. They lose one stamina")
         # Swap the tiles
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
-       
+        game_state['stamina'][user] -= 1       
         self.power_tiers[tier_index]["is_on_cooldown"] = True
         return True

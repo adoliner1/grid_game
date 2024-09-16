@@ -17,7 +17,8 @@ class Phoenix(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** After one of your shapes is ^^burned^^ at a tile, if you are still present there, you may [[receive]] a circle there",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                     
+                    "has_a_cooldown": True,         
+                    "leader_must_be_present": False,             
                     "data_needed_for_use": ['confirm_choice']
                 },        
                 {
@@ -25,7 +26,8 @@ class Phoenix(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** Same as above but [[receive]] a square instead",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                     
+                    "has_a_cooldown": True,   
+                    "leader_must_be_present": False,                   
                     "data_needed_for_use": ['confirm_choice']
                 }, 
                 {
@@ -33,7 +35,8 @@ class Phoenix(Tile):
                     "must_be_ruler": True,                    
                     "description": "**Reaction:** Same as above but [[receive]] a triangle instead",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                     
+                    "has_a_cooldown": True,            
+                    "leader_must_be_present": False,          
                     "data_needed_for_use": ['confirm_choice']
                 },     
             ]  

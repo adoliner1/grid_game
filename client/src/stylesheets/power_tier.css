@@ -10,13 +10,14 @@
 .power-tier-indicators-and-requirements {
     display: flex;
     flex-direction: row;
+    padding: 0px;
     align-items: center; /* This ensures vertical alignment */
-    gap: 5px; /* Adds consistent spacing between elements */
 }
 
 .power-requirement-at-tier,
 .ruler-tier,
 .has_a_cooldown,
+.leader_must_be_present,
 .player-indicators-for-power-tiers {
     display: flex;
     align-items: center;

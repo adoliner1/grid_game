@@ -13,7 +13,7 @@ class Turbine(Tile):
                 {
                     "power_to_reach_tier": 3,
                     "must_be_ruler": False,
-                    "description": "**Action:** If your peak power is\n**>= 6**, ++produce++ a circle\n**>= 10**, a square\n**>= 14**, a triangle",
+                    "description": "**Action:** If your peak power is\n**>= 6**, +1 stamina\n**>= 10**, +2 stamina\n**>= 14**, +3 stamina",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,                    
                     "data_needed_for_use": []
@@ -48,28 +48,18 @@ class Turbine(Tile):
             await send_clients_log_message(f"{self.name} is on cooldown")
             return False
 
-        await send_clients_log_message(f"{user} is using {self.name}")
+        stamina_to_give = 0
         if peak_power >= 14:
-            await game_utilities.produce_shape_for_player(
-                game_state, game_action_container_stack, send_clients_log_message,
-                get_and_send_available_actions, send_clients_game_state,
-                user, 1, "triangle", self.name, True
-            )
+            stamina_to_give = 3
         elif peak_power >= 10:
-            await game_utilities.produce_shape_for_player(
-                game_state, game_action_container_stack, send_clients_log_message,
-                get_and_send_available_actions, send_clients_game_state,
-                user, 1, "square", self.name, True
-            )
+            stamina_to_give = 2
         elif peak_power >= 6:
-            await game_utilities.produce_shape_for_player(
-                game_state, game_action_container_stack, send_clients_log_message,
-                get_and_send_available_actions, send_clients_game_state,
-                user, 1, "circle", self.name, True
-            )
+            stamina_to_give = 1
         else:
-            await send_clients_log_message(f"{user}'s peak power is not high enough to produce a shape with {self.name}")
-            return False
+            await send_clients_log_message(f"{user}'s peak power is not high enough to gain any stamina with {self.name}")
+            return True
 
+        await send_clients_log_message(f"{self.name} gives {user} {stamina_to_give} stamina")
+        game_state['stamina'][user] += stamina_to_give
         self.power_tiers[tier_index]["is_on_cooldown"] = True
         return True

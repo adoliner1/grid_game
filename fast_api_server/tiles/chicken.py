@@ -15,6 +15,7 @@ class Chicken(Tile):
                     "must_be_ruler": True,                    
                     "description": "**Action:** [[Receive]] a circle at an adjacent tile. Your opponent gets +1 stamina",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "data_needed_for_use": ["tile_to_receive_shapes_at"],
                     "has_a_cooldown": True,                    
                 },                

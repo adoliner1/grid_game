@@ -15,7 +15,8 @@ class RedDwarf(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ one of your shapes here to swap the position of 2 tiles",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,                    
+                    "has_a_cooldown": False,            
+                    "leader_must_be_present": False,         
                     "data_needed_for_use": ["slot_to_burn_from_on_red_dwarf", "first_tile", "second_tile"]
                 },
             ]

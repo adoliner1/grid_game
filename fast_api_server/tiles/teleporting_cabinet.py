@@ -15,7 +15,8 @@ class TeleportingCabinet(Tile):
                     "must_be_ruler": False,
                     "description": "**Action:** Choose a shape at an adjacent tile and swap it with a shape anywhere",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,             
+                    "leader_must_be_present": False,        
                     "data_needed_for_use": ["slot_and_tile_to_swap_shape_from", "slot_and_tile_to_swap_shape_to"]
                 },
             ]

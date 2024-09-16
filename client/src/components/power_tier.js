@@ -43,7 +43,14 @@ const PowerTier = ({
         <path fill="currentColor" d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z" />
       </svg>
     </Tooltip>
-  );
+  )
+
+  const meeple = (color) => (
+    <Tooltip text={`Leader Must be Present`}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill={color}>
+            <path d="M12 2C8.7 2 6 4.7 6 8c0 1.3.5 2.5 1.3 3.5l-.6 3.1C6.4 15.6 7 17 8 17h8c1 0 1.6-1.4 1.3-2.4l-.6-3.1C17.5 10.5 18 9.3 18 8c0-3.3-2.7-6-6-6z"/>
+        </svg>
+    </Tooltip> )
 
   const Indicator = ({ color }) => (
     <svg width="10" height="2" viewBox="0 0 10 2">
@@ -62,6 +69,7 @@ const PowerTier = ({
             <div className="power-requirement-at-tier">{tier.power_to_reach_tier}</div>
           </Tooltip>
           <div className="has_a_cooldown">{tier.has_a_cooldown ? cooldown_clock : null}</div>
+          <div className="leader_must_be_present">{tier.leader_must_be_present ? meeple('black') : null} </div>
           <div className="player-indicators-for-power-tiers">
             {redAtThisLevel && <Indicator color="red" />}
             {blueAtThisLevel && <Indicator color="blue" />}

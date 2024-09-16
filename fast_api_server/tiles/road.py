@@ -15,7 +15,8 @@ class Road(Tile):
                     "must_be_ruler": False,
                     "description": "**Action:** Choose a shape at an adjacent tile. Move it anywhere",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,     
+                    "leader_must_be_present": False,                
                     "data_needed_for_use": ["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
                 {
@@ -24,6 +25,7 @@ class Road(Tile):
                     "description": "**Action:** Same as above but choose a shape at an adjacent tile or anywhere you're present",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
+                    "leader_must_be_present": False, 
                     "data_needed_for_use": ["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
                 {
@@ -32,6 +34,7 @@ class Road(Tile):
                     "description": "**Action:** Same as above but choose any shape",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
+                    "leader_must_be_present": False, 
                     "data_needed_for_use": ["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
             ]

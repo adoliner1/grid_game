@@ -17,7 +17,8 @@ class Conductor(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** After you [[receive]] a shape, you may move it to a tile adjacent to Conductor",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,        
+                    "leader_must_be_present": False,             
                     "data_needed_for_use": ['tile_to_move_shape_to']
                 },
                 {
@@ -25,7 +26,8 @@ class Conductor(Tile):
                     "must_be_ruler": True,                    
                     "description": "**Reaction:** Same as above but you may move it anywhere",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,       
+                    "leader_must_be_present": False,              
                     "data_needed_for_use": ['tile_to_move_shape_to']
                 },
             ]

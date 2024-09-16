@@ -15,6 +15,7 @@ class Caves(Tile):
                     "must_be_ruler": False,                    
                     "description": "After you ((recruit)) at an adjacent tile, if you have less than 5 power there, [[receive]] a circle there",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
                 },
                 {
@@ -22,6 +23,7 @@ class Caves(Tile):
                     "must_be_ruler": False,                    
                     "description": "Same as above but less than 7 power",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
                 },
                 {
@@ -29,6 +31,7 @@ class Caves(Tile):
                     "must_be_ruler": True,                    
                     "description": "Same as above but less than 9 power",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
                 },                               
             ]

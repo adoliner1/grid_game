@@ -15,7 +15,8 @@ class Highway(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ one of your shapes here to move a shape on a tile to another tile",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,       
+                    "leader_must_be_present": False,              
                     "data_needed_for_use": ["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
                 {
@@ -23,7 +24,8 @@ class Highway(Tile):
                     "must_be_ruler": True,                    
                     "description": "**Action:** Same as above but don't burn a shape",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,          
+                    "leader_must_be_present": False,           
                     "data_needed_for_use": ["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
             ] 

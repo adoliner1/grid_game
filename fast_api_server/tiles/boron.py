@@ -16,6 +16,7 @@ class Boron(Tile):
                     "must_be_ruler": True,                    
                     "description": "+2 points at the end of the game",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_cooldown": False,
                 },
             ]            

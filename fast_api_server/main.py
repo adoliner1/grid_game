@@ -335,5 +335,6 @@ def serialize_game_state(game_state):
     serialized_game_state = copy.deepcopy(game_state)
     del serialized_game_state['listeners']
     serialized_game_state["tiles"] = [tile.serialize() for tile in game_state["tiles"]]
-    serialized_game_state["round_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["round_bonuses"]]
+    serialized_game_state["scorer_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["scorer_bonuses"]]
+    serialized_game_state["income_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["income_bonuses"]]
     return json.dumps(serialized_game_state)

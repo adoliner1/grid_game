@@ -17,7 +17,8 @@ class Maestro(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** After you [[receive]] a shape, you may move it to a tile adjacent to the tile you [[received]] it at",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                     
+                    "has_a_cooldown": True,  
+                    "leader_must_be_present": False,                    
                     "data_needed_for_use": ['slot_and_tile_to_move_shape_to']
                 },
                 {
@@ -25,7 +26,8 @@ class Maestro(Tile):
                     "must_be_ruler": True,                    
                     "description": "**Reaction:** Same as above (this tier has no cooldown though)",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,                     
+                    "has_a_cooldown": False,   
+                    "leader_must_be_present": False,                   
                     "data_needed_for_use": ['slot_and_tile_to_move_shape_to']
                 },
             ]

@@ -3,6 +3,7 @@ import '../stylesheets/game.css';
 import Tile from './tile';
 import GameLog from './game_log';
 import PlayerHUD from './player_HUD';
+import RoundBonusesTable from './round_bonuses_table';
 
 const Game = () => {
     const [gameState, setGameState] = useState(null)
@@ -211,13 +212,7 @@ const Game = () => {
         <div className="game-container">
           <div className="info_section">
             <div className={clientColor.current === 'red' ? 'red-text' : 'blue-text'}> You are {clientColor.current} </div>
-            <div>
-              {gameState.round_bonuses.map((bonus, index) => (
-                <p key={index} className={index === gameState.round ? 'current-round' : ''}>
-                  <b>Round {index+1}: </b> {bonus}
-                </p>
-              ))}
-            </div>
+            <RoundBonusesTable gameState={gameState} />
             <PlayerHUD   
               player_color="red"
               whose_turn_is_it={gameState.whose_turn_is_it}

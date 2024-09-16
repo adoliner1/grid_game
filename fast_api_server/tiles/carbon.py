@@ -17,6 +17,7 @@ class Carbon(Tile):
                     "description": "**Action:** ^^Burn^^ 3 of your circles here to [[receive]] a triangle here",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
+                    "leader_must_be_present": False, 
                     "data_needed_for_use": [],
                 },              
             ]      

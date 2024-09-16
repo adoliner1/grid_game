@@ -16,6 +16,7 @@ class Jester(Tile):
                     "must_be_ruler": True,                    
                     "description": "At the __end of the game__, -10 points",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_a_cooldown": False,                     
                 },
             ]            

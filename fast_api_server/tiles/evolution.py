@@ -16,7 +16,8 @@ class Evolution(Tile):
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ 3 of your triangles here. +5 points and +5 stamina",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,                    
+                    "has_a_cooldown": False,   
+                    "leader_must_be_present": False,                  
                     "data_needed_for_use": [],
                 },
                 {
@@ -24,6 +25,7 @@ class Evolution(Tile):
                     "must_be_ruler": True,                    
                     "description": "At the __end of the game__, -5 points",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
                 },
             ]

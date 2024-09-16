@@ -14,6 +14,7 @@ class Calculus(Tile):
                     "must_be_ruler": True,                    
                     "description": "At the __start of a round__, +3 stamina",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                 },              
             ],
             number_of_slots=5,
@@ -26,5 +27,5 @@ class Calculus(Tile):
         self.determine_power()
         ruler = self.determine_ruler(game_state)
         if ruler: 
-            await send_clients_log_message(f'{self.name} gives 3 to {ruler}')  
+            await send_clients_log_message(f'{self.name} gives 3 stamina to {ruler}')  
             game_state['stamina'][ruler] += 3

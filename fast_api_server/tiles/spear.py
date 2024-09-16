@@ -15,7 +15,8 @@ class Spear(Tile):
                     "must_be_ruler": True,
                     "description": "**Action:** ^^Burn^^ one of your shapes here, then ^^burn^^ a shape at a tile you're present at",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,                  
+                    "has_a_cooldown": True,   
+                    "leader_must_be_present": False,                
                     "data_needed_for_use": ["slot_to_burn_shape_from", "slot_and_tile_to_burn_shape_at"]
                 },
             ]

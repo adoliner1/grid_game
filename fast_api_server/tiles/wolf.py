@@ -16,7 +16,8 @@ class Wolf(Tile):
                     "description": "**Action:** [[Receive]] a square at an adjacent tile. Your opponent gets +2 stamina",
                     "is_on_cooldown": False,
                     "data_needed_for_use": ["tile_to_receive_shapes_at"],
-                    "has_a_cooldown": True,                    
+                    "has_a_cooldown": True,             
+                    "leader_must_be_present": False,        
                 },                
             ],      
         )

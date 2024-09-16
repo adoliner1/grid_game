@@ -253,6 +253,9 @@ class GameEngine:
                 if not await self.player_takes_recruit_action(game_action_container):
                     return False                                
 
+        game_utilities.determine_power_levels(self.game_state)
+        game_utilities.update_presence(self.game_state)
+        game_utilities.determine_rulers(self.game_state)
         #if we fail before here... we need to reset some data in required data i think
         self.game_action_container_stack.pop()
         await self.send_clients_game_state(self.game_state)
@@ -423,75 +426,53 @@ class GameEngine:
     def get_all_round_bonuses(self):
         module_name = 'round_bonuses'
         module = importlib.import_module(module_name)
-        
-        round_bonus_classes = []
-        
+       
+        scorer_bonuses = []
+        income_bonuses = []
+       
         for name, obj in inspect.getmembers(module, inspect.isclass):
             if issubclass(obj, round_bonuses.RoundBonus) and obj is not round_bonuses.RoundBonus:
-                round_bonus_classes.append(obj)
-        
-        return round_bonus_classes
+                if obj().bonus_type == "scorer":
+                    scorer_bonuses.append(obj)
+                elif obj().bonus_type == "income":
+                    income_bonuses.append(obj)
+       
+        return scorer_bonuses, income_bonuses
 
     def create_new_game_state(self):
         chosen_tiles = random.sample(self.import_all_tiles_from_folder('tiles'), 9)
-        all_bonuses = self.get_all_round_bonuses()
-        num_bonuses = min(6, len(all_bonuses))
-        chosen_round_bonuses = random.sample(all_bonuses, num_bonuses)
-        chosen_round_bonuses = [bonus() for bonus in chosen_round_bonuses]
-
+        scorer_bonuses, income_bonuses = self.get_all_round_bonuses()  
+    
+        chosen_scorer_bonuses = random.sample(scorer_bonuses, game_constants.number_of_scoring_bonuses)
+        chosen_income_bonuses = random.sample(income_bonuses, game_constants.number_of_income_bonuses)
+    
         game_state = {
             "round": 0,
-            "points": {
-                "red": 0,
-                "blue": 0
-            },
-            "presence": {
-                "red": 0,
-                "blue": 0
-            },
-            "peak_power":{
-                "red": 0,
-                "blue": 0
-            },
-            "player_has_passed": {
-                "red": False,
-                "blue": False
-            },
-            "stamina": {
-                "red": 999,
-                "blue": 999,
-            },
-            "recruit_range": {
-                "red": 0,
-                "blue": 0                
-            },
-            "exile_range": {
-                "red": 0,
-                "blue": 0                
-            },
-            "costs_to_recruit" :{
-                "red": game_constants.starting_cost_to_recruit,
-                "blue": game_constants.starting_cost_to_recruit,  
-            },
-            "costs_to_exile" :{
-                "red": game_constants.starting_cost_to_exile,
-                "blue": game_constants.starting_cost_to_exile,  
-            },
-            "movement": {
-                "red": game_constants.starting_movement,
-                "blue": game_constants.starting_movement,                
-            },
+            "points": {"red": 0, "blue": 0},
+            "presence": {"red": 0, "blue": 0},
+            "peak_power": {"red": 0, "blue": 0},
+            "player_has_passed": {"red": False, "blue": False},
+            "stamina": {"red": 0, "blue": 0},
+            "recruit_range": {"red": 0, "blue": 0},
+            "exile_range": {"red": 0, "blue": 0},
+            "costs_to_recruit": {"red": game_constants.starting_cost_to_recruit, "blue": game_constants.starting_cost_to_recruit},
+            "costs_to_exile": {"red": game_constants.starting_cost_to_exile, "blue": game_constants.starting_cost_to_exile},
+            "movement": {"red": game_constants.starting_movement, "blue": game_constants.starting_movement},
             "tiles": [tile() for tile in chosen_tiles],
             "whose_turn_is_it": "red",
             "first_player": "red",
-            "round_bonuses": chosen_round_bonuses,
-            "listeners": {"on_recruit": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {}, "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}},
+            "scorer_bonuses": [bonus() for bonus in chosen_scorer_bonuses],
+            "income_bonuses": [bonus() for bonus in chosen_income_bonuses],
+            "listeners": {
+                "on_recruit": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {},
+                "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}
+            },
         }
-
+        
         for tile in game_state["tiles"]:
             if hasattr(tile, 'setup_listener'):
                 tile.setup_listener(game_state)
-
+        
         return game_state
 
     def create_initial_decision_game_action_container(self):
@@ -504,24 +485,38 @@ class GameEngine:
 
     async def start_round(self):
         await self.send_clients_log_message("Starting new round")
-        round = self.game_state["round"] 
-        if (round > 0):
-            self.game_state["round_bonuses"][round-1].cleanup(self.game_state)
-        self.game_state["round_bonuses"][round].setup(self.game_state)         
+        round = self.game_state["round"]
+        
+        if round > 0:
+            self.game_state["scorer_bonuses"][round-1].cleanup(self.game_state)
+            self.game_state["income_bonuses"][round-1].cleanup(self.game_state)
+    
+        self.game_state["scorer_bonuses"][round].setup(self.game_state)
+        self.game_state["income_bonuses"][round].setup(self.game_state)
+
         self.game_state['player_has_passed']['red'] = False
         self.game_state['player_has_passed']['blue'] = False
+        
         for tile in self.game_state["tiles"]:
             await tile.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
             for tier in tile.power_tiers:
                 tier['is_on_cooldown'] = False
-
-        for _, listener_function in self.game_state["listeners"]["start_of_round"].items():
-                await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
-
+        
+        for _ , listener_function in self.game_state["listeners"]["start_of_round"].values():
+            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
+        
+        #base stamina-income
         stamina_to_give = game_constants.stamina_given_at_start_of_round[round]
         await self.send_clients_log_message(f"Giving {stamina_to_give} stamina to each player for the start of the round")        
+        
         for player in game_constants.player_colors:
             self.game_state['stamina'][player] += stamina_to_give
+        
+        #base stamina-income
+        if round == 0:
+            await self.send_clients_log_message(f"Blue gets 1 extra stamina for being second player")
+            self.game_state['stamina']['blue'] += 1          
+        
         game_utilities.determine_rulers(self.game_state)
 
     async def player_passes(self, player_color):

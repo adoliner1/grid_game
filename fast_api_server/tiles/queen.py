@@ -15,6 +15,7 @@ class Queen(Tile):
                     "must_be_ruler": False,                    
                     "description": "When your opponent ((recruits)) a shape on an adjacent tile, +1 point",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
                 },
                 {
@@ -22,6 +23,7 @@ class Queen(Tile):
                     "must_be_ruler": True,                    
                     "description": "Same as above, +2 additional points",
                     "is_on_cooldown": False,
+                    "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
                 },
             ]            
