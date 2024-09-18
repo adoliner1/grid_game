@@ -7,12 +7,12 @@ class Calculus(Tile):
         super().__init__(
             name="Calculus",
             type="Producer",
-            minimum_power_to_rule=2,
-            power_tiers=[
+            minimum_influence_to_rule=3,
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 6,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": True,                    
-                    "description": "At the __start of a round__, +3 stamina",
+                    "description": "At the __start of a round__, +3 power",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                 },              
@@ -21,11 +21,11 @@ class Calculus(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
-        self.determine_power()
+        self.determine_influence()
         ruler = self.determine_ruler(game_state)
         if ruler: 
-            await send_clients_log_message(f'{self.name} gives 3 stamina to {ruler}')  
-            game_state['stamina'][ruler] += 3
+            await send_clients_log_message(f'{self.name} gives 3 power to {ruler}')  
+            game_state['power'][ruler] += 3

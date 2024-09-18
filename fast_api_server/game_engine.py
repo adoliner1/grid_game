@@ -253,7 +253,7 @@ class GameEngine:
                 if not await self.player_takes_recruit_action(game_action_container):
                     return False                                
 
-        game_utilities.determine_power_levels(self.game_state)
+        game_utilities.determine_influence_levels(self.game_state)
         game_utilities.update_presence(self.game_state)
         game_utilities.determine_rulers(self.game_state)
         #if we fail before here... we need to reset some data in required data i think
@@ -271,6 +271,12 @@ class GameEngine:
         if not tile_index_to_move_to in tile_indices_adjacent_to_leader:
             await self.send_clients_log_message(f"Chose a non-adjacent tile to move to")           
             return False
+        
+        if self.game_state['power'][mover] < 1:
+            await self.send_clients_log_message("Don't have enough power to move")
+            return False
+
+        self.game_state['power'][mover] -= 1
 
         tile_of_players_leader.leaders_here[mover] = False
         tile_to_move_to.leaders_here[mover] = True
@@ -296,16 +302,16 @@ class GameEngine:
             await self.send_clients_log_message("Cannot recruit this shape here")
             return False    
 
-        if slot and not (game_constants.shape_power[slot['shape']] < game_constants.shape_power[shape_type] and color_of_player_recruiting == slot['color']):
+        if slot and not (game_constants.shape_influence[slot['shape']] < game_constants.shape_influence[shape_type] and color_of_player_recruiting == slot['color']):
             await self.send_clients_log_message("Cannot recruit on this slot, it's not empty or contains one of your weaker shapes")
             return False
         
-        if self.game_state['costs_to_recruit'][color_of_player_recruiting][shape_type] > self.game_state['stamina'][color_of_player_recruiting]:
-            await self.send_clients_log_message("Don't have enough stamina to recruit this")
+        if self.game_state['costs_to_recruit'][color_of_player_recruiting][shape_type] > self.game_state['power'][color_of_player_recruiting]:
+            await self.send_clients_log_message("Don't have enough power to recruit this")
             return False
         
 
-        self.game_state['stamina'][color_of_player_recruiting] -= self.game_state['costs_to_recruit'][color_of_player_recruiting][shape_type]
+        self.game_state['power'][color_of_player_recruiting] -= self.game_state['costs_to_recruit'][color_of_player_recruiting][shape_type]
         await game_utilities.recruit_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index, slot_index, shape_type, color_of_player_recruiting)
         game_utilities.determine_rulers(self.game_state)
         return True
@@ -327,8 +333,8 @@ class GameEngine:
             await self.send_clients_log_message("Nothing to exile here")
             return False
         
-        if self.game_state['costs_to_exile'][color_of_player_exiling][slot_to_exile_from['shape']] > self.game_state['stamina'][color_of_player_exiling]:
-            await self.send_clients_log_message("Not enough stamina to exile")
+        if self.game_state['costs_to_exile'][color_of_player_exiling][slot_to_exile_from['shape']] > self.game_state['power'][color_of_player_exiling]:
+            await self.send_clients_log_message("Not enough power to exile")
             return False            
 
         exiled_shape = slot_to_exile_from
@@ -385,7 +391,7 @@ class GameEngine:
                 tier_index = data['initial_data_passed_along_with_choice']['tier_index']
                 required_data = OrderedDict({"index_of_tile_in_use": tile_index, "index_of_tier_in_use": tier_index})
                 tile_in_use = self.game_state["tiles"][tile_index]
-                tier_in_use = tile_in_use.power_tiers[tier_index]
+                tier_in_use = tile_in_use.influence_tiers[tier_index]
                 if tier_in_use['data_needed_for_use']:
                     for piece_of_data_needed_for_tile_use in tier_in_use['data_needed_for_use']:
                         required_data[piece_of_data_needed_for_tile_use] = {} if 'slot' in piece_of_data_needed_for_tile_use else None
@@ -450,9 +456,9 @@ class GameEngine:
             "round": 0,
             "points": {"red": 0, "blue": 0},
             "presence": {"red": 0, "blue": 0},
-            "peak_power": {"red": 0, "blue": 0},
+            "peak_influence": {"red": 0, "blue": 0},
             "player_has_passed": {"red": False, "blue": False},
-            "stamina": {"red": 0, "blue": 0},
+            "power": {"red": 0, "blue": 0},
             "recruit_range": {"red": 0, "blue": 0},
             "exile_range": {"red": 0, "blue": 0},
             "costs_to_recruit": {"red": game_constants.starting_cost_to_recruit, "blue": game_constants.starting_cost_to_recruit},
@@ -499,23 +505,23 @@ class GameEngine:
         
         for tile in self.game_state["tiles"]:
             await tile.start_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
-            for tier in tile.power_tiers:
+            for tier in tile.influence_tiers:
                 tier['is_on_cooldown'] = False
         
         for _ , listener_function in self.game_state["listeners"]["start_of_round"].values():
             await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
         
-        #base stamina-income
-        stamina_to_give = game_constants.stamina_given_at_start_of_round[round]
-        await self.send_clients_log_message(f"Giving {stamina_to_give} stamina to each player for the start of the round")        
+        #base power-income
+        power_to_give = game_constants.power_given_at_start_of_round[round]
+        await self.send_clients_log_message(f"Giving {power_to_give} power to each player for the start of the round")        
         
         for player in game_constants.player_colors:
-            self.game_state['stamina'][player] += stamina_to_give
+            self.game_state['power'][player] += power_to_give
         
-        #base stamina-income
+        #base power-income
         if round == 0:
-            await self.send_clients_log_message(f"Blue gets 1 extra stamina for being second player")
-            self.game_state['stamina']['blue'] += 1          
+            await self.send_clients_log_message(f"Blue gets 1 extra power for being second player")
+            self.game_state['power']['blue'] += 1          
         
         game_utilities.determine_rulers(self.game_state)
 

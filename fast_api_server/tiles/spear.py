@@ -7,11 +7,11 @@ class Spear(Tile):
         super().__init__(
             name="Spear",
             type="Attacker",
-            minimum_power_to_rule=3,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
                     "description": "**Action:** ^^Burn^^ one of your shapes here, then ^^burn^^ a shape at a tile you're present at",
                     "is_on_cooldown": False,
@@ -23,16 +23,16 @@ class Spear(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
-        player_power = self.power_per_player[whose_turn_is_it]
+        player_influence = self.influence_per_player[whose_turn_is_it]
         ruler = self.determine_ruler(game_state)
 
-        if (player_power >= self.power_tiers[0]["power_to_reach_tier"] and 
-            not self.power_tiers[0]["is_on_cooldown"] and 
+        if (player_influence >= self.influence_tiers[0]["influence_to_reach_tier"] and 
+            not self.influence_tiers[0]["is_on_cooldown"] and 
             whose_turn_is_it == ruler):
             useable_tiers.append(0)
 
@@ -58,14 +58,14 @@ class Spear(Tile):
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
-        user_power = self.power_per_player[user]
+        user_influence = self.influence_per_player[user]
         ruler = self.determine_ruler(game_state)
 
-        if user_power < self.power_tiers[tier_index]["power_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough power to use tier {tier_index} of {self.name}")
+        if user_influence < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
+            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of {self.name}")
             return False
 
-        if self.power_tiers[tier_index]["is_on_cooldown"]:
+        if self.influence_tiers[tier_index]["is_on_cooldown"]:
             await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
             return False
 
@@ -98,5 +98,5 @@ class Spear(Tile):
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_spear, slot_index_to_burn_shape_from_here)
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_shape_at, slot_index_to_burn_shape_at)
 
-        self.power_tiers[tier_index]["is_on_cooldown"] = True
+        self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

@@ -7,12 +7,12 @@ class Jester(Tile):
         super().__init__(
             name="Jester",
             type="Scorer",
-            minimum_power_to_rule=1,
+            minimum_influence_to_rule=1,
             description = f"At the __end of a round__, per unique type of pair you have here, +5 points",
             number_of_slots=9,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 1,
+                    "influence_to_reach_tier": 1,
                     "must_be_ruler": True,                    
                     "description": "At the __end of the game__, -10 points",
                     "is_on_cooldown": False,
@@ -23,7 +23,7 @@ class Jester(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         for color in ['red', 'blue']:

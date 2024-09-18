@@ -7,11 +7,11 @@ class Road(Tile):
         super().__init__(
             name="Road",
             type="Mover",
-            minimum_power_to_rule=3,
+            minimum_influence_to_rule=3,
             number_of_slots=7,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 2,
+                    "influence_to_reach_tier": 2,
                     "must_be_ruler": False,
                     "description": "**Action:** Choose a shape at an adjacent tile. Move it anywhere",
                     "is_on_cooldown": False,
@@ -20,7 +20,7 @@ class Road(Tile):
                     "data_needed_for_use": ["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
                 {
-                    "power_to_reach_tier": 5,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": False,
                     "description": "**Action:** Same as above but choose a shape at an adjacent tile or anywhere you're present",
                     "is_on_cooldown": False,
@@ -29,7 +29,7 @@ class Road(Tile):
                     "data_needed_for_use": ["slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
                 {
-                    "power_to_reach_tier": 7,
+                    "influence_to_reach_tier": 7,
                     "must_be_ruler": True,
                     "description": "**Action:** Same as above but choose any shape",
                     "is_on_cooldown": False,
@@ -41,15 +41,15 @@ class Road(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
-        player_power = self.power_per_player[whose_turn_is_it]
+        player_influence = self.influence_per_player[whose_turn_is_it]
 
-        for i, tier in enumerate(self.power_tiers):
-            if player_power >= tier["power_to_reach_tier"] and not tier["is_on_cooldown"]:
+        for i, tier in enumerate(self.influence_tiers):
+            if player_influence >= tier["influence_to_reach_tier"] and not tier["is_on_cooldown"]:
                 useable_tiers.append(i)
 
         return useable_tiers
@@ -72,7 +72,7 @@ class Road(Tile):
                         slots_with_shapes = [i for i, slot in enumerate(tile.slots_for_shapes) if slot]
                         if slots_with_shapes:
                             slots_with_a_shape[index] = slots_with_shapes
-            else:  # 3+ power
+            else:  # 3+ influence
                 adjacent_tiles = game_utilities.get_adjacent_tile_indices(index_of_road)
                 for index in adjacent_tiles:
                     slots_with_shapes = [i for i, slot in enumerate(game_state["tiles"][index].slots_for_shapes) if slot]
@@ -91,13 +91,13 @@ class Road(Tile):
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
-        user_power = self.power_per_player[user]
+        user_influence = self.influence_per_player[user]
 
-        if user_power < self.power_tiers[tier_index]["power_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough power to use tier {tier_index} of {self.name}")
+        if user_influence < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
+            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of {self.name}")
             return False
 
-        if self.power_tiers[tier_index]["is_on_cooldown"]:
+        if self.influence_tiers[tier_index]["is_on_cooldown"]:
             await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
             return False
 
@@ -127,6 +127,6 @@ class Road(Tile):
         await send_clients_log_message(f"Using tier {tier_index} of {self.name}")
         await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index_from, slot_index_from, tile_index_to, slot_index_to)
         
-        self.power_tiers[tier_index]["is_on_cooldown"] = True
+        self.influence_tiers[tier_index]["is_on_cooldown"] = True
         
         return True

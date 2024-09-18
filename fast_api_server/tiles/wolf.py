@@ -6,14 +6,14 @@ class Wolf(Tile):
     def __init__(self):
         super().__init__(
             name="Wolf",
-            type="Stamina/Giver",
+            type="Power-Creator/Giver",
             number_of_slots=5,
-            minimum_power_to_rule=3,
-            power_tiers=[
+            minimum_influence_to_rule=3,
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** [[Receive]] a square at an adjacent tile. Your opponent gets +2 stamina",
+                    "description": "**Action:** [[Receive]] a square at an adjacent tile. Your opponent gets +2 power",
                     "is_on_cooldown": False,
                     "data_needed_for_use": ["tile_to_receive_shapes_at"],
                     "has_a_cooldown": True,             
@@ -23,12 +23,12 @@ class Wolf(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         current_player = game_state["whose_turn_is_it"]
-        if not self.power_tiers[0]["is_on_cooldown"] and self.determine_ruler(game_state) == current_player:
+        if not self.influence_tiers[0]["is_on_cooldown"] and self.determine_ruler(game_state) == current_player:
             useable_tiers.append(0)
         return useable_tiers
 
@@ -48,7 +48,7 @@ class Wolf(Tile):
             await send_clients_log_message(f"Only the ruler can use {self.name}")
             return False
 
-        if self.power_tiers[0]['is_on_cooldown']:
+        if self.influence_tiers[0]['is_on_cooldown']:
             await send_clients_log_message(f"{self.name} is on cooldown and cannot be used this round")
             return False
 
@@ -60,9 +60,9 @@ class Wolf(Tile):
             return False
 
         await send_clients_log_message(f"{self.name} is used")
-        self.power_tiers[0]['is_on_cooldown'] = True
+        self.influence_tiers[0]['is_on_cooldown'] = True
         await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'square')
         other_player = game_utilities.get_other_player_color(ruler)
-        await send_clients_log_message(f"{other_player} gets +2 stamina")
-        game_state['stamina'][other_player] += 2
+        await send_clients_log_message(f"{other_player} gets +2 power")
+        game_state['power'][other_player] += 2
         return True

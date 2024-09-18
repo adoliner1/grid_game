@@ -7,15 +7,15 @@ class Ember(Tile):
         super().__init__(
             name="Ember",
             type="Scorer",
-            minimum_power_to_rule=3,
-            power_tiers=[],
+            minimum_influence_to_rule=3,
+            influence_tiers=[],
             description=f"You may not ((recruit)) here\nWhen a shape is ^^burned^^ on a tile, the owner [[receives]] a copy of it here\nAt the __end of a round__, if Ember is full, remove all the shapes. +6 points to whichever player had more",
             number_of_slots=11,
             shapes_which_can_be_recruited_to_this=[]
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def setup_listener(self, game_state):
         game_state["listeners"]["on_burn"][self.name] = self.on_burn_effect

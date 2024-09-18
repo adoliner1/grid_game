@@ -9,11 +9,11 @@ class Maestro(Tile):
         super().__init__(
             name="Maestro",
             type="Mover",
-            minimum_power_to_rule=2,
+            minimum_influence_to_rule=5,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 2,
+                    "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** After you [[receive]] a shape, you may move it to a tile adjacent to the tile you [[received]] it at",
                     "is_on_cooldown": False,
@@ -22,7 +22,7 @@ class Maestro(Tile):
                     "data_needed_for_use": ['slot_and_tile_to_move_shape_to']
                 },
                 {
-                    "power_to_reach_tier": 6,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": True,                    
                     "description": "**Reaction:** Same as above (this tier has no cooldown though)",
                     "is_on_cooldown": False,
@@ -34,7 +34,7 @@ class Maestro(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
         available_actions["do_not_react"] = None
@@ -53,11 +53,11 @@ class Maestro(Tile):
         ruler = self.determine_ruler(game_state)
         
         if tier_index == 0:
-            if self.power_per_player[game_action_container.whose_action] < self.power_tiers[tier_index]['power_to_reach_tier']:
-                await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, not enough power")
+            if self.influence_per_player[game_action_container.whose_action] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
+                await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, not enough influence")
                 return False
             
-            if self.power_tiers[tier_index]['is_on_cooldown']:
+            if self.influence_tiers[tier_index]['is_on_cooldown']:
                 await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, it's on cooldown")
                 return False
             
@@ -87,7 +87,7 @@ class Maestro(Tile):
         await game_utilities.move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index_from, slot_index_from, tile_index_to, slot_index_to)
         
         if tier_index == 0:
-            self.power_tiers[tier_index]['is_on_cooldown'] = True
+            self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True
 
     def setup_listener(self, game_state):
@@ -120,10 +120,10 @@ class Maestro(Tile):
         receiver = data.get('receiver')
         tiers_that_can_be_reacted_with = []
         
-        if not self.power_tiers[0]['is_on_cooldown'] and self.power_per_player[receiver] >= self.power_tiers[0]['power_to_reach_tier']:
+        if not self.influence_tiers[0]['is_on_cooldown'] and self.influence_per_player[receiver] >= self.influence_tiers[0]['influence_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(0)
         
-        if not self.power_tiers[1]['is_on_cooldown'] and self.determine_ruler(game_state) == receiver:
+        if not self.influence_tiers[1]['is_on_cooldown'] and self.determine_ruler(game_state) == receiver:
             tiers_that_can_be_reacted_with.append(1)
         
         if tiers_that_can_be_reacted_with:

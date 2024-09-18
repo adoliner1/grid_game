@@ -7,13 +7,13 @@ class Sword(Tile):
         super().__init__(
             name="Sword",
             type="Attacker",
-            minimum_power_to_rule=3,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "**Action:** Pay one stamina to ^^burn^^ a shape at an adjacent tile",
+                    "description": "**Action:** Pay one power to ^^burn^^ a shape at an adjacent tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                  
@@ -23,14 +23,14 @@ class Sword(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         ruler = self.determine_ruler(game_state)
 
-        if (ruler == whose_turn_is_it and not self.power_tiers[0]["is_on_cooldown"] and game_state['stamina'][whose_turn_is_it] > 0):
+        if (ruler == whose_turn_is_it and not self.influence_tiers[0]["is_on_cooldown"] and game_state['power'][whose_turn_is_it] > 0):
             useable_tiers.append(0)
         
         return useable_tiers
@@ -53,12 +53,12 @@ class Sword(Tile):
             await send_clients_log_message(f"Only the ruler can use {self.name}")
             return False            
 
-        if self.power_tiers[tier_index]["is_on_cooldown"]:
+        if self.influence_tiers[tier_index]["is_on_cooldown"]:
             await send_clients_log_message(f"{self.name} is on cooldown")
             return False
         
-        if game_state['stamina'][user] < 1:
-            await send_clients_log_message(f"Not enough stamina to use {self.name}")
+        if game_state['power'][user] < 1:
+            await send_clients_log_message(f"Not enough power to use {self.name}")
             return False
 
         index_of_sword = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -73,8 +73,8 @@ class Sword(Tile):
             await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no shape to burn at {game_state['tiles'][index_of_tile_to_burn_shape_at].name}")
             return False
         
-        await send_clients_log_message(f"{user} uses {self.name} and loses one stamina")
+        await send_clients_log_message(f"{user} uses {self.name} and loses one power")
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_shape_at, slot_index_to_burn_shape_at)
 
-        self.power_tiers[tier_index]["is_on_cooldown"] = True
+        self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

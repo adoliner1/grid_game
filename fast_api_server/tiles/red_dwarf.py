@@ -7,11 +7,11 @@ class RedDwarf(Tile):
         super().__init__(
             name="Red Dwarf",
             type="Tile-Mover",
-            minimum_power_to_rule=2,
+            minimum_influence_to_rule=2,
             number_of_slots=3,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 1,
+                    "influence_to_reach_tier": 1,
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ one of your shapes here to swap the position of 2 tiles",
                     "is_on_cooldown": False,
@@ -23,13 +23,13 @@ class RedDwarf(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         
-        if self.power_per_player[whose_turn_is_it] >= self.power_tiers[0]['power_to_reach_tier'] and any(slot for slot in self.slots_for_shapes if slot and slot["color"] == whose_turn_is_it):
+        if self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and any(slot for slot in self.slots_for_shapes if slot and slot["color"] == whose_turn_is_it):
             useable_tiers.append(0)
 
         return useable_tiers
@@ -53,8 +53,8 @@ class RedDwarf(Tile):
         game_action_container = game_action_container_stack[-1]
         player = game_action_container.whose_action
 
-        if self.power_per_player[player] < self.power_tiers[tier_index]['power_to_reach_tier']:
-            await send_clients_log_message(f"{player} does not have enough power to use tier {tier_index} of {self.name}")
+        if self.influence_per_player[player] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
+            await send_clients_log_message(f"{player} does not have enough influence to use tier {tier_index} of {self.name}")
             return False
 
         slot_to_burn_from = game_action_container.required_data_for_action['slot_to_burn_from_on_red_dwarf']['slot_index']

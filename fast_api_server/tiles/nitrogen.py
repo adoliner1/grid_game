@@ -6,15 +6,15 @@ class Nitrogen(Tile):
     def __init__(self):
         super().__init__(
             name="Nitrogen",
-            type="Giver/Stamina",
-            minimum_power_to_rule=3,
+            type="Giver/Power-Creator",
+            minimum_influence_to_rule=3,
             description="At the __end of a round__, for each triangle you have here, [[receive]] a square and a circle here",
             number_of_slots=11,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 0,
+                    "influence_to_reach_tier": 0,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ one of your sets here for +5 stamina",
+                    "description": "**Action:** ^^Burn^^ one of your sets here for +5 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
                     "leader_must_be_present": False,                      
@@ -37,7 +37,7 @@ class Nitrogen(Tile):
         return useable_tiers
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         first_player = game_state["first_player"]
@@ -76,8 +76,8 @@ class Nitrogen(Tile):
         
         await send_clients_log_message(f"{player} burns a set on {self.name}")
         
-        stamina_to_gain = 5
-        game_state["stamina"][player] += stamina_to_gain
-        await send_clients_log_message(f"{player} gains {stamina_to_gain} stamina from burning a set on {self.name}")
+        power_to_gain = 5
+        game_state["power"][player] += power_to_gain
+        await send_clients_log_message(f"{player} gains {power_to_gain} power from burning a set on {self.name}")
 
         return True

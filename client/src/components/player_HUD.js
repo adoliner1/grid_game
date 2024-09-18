@@ -3,6 +3,7 @@ import Circle from './shapes/circle';
 import Square from './shapes/square';
 import Triangle from './shapes/triangle';
 import Tooltip from './tooltip';
+import createIcon from './icons';
 import '../stylesheets/player_HUD.css';
 
 const ArrowIcon = ({ rotation }) => (
@@ -77,8 +78,8 @@ const PlayerHUD = ({
   clients_color,
   points,
   presence,
-  stamina,
-  peak_power,
+  power,
+  peak_influence,
   available_actions,
   onShapeClick,
   costs_to_exile,
@@ -87,17 +88,35 @@ const PlayerHUD = ({
 }) => {
   const class_for_player_color = player_color === 'red' ? 'player-red' : 'player-blue';
   const active_player_class = whose_turn_is_it === player_color ? 'player-active' : '';
+
+  const pointsIcon = createIcon({ type: 'points', tooltipText: 'Points', width: 18, height: 18 });
+  const presenceIcon = createIcon({ type: 'presence', tooltipText: 'Presence', width: 18, height: 18 });
+  const peakInfluenceIcon = createIcon({ type: 'peakInfluence', tooltipText: 'Peak Influence', width: 18, height: 18 });
+  const powerIcon = createIcon({ type: 'power', tooltipText: 'Power', width: 18, height: 18 });
+
   return (
     <div className={`player-info ${class_for_player_color} ${active_player_class} ${has_passed ? 'player-has-passed' : ''}`}>
-      <div className='points-presence-stamina-peak-power-row'>
-        <div> <b>Points:</b> {points}</div>
-        <div> <b>Presence:</b> {presence}</div>
-        <div> <b>Peak Power:</b> {peak_power}</div>
-        <div> <b>Stamina:</b> {stamina}</div>                  
+      <div className='points-presence-power-peak-influence-row'>
+        <div className="icon-value-pair">
+          {pointsIcon} : 
+          <span>{points}</span>
+        </div>
+        <div className="icon-value-pair">
+          {presenceIcon} : 
+          <span>{presence}</span>
+        </div>
+        <div className="icon-value-pair">
+          {peakInfluenceIcon} : 
+          <span>{peak_influence}</span>
+        </div>
+        <div className="icon-value-pair">
+          {powerIcon} : 
+          <span>{power}</span>
+        </div>
       </div>
-      <CostGrid 
-        costs_to_recruit={costs_to_recruit} 
-        costs_to_exile={costs_to_exile} 
+      <CostGrid
+        costs_to_recruit={costs_to_recruit}
+        costs_to_exile={costs_to_exile}
         player_color={player_color}
         available_actions={available_actions}
         clients_color={clients_color}

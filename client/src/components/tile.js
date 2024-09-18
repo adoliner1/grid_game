@@ -1,17 +1,18 @@
 import React from 'react'
 import '../stylesheets/tile.css'
 import ShapesOnTile from './shapes_on_tile'
-import PowerTier from './power_tier'
+import InfluenceTier from './influence_tier'
 import Tooltip from './tooltip';
+import createIcon from './icons';
 
 const Tile = ({
     name,
-    minimum_power_to_rule,
+    minimum_influence_to_rule,
     type,
     description,
-    power_tiers,
-    red_power,
-    blue_power,
+    influence_tiers,
+    red_influence,
+    blue_influence,
     is_on_cooldown,
     slots_for_shapes,
     tile_index,
@@ -20,74 +21,126 @@ const Tile = ({
     available_actions,
     onTileClick,
     onSlotClick,
-    onPowerTierClick,
+    onInfluenceTierClick,
 }) => {
 
-    const meeple = (color) => (
-        <Tooltip text={`${color.charAt(0).toUpperCase() + color.slice(1)} Leader`}>
-          <svg width="20" height="24" viewBox="0 0 24 28" fill={color}>
-            <path d="M12 2C8.7 2 6 4.7 6 8c0 1.3.5 2.5 1.3 3.5l-.6 3.1C6.4 15.6 7 17 8 17h8c1 0 1.6-1.4 1.3-2.4l-.6-3.1C17.5 10.5 18 9.3 18 8c0-3.3-2.7-6-6-6z"/>
-          </svg>
-        </Tooltip> )
+    const meeple = (color) => createIcon({
+        type: 'meeple',
+        tooltipText: `${color.charAt(0).toUpperCase() + color.slice(1)} Leader`,
+        color: color,
+        width: 20,
+        height: 24
+    });
+
+    const crownIcon = createIcon({
+        type: 'crown',
+        tooltipText: 'Influence Needed to Rule',
+        width: 24,
+        height: 24,
+        className: 'crown-icon'
+    });
+
+    const influenceIcon = (color) => createIcon({
+        type: 'influence',
+        tooltipText: `${color.charAt(0).toUpperCase() + color.slice(1)} Influence`,
+        color: color,
+        width: 16,
+        height: 16,
+        className: 'influence-icon'
+    });
 
     const isSelectableTier = (tier_index) => {
-        console.log(available_actions)
         return available_actions.hasOwnProperty('select_a_tier') &&
           available_actions['select_a_tier'].hasOwnProperty(tile_index) &&
           available_actions['select_a_tier'][tile_index].includes(tier_index);
-      };
+    };
 
     const isSelectable = () => {
-            return available_actions.hasOwnProperty('select_a_tile') && available_actions['select_a_tile'].includes(tile_index)
+        return available_actions.hasOwnProperty('select_a_tile') && available_actions['select_a_tile'].includes(tile_index)
     }
 
     const tileClickHandler = isSelectable() ? onTileClick : undefined
 
     function parseCustomMarkup(text) {
-        return text
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
-          .replace(/__(.*?)__/g, '<i>$1</i>')  // Italic
-          .replace(/\^\^(.*?)\^\^/g, '<span style="color: #ff8700;">$1</span>')  // Burn (orange)
-          .replace(/\[\[(.*?)\]\]/g, '<span style="color: #9f00ff;">$1</span>')  // Receive (purple)
-          .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a;">$1</span>')  // Place (blue)
-          .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000;">$1</span>')  // Produce (green)
-          .replace(/\b(action|reaction)\b/gi, '<u>$1</u>')  // Underline action and reaction
-          .replace(/\n/g, '<br><br>')  // New line
-      }
+        const parts = text.split(/(\bpower\b|\binfluence\b|\bpoints\b)/gi);
+        return parts.map((part, index) => {
+          const lowerPart = part.toLowerCase();
+          if (lowerPart === 'power') {
+            return createIcon({
+              type: 'power',
+              tooltipText: 'Power',
+              width: 14,
+              height: 14,
+              className: 'power-icon'
+            });
+          }
+          if (lowerPart === 'influence') {
+            return createIcon({
+              type: 'influence',
+              tooltipText: 'Influence',
+              width: 14,
+              height: 14,
+              className: 'influence-icon'
+            });
+          }
+          if (lowerPart === 'points') {
+            return createIcon({
+                type: 'points',
+                tooltipText: `Points`,
+                width: 16,
+                height: 16,
+                className: 'points-icon'
+            });
+          }
+          return part
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+            .replace(/__(.*?)__/g, '<i>$1</i>')  // Italic
+            .replace(/\^\^(.*?)\^\^/g, '<span style="color: #ff8700;">$1</span>')  // Burn (orange)
+            .replace(/\[\[(.*?)\]\]/g, '<span style="color: #9f00ff;">$1</span>')  // Receive (purple)
+            .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a;">$1</span>')  // Place (blue)
+            .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000;">$1</span>')  // Produce (green)
+            .replace(/\b(action|reaction)\b/gi, '<u>$1</u>')  // Underline action and reaction
+            .replace(/\n/g, '<br>')  // New line
+        });
+    }
 
     return (
         <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'} ${is_on_cooldown ? 'tile-on-cooldown' : ''}`} onClick={tileClickHandler}>
-        <div className="tile-header">
-            <div className={`ruler-crown-in-header ${ruler ? `ruler-crown-${ruler}` : ''}`}>
-            <Tooltip text="Power Needed to Rule">
-                <svg className="crown-icon" viewBox="0 0 24 24" width="24" height="24">
-                    <path fill="currentColor" d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z" />
-                </svg>
-            </Tooltip>
-                {minimum_power_to_rule}
+            <div className="tile-header">
+                <div className={`ruler-crown-in-header ${ruler ? `ruler-crown-${ruler}` : ''}`}>
+                    {crownIcon}
+                    {minimum_influence_to_rule}
+                </div>
+                <div className='red-leader-here'>{leaders_here.red && meeple('red')} </div>
+                <h3 className='tile-name'>{name}</h3>
+                <div className='blue-leader-here'>{leaders_here.blue && meeple('blue')} </div>
+                <span className="tile-type">{type}</span>
             </div>
-            <div className='red-leader-here'>{leaders_here.red && meeple('red')} </div>
-            <h3 className='tile-name'>{name}</h3>
-            <div className='blue-leader-here'>{leaders_here.blue && meeple('blue')} </div>
-            <span className="tile-type">{type}</span>
-        </div>
-            {description && (<p className="tile-description" dangerouslySetInnerHTML={{ __html: parseCustomMarkup(description) }}></p>)}
-            <div className="power-tiers">
-                {power_tiers.map((tier, tier_index) => (
-                    <PowerTier
+            {description && (
+                <div className="tile-description">
+                    {parseCustomMarkup(description).map((part, index) =>
+                        typeof part === 'string' ?
+                            <span key={`text-${index}`} dangerouslySetInnerHTML={{ __html: part }} /> :
+                            React.cloneElement(part, { key: `icon-${index}` })
+                    )}
+                </div>
+            )}
+            <div className="influence-tiers">
+                {influence_tiers.map((tier, tier_index) => (
+                    <InfluenceTier
                         key={tier_index}
                         tier={tier}
                         tile_index={tile_index}
                         isSelectable={isSelectableTier(tier_index)}
-                        onTierClick={() => onPowerTierClick(tier_index)}
-                        redAtThisLevel={tier.must_be_ruler ? ruler === 'red' && red_power >= tier.power_to_reach_tier : red_power >= tier.power_to_reach_tier}
-                        blueAtThisLevel={tier.must_be_ruler ? ruler === 'blue' && blue_power >= tier.power_to_reach_tier : blue_power >= tier.power_to_reach_tier}
+                        onTierClick={() => onInfluenceTierClick(tier_index)}
+                        redAtThisLevel={tier.must_be_ruler ? ruler === 'red' && red_influence >= tier.influence_to_reach_tier : red_influence >= tier.influence_to_reach_tier}
+                        blueAtThisLevel={tier.must_be_ruler ? ruler === 'blue' && blue_influence >= tier.influence_to_reach_tier : blue_influence >= tier.influence_to_reach_tier}
                     />
                 ))}
-             </div>
-            <div className="power-per-player">
-                <p className='red-power'> Red Power: {red_power} </p>
-                <p className='blue-power'> Blue Power: {blue_power} </p>
+            </div>
+            <div className="influence-per-player">
+                <p className='red-influence'>{influenceIcon('red')} {red_influence}</p>
+                <p className='blue-influence'>{influenceIcon('blue')} {blue_influence}</p>
             </div>
             <ShapesOnTile 
                 slots_for_shapes={slots_for_shapes} 

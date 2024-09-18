@@ -1,4 +1,4 @@
-.power-tier {
+.influence-tier {
     border-top: 1px solid #a39e9e;
     display: flex;
     flex-direction: row;
@@ -7,24 +7,29 @@
     align-items: center;
 }
 
-.power-tier-indicators-and-requirements {
+.influence-tier-indicators-and-requirements {
     display: flex;
     flex-direction: row;
     padding: 0px;
     align-items: center; /* This ensures vertical alignment */
 }
 
-.power-requirement-at-tier,
+.power-icon {
+    vertical-align: middle;
+    display: inline-block;
+  }
+
+.influence-requirement-at-tier,
 .ruler-tier,
 .has_a_cooldown,
 .leader_must_be_present,
-.player-indicators-for-power-tiers {
+.player-indicators-for-influence-tiers {
     display: flex;
     align-items: center;
     height: 24px; /* Set a consistent height for all elements */
 }
 
-.power-requirement-at-tier {
+.influence-requirement-at-tier {
     font-weight: bold;
 }
 
@@ -32,7 +37,7 @@
     font-weight: bold;
 }
 
-.player-indicators-for-power-tiers {
+.player-indicators-for-influence-tiers {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -48,24 +53,26 @@
 .cooldown-icon {
     width: 16px;
     height: 16px;
-    display: block; /* Ensures the SVG doesn't have extra space below */
+    display: block;
 }
 
-.selectable-power-tier {
+.selectable-influence-tier {
     cursor: pointer;
     background-color: #ddb61a;
 }
 
-.selectable-power-tier:hover {
+.selectable-influence-tier:hover {
     background-color: #ffd700;
 }
 
-.power-tier-on-cooldown {
+.influence-tier-on-cooldown {
     background-color: #d3d3d3;
 }
 
 .tooltip-container {
-    display: flex;
     align-items: center;
-  }
-  
+}
+
+.tier-description {
+    align-items: center;
+}

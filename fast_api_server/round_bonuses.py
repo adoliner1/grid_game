@@ -1,6 +1,5 @@
 import game_utilities
 import game_constants
-import math
 
 class RoundBonus:
     def __init__(self, name, description, listener_type, bonus_type):
@@ -22,7 +21,7 @@ class PointsPerRow(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Points Per Completed Row",
-            description = "If you rule all 3 tiles in a row, +10 points",
+            description = "10 points row",
             listener_type="end_of_round",
             bonus_type="scorer"
         )
@@ -45,7 +44,7 @@ class PointsPerColumn(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Points Per Completed Column",
-            description = "If you rule all 3 tiles in a column, +10 points",
+            description = "10 points column",
             listener_type="end_of_round",
             bonus_type="scorer"
         )
@@ -67,8 +66,8 @@ class PointsPerColumn(RoundBonus):
 class PointsPerTileRuled(RoundBonus):
     def __init__(self):
         super().__init__(
-            name = "Points Per Tile Ruled",
-            description = "Gain 2 points for each tile you rule",
+            name = "tile-rule points",
+            description = "2 points tile",
             listener_type="end_of_round",
             bonus_type="scorer"
         )
@@ -87,11 +86,11 @@ class PointsPerTileRuled(RoundBonus):
             game_state["points"]["blue"] += points_to_gain
             await send_clients_log_message(f"Blue gets {points_to_gain} points for ruling {blue_tiles_ruled} tile(s)")
 
-class StaminaPerPresence(RoundBonus):
+class PowerPerPresence(RoundBonus):
     def __init__(self):
         super().__init__(
-            name="Gain Stamina for Presence",
-            description="Gain stamina equal to your presence/2 (round down)",
+            name="Gain Power for Presence",
+            description= "1/2 power presence",
             listener_type="end_of_round",
             bonus_type="income"
         )
@@ -103,35 +102,35 @@ class StaminaPerPresence(RoundBonus):
 
         for player in [first_player, second_player]:
             presence = game_state["presence"][player]
-            stamina_to_gain = presence/2
-            game_state['stamina'][player] += stamina_to_gain
-            await send_clients_log_message(f"{player} has {presence} presence and gains {stamina_to_gain}")
+            power_to_gain = presence/2
+            game_state['power'][player] += power_to_gain
+            await send_clients_log_message(f"{player} has {presence} presence and gains {power_to_gain}")
 
-class StaminaPerPeakPower(RoundBonus):
+class PowerPerPeakInfluence(RoundBonus):
     def __init__(self):
         super().__init__(
-            name="Gain Stamina for Peak-Power",
-            description="Gain stamina equal to your peak power/2 (round down)",
+            name="Gain Power for Peak-Influence",
+            description="1/2 power peak-influence",
             listener_type="end_of_round",
             bonus_type="income"
         )
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
-        game_utilities.determine_power_levels(game_state)
+        game_utilities.determine_influence_levels(game_state)
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
 
         for player in [first_player, second_player]:
-            peak_power = game_state["peak_power"][player]
-            stamina_to_gain = peak_power/2
-            game_state['stamina'][player] += stamina_to_gain
-            await send_clients_log_message(f"{player} has a peak power of {peak_power} and gains {stamina_to_gain}")
+            peak_influence = game_state["peak_influence"][player]
+            power_to_gain = peak_influence/2
+            game_state['power'][player] += power_to_gain
+            await send_clients_log_message(f"{player} has a peak influence of {peak_influence} and gains {power_to_gain}")
             
-class StaminaForLongestChain(RoundBonus):
+class PowerForLongestChain(RoundBonus):
     def __init__(self):
         super().__init__(
-            name="Gain Stamina for Longest Chain",
-            description="Gain stamina equal to the length of your longest connected chain of ruled tiles",
+            name="Gain Power for Longest Chain",
+            description="power longest-chain",
             listener_type="end_of_round",
             bonus_type="income"
         )
@@ -145,15 +144,15 @@ class StaminaForLongestChain(RoundBonus):
         for player in [first_player, second_player]:
             player_color = "red" if player == "red" else "blue"
             size_of_longest_chain = longest_chains[player_color]
-            stamina_to_gain = size_of_longest_chain
-            game_state['stamina'][player] += stamina_to_gain
-            await send_clients_log_message(f"{player} has a chain of size of {size_of_longest_chain} and gains {stamina_to_gain}")
+            power_to_gain = size_of_longest_chain
+            game_state['power'][player] += power_to_gain
+            await send_clients_log_message(f"{player} has a chain of size of {size_of_longest_chain} and gains {power_to_gain}")
 
 class PointsForLongestChain(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Produce Points for Longest Chain",
-            description="Gain points equal to the length*3 of your longest connected chain of ruled tiles",
+            description="3 points longest-chain",
             listener_type="end_of_round",
             bonus_type="scorer"
         )
@@ -173,7 +172,7 @@ class PointsPerPresence(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Points for Presence",
-            description="Gain points equal to your presence",
+            description="points presence",
             listener_type="end_of_round",
             bonus_type="scorer"
         )
@@ -190,32 +189,32 @@ class PointsPerPresence(RoundBonus):
             game_state["points"][player] += points_to_award
             await send_clients_log_message(f"{player} gains {points_to_award} points from {self.name} (presence: {presence})")
 
-class PointsPerPeakPower(RoundBonus):
+class PointsPerPeakInfluence(RoundBonus):
     def __init__(self):
         super().__init__(
-            name="Points for Peak Power",
-            description="Gain points equal to your peak power",
+            name="Points for Peak Influence",
+            description="points peak-influence",
             listener_type="end_of_round",
             bonus_type="scorer"
         )
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
-        game_utilities.determine_power_levels(game_state)
+        game_utilities.determine_influence_levels(game_state)
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
         
         for player in [first_player, second_player]:
-            peak_power = game_state["peak_power"][player]
-            points_to_award = peak_power
+            peak_influence = game_state["peak_influence"][player]
+            points_to_award = peak_influence
             
             game_state["points"][player] += points_to_award
-            await send_clients_log_message(f"{player} gains {points_to_award} points from {self.name} (peak power: {peak_power})")
+            await send_clients_log_message(f"{player} gains {points_to_award} points from {self.name} (peak influence: {peak_influence})")
 
-class StaminaForCorner(RoundBonus):
+class PowerForCorner(RoundBonus):
     def __init__(self):
         super().__init__(
-            name="Stamina for Corner",
-            description="Gain 3 stamina if your leader is on a corner tile",
+            name="Power for Corner",
+            description="3 power corner",
             listener_type="end_of_round",
             bonus_type="income"
         )
@@ -227,15 +226,15 @@ class StaminaForCorner(RoundBonus):
         for player in [first_player, second_player]:
             tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
             if tile_index_of_leader in game_constants.corner_tiles:
-                stamina_to_gain = 3
-                game_state['stamina'][player] += stamina_to_gain
-                await send_clients_log_message(f"{player} leader is on a corner tile, {game_state['tiles'][tile_index_of_leader].name}, so gains {stamina_to_gain} stamina")
+                power_to_gain = 3
+                game_state['power'][player] += power_to_gain
+                await send_clients_log_message(f"{player} leader is on a corner tile, {game_state['tiles'][tile_index_of_leader].name}, so gains {power_to_gain} power")
 
-class StaminaPerRow(RoundBonus):
+class PowerPerRow(RoundBonus):
     def __init__(self):
         super().__init__(
-            name = "Stamina Per Completed Row",
-            description = "If you rule all 3 tiles in a row, gain 5 stamina",
+            name = "Power Per Completed Row",
+            description = "5 power row",
             listener_type="end_of_round",
             bonus_type="income"
         )
@@ -246,15 +245,15 @@ class StaminaPerRow(RoundBonus):
 
         for player, complete_rows in [("red", red_complete_rows), ("blue", blue_complete_rows)]:
             if complete_rows > 0:
-                stamina_to_gain = 5 * complete_rows
-                game_state["stamina"][player] += stamina_to_gain
-                await send_clients_log_message(f"{player} gains {stamina_to_gain} stamina for {complete_rows} completed row(s)")
+                power_to_gain = 5 * complete_rows
+                game_state["power"][player] += power_to_gain
+                await send_clients_log_message(f"{player} gains {power_to_gain} power for {complete_rows} completed row(s)")
 
-class StaminaPerColumn(RoundBonus):
+class PowerPerColumn(RoundBonus):
     def __init__(self):
         super().__init__(
-            name = "Stamina Per Completed Column",
-            description = "If you rule all 3 tiles in a column, gain 5 stamina",
+            name = "Power Per Completed Column",
+            description = "5 power column",
             listener_type="end_of_round",
             bonus_type="income"
         )
@@ -265,15 +264,15 @@ class StaminaPerColumn(RoundBonus):
 
         for player, complete_columns in [("red", red_complete_columns), ("blue", blue_complete_columns)]:
             if complete_columns > 0:
-                stamina_to_gain = 5 * complete_columns
-                game_state["stamina"][player] += stamina_to_gain
-                await send_clients_log_message(f"{player} gains {stamina_to_gain} stamina for {complete_columns} completed column(s)")
+                power_to_gain = 5 * complete_columns
+                game_state["power"][player] += power_to_gain
+                await send_clients_log_message(f"{player} gains {power_to_gain} power for {complete_columns} completed column(s)")
 
-class StaminaPerTileRuled(RoundBonus):
+class PowerPerTileRuled(RoundBonus):
     def __init__(self):
         super().__init__(
-            name = "Stamina Per Tile Ruled",
-            description = "Gain 1 stamina for each tile you rule",
+            name = "Power Per Tile Ruled",
+            description = "power tile",
             listener_type="end_of_round",
             bonus_type="income"
         )
@@ -284,15 +283,15 @@ class StaminaPerTileRuled(RoundBonus):
 
         for player, tiles_ruled in [("red", red_tiles_ruled), ("blue", blue_tiles_ruled)]:
             if tiles_ruled > 0:
-                stamina_to_gain = tiles_ruled
-                game_state["stamina"][player] += stamina_to_gain
-                await send_clients_log_message(f"{player} gains {stamina_to_gain} stamina for ruling {tiles_ruled} tile(s)")
+                power_to_gain = tiles_ruled
+                game_state["power"][player] += power_to_gain
+                await send_clients_log_message(f"{player} gains {power_to_gain} power for ruling {tiles_ruled} tile(s)")
 
 class PointsForCorner(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Points for Corner",
-            description="Gain 5 points if your leader is on a corner tile",
+            description="5 points corner",
             listener_type="end_of_round",
             bonus_type="scorer"
         )

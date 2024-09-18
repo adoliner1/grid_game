@@ -1,59 +1,88 @@
 import React from 'react';
-import { Tooltip } from '@/components/ui/tooltip'; // Assuming you have a Tooltip component
-
-const CompletedColumn = () => (
-  <Tooltip text="Per column you rule">
-    <svg width="24" height="24" viewBox="0 0 24 24">
-      <rect x="9" y="2" width="6" height="6" />
-      <rect x="9" y="9" width="6" height="6" />
-      <rect x="9" y="16" width="6" height="6" />
-    </svg>
-  </Tooltip>
-);
-
-const CompletedRow = () => (
-  <Tooltip text="Per row you rule">
-    <svg width="24" height="24" viewBox="0 0 24 24">
-      <rect x="2" y="9" width="6" height="6" />
-      <rect x="9" y="9" width="6" height="6" />
-      <rect x="16" y="9" width="6" height="6" />
-    </svg>
-  </Tooltip>
-);
-
-const CornerHighlight = () => (
-  <Tooltip text="If your leader is in a corner">
-    <svg width="24" height="24" viewBox="0 0 24 24">
-      <rect x="2" y="2" width="6" height="6" opacity="0.8" />
-      <rect x="9" y="2" width="6" height="6" opacity="0.3" />
-      <rect x="16" y="2" width="6" height="6" opacity="0.8" />
-      <rect x="2" y="9" width="6" height="6" opacity="0.3" />
-      <rect x="9" y="9" width="6" height="6" opacity="0.3" />
-      <rect x="16" y="9" width="6" height="6" opacity="0.3" />
-      <rect x="2" y="16" width="6" height="6" opacity="0.8" />
-      <rect x="9" y="16" width="6" height="6" opacity="0.3" />
-      <rect x="16" y="16" width="6" height="6" opacity="0.8" />
-    </svg>
-  </Tooltip>
-);
+import createIcon from './icons';
+import Tooltip from './tooltip';
+import '../stylesheets/round_bonuses_table.css'
 
 const RoundBonusesTable = ({ gameState }) => {
   const totalRounds = Math.max(gameState.scorer_bonuses.length, gameState.income_bonuses.length);
+
+  const rowIcon = createIcon({ type: 'row', width: 24, height: 8 });
+  const columnIcon = createIcon({ type: 'column', width: 8, height: 24 });
+  const presenceIcon = createIcon({ type: 'presence', width: 16, height: 16 });
+  const peakInfluenceIcon = createIcon({type: 'peakInfluence', width: 24, height: 24});
+  const pointsIcon = createIcon({ type: 'points', width: 16, height: 16 });
+  const powerIcon = createIcon({ type: 'power', width: 16, height: 16 });
+  const ruledTilesIcon = createIcon({ type: 'ruledTiles', width: 48, height: 24 });
+  const inCornerIcon = createIcon({ type: 'inCorner', width: 16, height: 16 });
+  const connectedChainIcon = createIcon({ type: 'connectedChain', width: 16, height: 16 });
+
+  const bonusDescriptions = {
+    "10 points row": "If you rule all 3 tiles in a row, +10 points",
+    "10 points column": "If you rule all 3 tiles in a column, +10 points",
+    "2 points tile": "Gain 2 points for each tile you rule",
+    "1/2 power presence": "Gain power equal to your presence/2 (round down)",
+    "1/2 power peak-influence": "Gain power equal to your peak influence/2 (round down)",
+    "power longest-chain": "Gain power equal to the length of your longest connected chain of ruled tiles",
+    "points longest-chain": "Gain points equal to the length*3 of your longest connected chain of ruled tiles",
+    "points presence": "Gain points equal to your presence",
+    "points peak-influence": "Gain points equal to your peak influence",
+    "3 power corner": "Gain 3 power if your leader is on a corner tile",
+    "5 power row": "If you rule all 3 tiles in a row, gain 5 power",
+    "5 power column": "If you rule all 3 tiles in a column, gain 5 power",
+    "power tile": "Gain 1 power for each tile you rule",
+    "5 points corner": "Gain 5 points if your leader is on a corner tile"
+  };
+
+  const getSubtypeIcon = (subtype) => {
+    switch (subtype.toLowerCase()) {
+      case 'row': return rowIcon;
+      case 'column': return columnIcon;
+      case 'tile': return ruledTilesIcon;
+      case 'corner': return inCornerIcon;
+      case 'presence': return presenceIcon;
+      case 'peak-influence': return peakInfluenceIcon;
+      case 'longest-chain': return connectedChainIcon;
+      default: return null;
+    }
+  };
+
+  const parseBonus = (bonusText) => {
+    if (!bonusText) return ['N/A'];
+
+    const parts = bonusText.split(/(\s+)/);
+    const parsedParts = parts.map((part, index) => {
+      if (part.match(/^\d+(\.\d+)?$/)) {
+        return <span key={index} className="font-bold">{part}</span>;
+      } else if (part.toLowerCase() === 'points') {
+        return <span key={index} className="bonus-icon">{pointsIcon}</span>;
+      } else if (part.toLowerCase() === 'power') {
+        return <span key={index} className="bonus-icon">{powerIcon}</span>;
+      } else {
+        const subtypeIcon = getSubtypeIcon(part);
+        return subtypeIcon ? <span key={index} className="bonus-icon">{subtypeIcon}</span> : part;
+      }
+    });
+
+    return (
+      <Tooltip text={bonusDescriptions[bonusText] || bonusText}>
+        <span className="bonus-content">{parsedParts}</span>
+      </Tooltip>
+    );
+  };
+
   return (
-    <table className="w-full border-collapse">
+    <table className="round-bonuses-table">
       <thead>
-        <tr className="bg-gray-100">
-          <th className="border p-2">Round</th>
-          <th className="border p-2">Income Bonus</th>
-          <th className="border p-2">Scoring Bonus</th>
+        <tr>
+          <th>Income Bonus</th>
+          <th>Scoring Bonus</th>
         </tr>
       </thead>
       <tbody>
         {[...Array(totalRounds)].map((_, index) => (
-          <tr key={index} className={index === gameState.round ? 'bg-yellow-100' : ''}>
-            <td className="border p-2 font-bold">{index + 1}</td>
-            <td className="border p-2">{gameState.income_bonuses[index] || 'N/A'}</td>
-            <td className="border p-2">{gameState.scorer_bonuses[index] || 'N/A'}</td>
+          <tr key={index} className={index === gameState.round ? 'current-round' : ''}>
+            <td>{parseBonus(gameState.income_bonuses[index])}</td>
+            <td>{parseBonus(gameState.scorer_bonuses[index])}</td>
           </tr>
         ))}
       </tbody>
@@ -61,14 +90,4 @@ const RoundBonusesTable = ({ gameState }) => {
   );
 }
 
-const Stamina = (color) => (
-  <Tooltip text={`Stamina`}>
-      <svg width="24" height="24" viewBox="0 0 24 24">
-          <path d="M0 0h512v512H0z"/>
-      </svg>
-  </Tooltip> )
-
 export default RoundBonusesTable;
-export { meeple, CompletedColumn, CompletedRow, CornerHighlight };
-
-

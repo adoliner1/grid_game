@@ -7,12 +7,12 @@ class Prince(Tile):
         super().__init__(
             name="Prince",
             type="Scorer",
-            minimum_power_to_rule=3,
+            minimum_influence_to_rule=3,
             number_of_slots=7,
             description="At the __end of a round__, for each same-shape pair you have here, +1 point",
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 5,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
                     "description": "At the __end of a round__, for each same-shape pair you have here, +3 additional points",
                     "is_on_cooldown": False,
@@ -23,7 +23,7 @@ class Prince(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
@@ -39,7 +39,7 @@ class Prince(Tile):
             base_points = pairs
             additional_points = 0
             
-            if color == ruler and self.power_per_player[color] >= self.power_tiers[0]['power_to_reach_tier']:
+            if color == ruler and self.influence_per_player[color] >= self.influence_tiers[0]['influence_to_reach_tier']:
                 additional_points = pairs * 3
             
             total_points = base_points + additional_points

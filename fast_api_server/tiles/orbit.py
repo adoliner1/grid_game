@@ -7,11 +7,11 @@ class Orbit(Tile):
         super().__init__(
             name="Orbit",
             type="Tile-Mover",
-            minimum_power_to_rule=3,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
                     "description": "**Action:** Choose a tile. Shift the row that tile is in left once",
                     "is_on_cooldown": False,
@@ -26,13 +26,13 @@ class Orbit(Tile):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         
-        if not self.power_tiers[0]["is_on_cooldown"] and self.determine_ruler(game_state) == whose_turn_is_it:
+        if not self.influence_tiers[0]["is_on_cooldown"] and self.determine_ruler(game_state) == whose_turn_is_it:
             useable_tiers.append(0)
 
         return useable_tiers
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
         available_actions["select_a_tile"] = game_constants.all_tile_indices
@@ -49,7 +49,7 @@ class Orbit(Tile):
             await send_clients_log_message(f"Non-ruler tried to use {self.name}")
             return False
         
-        if self.power_tiers[0]['is_on_cooldown']:
+        if self.influence_tiers[0]['is_on_cooldown']:
             await send_clients_log_message(f"{self.name} is on cooldown")
             return False
 
@@ -71,5 +71,5 @@ class Orbit(Tile):
         # Update the game state with the shifted row
         game_state["tiles"][row_start_index:row_end_index] = shifted_row_tiles
         
-        self.power_tiers[0]['is_on_cooldown'] = True
+        self.influence_tiers[0]['is_on_cooldown'] = True
         return True

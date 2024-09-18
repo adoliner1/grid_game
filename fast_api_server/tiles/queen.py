@@ -7,11 +7,11 @@ class Queen(Tile):
         super().__init__(
             name="Queen",
             type="Scorer",
-            minimum_power_to_rule=3,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 2,
+                    "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
                     "description": "When your opponent ((recruits)) a shape on an adjacent tile, +1 point",
                     "is_on_cooldown": False,
@@ -19,7 +19,7 @@ class Queen(Tile):
                     "has_a_cooldown": False,                    
                 },
                 {
-                    "power_to_reach_tier": 4,
+                    "influence_to_reach_tier": 4,
                     "must_be_ruler": True,                    
                     "description": "Same as above, +2 additional points",
                     "is_on_cooldown": False,
@@ -30,7 +30,7 @@ class Queen(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def setup_listener(self, game_state):
         game_state["listeners"]["on_recruit"][self.name] = self.on_recruit_effect
@@ -45,12 +45,12 @@ class Queen(Tile):
 
         other_player = 'red' if recruiter == 'blue' else 'blue'
         ruler = self.determine_ruler(game_state)
-        other_player_power = self.power_per_player[other_player]
+        other_player_influence = self.influence_per_player[other_player]
 
         points_earned = 0
-        if other_player_power >= 3:
+        if other_player_influence >= 3:
             points_earned += 1
-        if ruler == other_player and other_player_power >= 5:
+        if ruler == other_player and other_player_influence >= 5:
             points_earned += 2
 
         if points_earned > 0:

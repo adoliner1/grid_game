@@ -9,10 +9,10 @@ class Captain(Tile):
         super().__init__(
             name="Captain",
             type="Attacker/Scorer",
-            minimum_power_to_rule=3,
-            power_tiers=[
+            minimum_influence_to_rule=3,
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 4,
+                    "influence_to_reach_tier": 4,
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** After you [[receive]] a shape at a tile, you may ^^burn^^ any shape at a tile adjacent to that tile",
                     "is_on_cooldown": False,
@@ -21,7 +21,7 @@ class Captain(Tile):
                     "data_needed_for_use": ['slot_and_tile_to_burn_shape'],
                 },
                 {
-                    "power_to_reach_tier": 6,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": True,                    
                     "description": "**Reaction:** Same as above but +2 points when you do",
                     "is_on_cooldown": False,
@@ -34,7 +34,7 @@ class Captain(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
         available_actions["do_not_react"] = None
@@ -52,15 +52,15 @@ class Captain(Tile):
         player = game_action_container.whose_action
         ruler = self.determine_ruler(game_state)
 
-        if self.power_tiers[tier_index]["must_be_ruler"] and player != ruler:
+        if self.influence_tiers[tier_index]["must_be_ruler"] and player != ruler:
             await send_clients_log_message(f"Only the ruler can use tier {tier_index} of {self.name}")
             return False
 
-        if self.power_per_player[player] < self.power_tiers[tier_index]["power_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough power to use tier {tier_index} of {self.name}")
+        if self.influence_per_player[player] < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
+            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of {self.name}")
             return False
 
-        if self.power_tiers[tier_index]["is_on_cooldown"]:
+        if self.influence_tiers[tier_index]["is_on_cooldown"]:
             await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
             return False
 
@@ -84,7 +84,7 @@ class Captain(Tile):
             game_state["points"][player] += points_gained
             await send_clients_log_message(f"{player} gains {points_gained} points from using {self.name}")
 
-        self.power_tiers[tier_index]["is_on_cooldown"] = True
+        self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True
     
     def setup_listener(self, game_state):
@@ -118,11 +118,11 @@ class Captain(Tile):
 
         tiers_that_can_be_reacted_with = []
         ruler = self.determine_ruler(game_state)
-        player_power = self.power_per_player[receiver]
+        player_influence = self.influence_per_player[receiver]
 
-        if not self.power_tiers[0]["is_on_cooldown"] and player_power >= self.power_tiers[0]['power_to_reach_tier']:
+        if not self.influence_tiers[0]["is_on_cooldown"] and player_influence >= self.influence_tiers[0]['influence_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(0)
-        if not self.power_tiers[1]["is_on_cooldown"] and player_power >= self.power_tiers[1]['power_to_reach_tier'] and receiver == ruler:
+        if not self.influence_tiers[1]["is_on_cooldown"] and player_influence >= self.influence_tiers[1]['influence_to_reach_tier'] and receiver == ruler:
             tiers_that_can_be_reacted_with.append(1)
 
         if tiers_that_can_be_reacted_with:

@@ -6,7 +6,7 @@ async def recruit_shape_on_tile(game_state, game_action_container_stack, send_cl
     tile_to_recruit_on = game_state["tiles"][tile_index]
     old_shape =  tile_to_recruit_on.slots_for_shapes[slot_index]
     tile_to_recruit_on.slots_for_shapes[slot_index] = {'shape': shape, 'color': color}
-    determine_power_levels(game_state)
+    determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
@@ -26,7 +26,7 @@ async def recruit_shape_on_tile(game_state, game_action_container_stack, send_cl
 
 async def place_leader_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, color):
     game_state['tiles'][tile_index].leaders_here[color] = True
-    determine_power_levels(game_state)
+    determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
@@ -41,7 +41,7 @@ async def player_receives_a_shape_on_tile(game_state, game_action_container_stac
     next_empty_slot = tile.slots_for_shapes.index(None)
     tile.slots_for_shapes[next_empty_slot] = {"shape": shape_type, "color": player_color}
     await send_clients_log_message(f"{player_color} receives a {player_color}_{shape_type} on {tile.name}")
-    determine_power_levels(game_state)
+    determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
@@ -61,7 +61,7 @@ async def move_shape_between_tiles(game_state, game_action_container_stack, send
     game_state["tiles"][to_tile_index].slots_for_shapes[to_slot_index] = shape_to_move
 
     await send_clients_log_message(f"moved a {shape_to_move['color']}_{shape_to_move['shape']} from {game_state['tiles'][from_tile_index].name} to {game_state['tiles'][to_tile_index].name}")
-    determine_power_levels(game_state)
+    determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
@@ -75,7 +75,7 @@ async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, s
     color = tile.slots_for_shapes[slot_index]["color"]
     tile.slots_for_shapes[slot_index] = None
     await send_clients_log_message(f"burning a {color}_{shape} at {tile.name}")
-    determine_power_levels(game_state)
+    determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
@@ -104,7 +104,7 @@ async def call_listener_functions_for_event_type(game_state, game_action_contain
 
     for _, listener_function in game_state["listeners"][event_type].items():
         await listener_function(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data)
-        determine_power_levels(game_state)
+        determine_influence_levels(game_state)
         update_presence(game_state)
         determine_rulers(game_state)
         await send_clients_game_state(game_state)
@@ -123,7 +123,7 @@ async def call_listener_functions_for_event_type(game_state, game_action_contain
         for tile_index, tier_indices in list(reactions_by_player[second_player].tiers_to_resolve.items()):
             tiers_to_remove = []
             for tier_index in tier_indices:
-                if game_state['tiles'][tile_index].power_tiers[tier_index]['is_on_cooldown']:
+                if game_state['tiles'][tile_index].influence_tiers[tier_index]['is_on_cooldown']:
                     tiers_to_remove.append(tier_index)
             
             for tier_index in tiers_to_remove:
@@ -278,7 +278,7 @@ def get_shapes_that_can_be_recruited(game_state, player_color):
     calculate_recruiting_costs(game_state, player_color)
     shapes_that_can_be_recruited = []
     for shape in game_constants.shapes:
-        if game_state['costs_to_recruit'][player_color][shape] <= game_state['stamina'][player_color]:
+        if game_state['costs_to_recruit'][player_color][shape] <= game_state['power'][player_color]:
             shapes_that_can_be_recruited.append(shape)
     return shapes_that_can_be_recruited
 
@@ -289,40 +289,40 @@ def determine_rulers(game_state):
     for tile in game_state["tiles"]:
         tile.determine_ruler(game_state)
 
-def determine_power_levels(game_state):
-    game_state['peak_power']['red'] = 0
-    game_state['peak_power']['blue'] = 0
+def determine_influence_levels(game_state):
+    game_state['peak_influence']['red'] = 0
+    game_state['peak_influence']['blue'] = 0
     for tile in game_state["tiles"]:
-        tile.determine_power()
-        game_state['peak_power']['red'] = max(tile.power_per_player['red'], game_state['peak_power']['red'])
-        game_state['peak_power']['blue'] = max(tile.power_per_player['blue'], game_state['peak_power']['blue'])
+        tile.determine_influence()
+        game_state['peak_influence']['red'] = max(tile.influence_per_player['red'], game_state['peak_influence']['red'])
+        game_state['peak_influence']['blue'] = max(tile.influence_per_player['blue'], game_state['peak_influence']['blue'])
 
-def set_peak_power(game_state):
+def set_peak_influence(game_state):
     """
-    Determine and set the peak power for both players in the game state.
-    Peak power is the highest power a player has on any single tile.
+    Determine and set the peak influence for both players in the game state.
+    Peak influence is the highest influence a player has on any single tile.
 
     :param game_state: The current game state
     """
-    peak_power = {
+    peak_influence = {
         "red": 0,
         "blue": 0
     }
 
     for tile in game_state["tiles"]:
-        # Ensure the tile's power is up to date
-        tile.determine_power()
+        # Ensure the tile's influence is up to date
+        tile.determine_influence()
 
-        # Update peak power for red player
-        if tile.red_power > peak_power["red"]:
-            peak_power["red"] = tile.red_power
+        # Update peak influence for red player
+        if tile.red_influence > peak_influence["red"]:
+            peak_influence["red"] = tile.red_influence
 
-        # Update peak power for blue player
-        if tile.blue_power > peak_power["blue"]:
-            peak_power["blue"] = tile.blue_power
+        # Update peak influence for blue player
+        if tile.blue_influence > peak_influence["blue"]:
+            peak_influence["blue"] = tile.blue_influence
 
-    # Set the calculated peak power in the game state
-    game_state["peak_power"] = peak_power
+    # Set the calculated peak influence in the game state
+    game_state["peak_influence"] = peak_influence
 
 def count_sets_on_tile_for_color(tile, color,):
     shape_counts = {"circle": 0, "square": 0, "triangle": 0}
@@ -422,7 +422,7 @@ def get_tile_slots_that_can_be_recruited_on(game_state, shape_type, color, tile_
         tile = game_state['tiles'][tile_index]
         if shape_type in tile.shapes_which_can_be_recruited_to_this:
             for slot_index, slot in enumerate(tile.slots_for_shapes):
-                if slot is None or (game_constants.shape_power[slot['shape']] < game_constants.shape_power[shape_type] and color == slot['color']):
+                if slot is None or (game_constants.shape_influence[slot['shape']] < game_constants.shape_influence[shape_type] and color == slot['color']):
                     slots_for_tile.append(slot_index)
             if slots_for_tile:
                 tile_slots_that_can_be_recruited_on[tile_index] = slots_for_tile
@@ -438,7 +438,7 @@ def get_tile_slots_that_can_be_exiled(game_state, color, tile_indices):
         slots_for_tile = []
         tile = game_state['tiles'][tile_index]
         for slot_index, slot in enumerate(tile.slots_for_shapes):
-            if slot is not None and game_state['costs_to_exile'][color][slot['shape']] <= game_state['stamina'][color]:
+            if slot is not None and game_state['costs_to_exile'][color][slot['shape']] <= game_state['power'][color]:
                 slots_for_tile.append(slot_index)
         if slots_for_tile:
             tile_slots_that_can_be_exiled[tile_index] = slots_for_tile
@@ -454,7 +454,7 @@ def get_tile_slots_that_can_be_placed_on(game_state, shape_type, color):
         slots_for_tile = []
         if shape_type in tile.shapes_which_can_be_recruited_to_this:
             for slot_index, slot in enumerate(tile.slots_for_shapes):
-                if slot is None or (game_constants.shape_power[slot['shape']] < game_constants.shape_power[shape_type] and color == slot['color']):
+                if slot is None or (game_constants.shape_influence[slot['shape']] < game_constants.shape_influence[shape_type] and color == slot['color']):
                     slots_for_tile.append(slot_index)
             if slots_for_tile:
                 tile_slots_that_can_be_placed_on[tile_index] = slots_for_tile

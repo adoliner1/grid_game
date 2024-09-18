@@ -7,14 +7,14 @@ class Duke(Tile):
         super().__init__(
             name="Duke",
             type="Scorer",
-            minimum_power_to_rule=2,
-            power_tiers=[],
+            minimum_influence_to_rule=3,
+            influence_tiers=[],
             description="For each shape type you have more of here at the end of the game, +3 points. If it's all of them, +5 points more",
             number_of_slots=7,
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         shape_counts = {

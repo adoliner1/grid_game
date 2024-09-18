@@ -7,11 +7,11 @@ class TeleportingCabinet(Tile):
         super().__init__(
             name="Teleporting Cabinet",
             type="Mover",
-            minimum_power_to_rule=3,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": False,
                     "description": "**Action:** Choose a shape at an adjacent tile and swap it with a shape anywhere",
                     "is_on_cooldown": False,
@@ -23,14 +23,14 @@ class TeleportingCabinet(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         
-        if (self.power_per_player[whose_turn_is_it] >= self.power_tiers[0]["power_to_reach_tier"] and 
-            not self.power_tiers[0]["is_on_cooldown"]):
+        if (self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]["influence_to_reach_tier"] and 
+            not self.influence_tiers[0]["is_on_cooldown"]):
             useable_tiers.append(0)
         
         return useable_tiers
@@ -57,11 +57,11 @@ class TeleportingCabinet(Tile):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
 
-        if self.power_per_player[user] < self.power_tiers[tier_index]["power_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough power to use {self.name}")
+        if self.influence_per_player[user] < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
+            await send_clients_log_message(f"Not enough influence to use {self.name}")
             return False
 
-        if self.power_tiers[tier_index]["is_on_cooldown"]:
+        if self.influence_tiers[tier_index]["is_on_cooldown"]:
             await send_clients_log_message(f"{self.name} is on cooldown")
             return False
 
@@ -92,10 +92,10 @@ class TeleportingCabinet(Tile):
         game_state["tiles"][tile_index_from].slots_for_shapes[slot_index_from] = slot_data_to
         game_state["tiles"][tile_index_to].slots_for_shapes[slot_index_to] = slot_data_from
 
-        game_utilities.determine_power_levels(game_state)
+        game_utilities.determine_influence_levels(game_state)
         game_utilities.update_presence(game_state)
         game_utilities.determine_rulers(game_state)
         await send_clients_log_message(f"Swapped {slot_data_from['shape']} from {game_state['tiles'][tile_index_from].name} with {slot_data_to['shape']} at {game_state['tiles'][tile_index_to].name}")
         
-        self.power_tiers[tier_index]["is_on_cooldown"] = True
+        self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

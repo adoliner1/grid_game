@@ -9,21 +9,11 @@ class Boron(Tile):
             type="Giver",
             description = "At the __end of a round__, per square you have here, [[receive]] a circle here.",
             number_of_slots=11,
-            minimum_power_to_rule=1,
-            power_tiers=[
-                {
-                    "power_to_reach_tier": 1,
-                    "must_be_ruler": True,                    
-                    "description": "+2 points at the end of the game",
-                    "is_on_cooldown": False,
-                    "leader_must_be_present": False, 
-                    "has_cooldown": False,
-                },
-            ]            
+            minimum_influence_to_rule=3,
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         first_player = game_state["first_player"]
@@ -38,9 +28,3 @@ class Boron(Tile):
                     get_and_send_available_actions, send_clients_game_state, 
                     player, self, 'circle'
                 )
-
-    async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
-        ruler = self.determine_ruler(game_state)
-        if (ruler != None):
-            await send_clients_log_message(f"{self.name} gives 2 points to {ruler}")
-            game_state["points"][ruler] += 2

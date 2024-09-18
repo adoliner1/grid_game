@@ -20,12 +20,28 @@
 .player-active.player-blue {
     background-color: #e3f2fd;
 }
-.points-presence-stamina-peak-power-row {
+.points-presence-power-peak-influence-row {
     display: flex;
     justify-content: space-evenly;
+    align-items: center;
     padding: 2px;
     flex-direction: row;
     width: 100%;
+    border-bottom: 2px dotted grey;
+}
+
+.icon-value-pair {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
+}
+
+.icon-value-pair span {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    line-height: 24px;
 }
 .player-has-passed {
     background-color: #d3d3d3;

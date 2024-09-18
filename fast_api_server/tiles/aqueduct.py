@@ -8,10 +8,10 @@ class Aqueduct(Tile):
             name="Aqueduct",
             type="Mover",
             number_of_slots=5,
-            minimum_power_to_rule=2,
-            power_tiers=[
+            minimum_influence_to_rule=3,
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ one of your shapes here. Choose a shape at a tile you're present at. Move as many of that shape type and color as possible to another tile you're present at",
                     "is_on_cooldown": False,
@@ -23,12 +23,12 @@ class Aqueduct(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
 
-        if not self.power_tiers[0]["is_on_cooldown"] and self.power_per_player[game_state["whose_turn_is_it"]] >= self.power_tiers[0]['power_to_reach_tier']:
+        if not self.influence_tiers[0]["is_on_cooldown"] and self.influence_per_player[game_state["whose_turn_is_it"]] >= self.influence_tiers[0]['influence_to_reach_tier']:
             useable_tiers.append(0)
 
         return useable_tiers

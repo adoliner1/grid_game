@@ -7,13 +7,13 @@ class SolarArray(Tile):
         super().__init__(
             name="Solar Array",
             type="Scorer",
-            minimum_power_to_rule=3,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "**Action:** ^^Burn^^ all your shapes here. If you burned 2 or more and your peak power is:\n **>= 6:** +3 points\n**>= 10:** +7 points\n**>= 14:** +12 points",
+                    "description": "**Action:** ^^Burn^^ all your shapes here. If you burned 2 or more and your peak influence is:\n **>= 6:** +3 points\n**>= 10:** +7 points\n**>= 14:** +12 points",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,  
                     "leader_must_be_present": False,                
@@ -23,13 +23,13 @@ class SolarArray(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         ruler = self.determine_ruler(game_state)
-        if ruler == whose_turn_is_it and not self.power_tiers[0]["is_on_cooldown"]:
+        if ruler == whose_turn_is_it and not self.influence_tiers[0]["is_on_cooldown"]:
             useable_tiers.append(0)
         return useable_tiers
 
@@ -39,7 +39,7 @@ class SolarArray(Tile):
         if ruler != game_action_container.whose_action:
             await send_clients_log_message(f"{game_action_container.whose_action} is not the ruler of {self.name} and cannot use it")
             return False
-        if self.power_tiers[tier_index]["is_on_cooldown"]:
+        if self.influence_tiers[tier_index]["is_on_cooldown"]:
             await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
             return False
         solar_array_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -53,17 +53,17 @@ class SolarArray(Tile):
                 )
                 shapes_burned += 1
         await send_clients_log_message(f"{ruler} burned {shapes_burned} shapes on {self.name}")
-        peak_power = game_state["peak_power"][ruler]
+        peak_influence = game_state["peak_influence"][ruler]
         points_gained = 0
         if shapes_burned >= 2:
-            if peak_power >= 14:
+            if peak_influence >= 14:
                 points_gained = 12
-            elif peak_power >= 10:
+            elif peak_influence >= 10:
                 points_gained = 7
-            elif peak_power >= 6:
+            elif peak_influence >= 6:
                 points_gained = 3
         if points_gained > 0:
             game_state["points"][ruler] += points_gained
             await send_clients_log_message(f"{ruler} gains {points_gained} points from {self.name}")
-        self.power_tiers[tier_index]["is_on_cooldown"] = True
+        self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

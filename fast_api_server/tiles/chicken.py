@@ -6,14 +6,14 @@ class Chicken(Tile):
     def __init__(self):
         super().__init__(
             name="Chicken",
-            type="Stamina/Giver",
+            type="Power-Creator/Giver",
             number_of_slots=5,
-            minimum_power_to_rule=2,
-            power_tiers=[
+            minimum_influence_to_rule=3,
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 2,
+                    "influence_to_reach_tier": 2,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** [[Receive]] a circle at an adjacent tile. Your opponent gets +1 stamina",
+                    "description": "**Action:** [[Receive]] a circle at an adjacent tile. Your opponent gets +1 power",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "data_needed_for_use": ["tile_to_receive_shapes_at"],
@@ -23,13 +23,13 @@ class Chicken(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         current_player = game_state["whose_turn_is_it"]
 
-        if not self.power_tiers[0]["is_on_cooldown"] and self.determine_ruler(game_state) == current_player:
+        if not self.influence_tiers[0]["is_on_cooldown"] and self.determine_ruler(game_state) == current_player:
             useable_tiers.append(0)
 
         return useable_tiers
@@ -50,7 +50,7 @@ class Chicken(Tile):
             await send_clients_log_message(f"Only the ruler can use {self.name}")
             return False
 
-        if self.power_tiers[0]['is_on_cooldown']:
+        if self.influence_tiers[0]['is_on_cooldown']:
             await send_clients_log_message(f"{self.name} is on cooldown and cannot be used this round")
             return False
 
@@ -62,9 +62,9 @@ class Chicken(Tile):
             return False
 
         await send_clients_log_message(f"{self.name} is used")
-        self.power_tiers[0]['is_on_cooldown'] = True
+        self.influence_tiers[0]['is_on_cooldown'] = True
         await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'circle')
         other_player = game_utilities.get_other_player_color(ruler)
-        await send_clients_log_message(f"{other_player} gets +1 stamina")
-        game_state['stamina'][other_player] += 1 
+        await send_clients_log_message(f"{other_player} gets +1 power")
+        game_state['power'][other_player] += 1 
         return True

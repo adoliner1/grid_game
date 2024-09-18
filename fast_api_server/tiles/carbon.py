@@ -9,10 +9,10 @@ class Carbon(Tile):
             type="Giver/Scorer",
             description="At the __end of a round__, for each circle you have here, [[receive]] another circle here",
             number_of_slots=9,
-            minimum_power_to_rule=3,            
-            power_tiers=[
+            minimum_influence_to_rule=3,            
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
                     "description": "**Action:** ^^Burn^^ 3 of your circles here to [[receive]] a triangle here",
                     "is_on_cooldown": False,
@@ -29,13 +29,13 @@ class Carbon(Tile):
         number_of_circles_current_player_has_here = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "circle" and slot["color"] == whose_turn_is_it)
         ruler = self.determine_ruler(game_state)
 
-        if number_of_circles_current_player_has_here >= 3 and ruler == whose_turn_is_it and self.power_per_player[whose_turn_is_it] >= self.power_tiers[0]['power_to_reach_tier']:
+        if number_of_circles_current_player_has_here >= 3 and ruler == whose_turn_is_it and self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier']:
             useable_tiers.append(0)
 
         return useable_tiers
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         first_player = game_state["first_player"]

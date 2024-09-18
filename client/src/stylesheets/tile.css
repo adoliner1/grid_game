@@ -32,7 +32,7 @@
     padding: 10px;
   }
 
-.power-per-player {
+.influence-per-player {
     border-top: 1px solid #a39e9e;
     flex-direction: row;
     display: flex;
@@ -66,12 +66,12 @@
     animation: flash 0.2s;
 }
 
-.red-power{
+.red-influence{
     color: rgb(255, 41, 41);
     font-weight: bold;
 }
 
-.blue-power{
+.blue-influence{
     color: rgb(52, 52, 255);
     font-weight: bold;
 }

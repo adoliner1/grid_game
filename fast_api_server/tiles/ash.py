@@ -8,10 +8,10 @@ class Ash(Tile):
             name="Ash",
             type="Scorer",
             number_of_slots=5,
-            minimum_power_to_rule=2,
-            power_tiers=[
+            minimum_influence_to_rule=3,
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": False,
                     "description": "After one of your shapes is ^^burned^^ on a tile, if you're still present there, +2 points",
                     "is_on_cooldown": False,
@@ -19,7 +19,7 @@ class Ash(Tile):
                     "has_cooldown": False,
                 },
                 {
-                    "power_to_reach_tier": 5,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,
                     "description": "+3 points instead",
                     "is_on_cooldown": False,
@@ -30,7 +30,7 @@ class Ash(Tile):
         )
  
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def setup_listener(self, game_state):
         game_state["listeners"]["on_burn"][self.name] = self.on_burn_effect
@@ -42,11 +42,11 @@ class Ash(Tile):
         shape = data.get('shape')
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
-        self.determine_power()        
+        self.determine_influence()        
         ruler = self.determine_ruler(game_state)
         for player in [first_player, second_player]:
-            player_power = self.power_per_player[player]
-            if player_power >= 3 and game_utilities.has_presence(tile_burned_at, player) and color == player:
+            player_influence = self.influence_per_player[player]
+            if player_influence >= 3 and game_utilities.has_presence(tile_burned_at, player) and color == player:
                 points_gained = 3 if player == ruler else 2
                 game_state["points"][player] += points_gained
                 await send_clients_log_message(f"{player} gains {points_gained} points from {self.name} due to their {color}_{shape} being burned on {tile_burned_at.name}")

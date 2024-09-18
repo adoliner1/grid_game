@@ -7,11 +7,11 @@ class Highway(Tile):
         super().__init__(
             name="Highway",
             type="Mover",
-            minimum_power_to_rule=2,
+            minimum_influence_to_rule=5,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 2,
+                    "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ one of your shapes here to move a shape on a tile to another tile",
                     "is_on_cooldown": False,
@@ -20,7 +20,7 @@ class Highway(Tile):
                     "data_needed_for_use": ["slot_and_tile_to_burn_shape_from", "slot_and_tile_to_move_shape_from", "slot_and_tile_to_move_shape_to"]
                 },
                 {
-                    "power_to_reach_tier": 5,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
                     "description": "**Action:** Same as above but don't burn a shape",
                     "is_on_cooldown": False,
@@ -32,15 +32,15 @@ class Highway(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         current_player = game_state['whose_turn_is_it']
         useable_tiers = []
-        if self.power_per_player[current_player] >= self.power_tiers[0]['power_to_reach_tier'] and not self.power_tiers[0]['is_on_cooldown'] and game_utilities.has_presence(self, current_player):
+        if self.influence_per_player[current_player] >= self.influence_tiers[0]['influence_to_reach_tier'] and not self.influence_tiers[0]['is_on_cooldown'] and game_utilities.has_presence(self, current_player):
             useable_tiers.append(0)
 
-        if not self.power_tiers[1]['is_on_cooldown'] and self.determine_ruler == current_player:
+        if not self.influence_tiers[1]['is_on_cooldown'] and self.determine_ruler == current_player:
             useable_tiers.append(1)
 
         return useable_tiers
@@ -76,12 +76,12 @@ class Highway(Tile):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
         
-        if self.power_tiers[tier_index]['is_on_cooldown']:
+        if self.influence_tiers[tier_index]['is_on_cooldown']:
             await send_clients_log_message(f"Tried to use {self.name} but it's on cooldown")
             return False
         
-        if self.power_per_player[user] < self.power_tiers[tier_index]['power_to_reach_tier']:
-            await send_clients_log_message(f"Not enough power on {self.name} to use")
+        if self.influence_per_player[user] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
+            await send_clients_log_message(f"Not enough influence on {self.name} to use")
             return False    
 
         index_of_highway = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -123,5 +123,5 @@ class Highway(Tile):
         color_of_shape_moved = game_state['tiles'][index_of_tile_to_move_shape_to].slots_for_shapes[slot_index_to_move_shape_to]["color"]
         await send_clients_log_message(f"Moved a {color_of_shape_moved} {shape_moved} from {game_state['tiles'][index_of_tile_to_move_shape_from].name} to {game_state['tiles'][index_of_tile_to_move_shape_to].name}")
 
-        self.power_tiers[tier_index]['is_on_cooldown'] = True
+        self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True

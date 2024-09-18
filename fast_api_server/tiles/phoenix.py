@@ -9,11 +9,11 @@ class Phoenix(Tile):
         super().__init__(
             name="Phoenix",
             type="Giver",
-            minimum_power_to_rule=2,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** After one of your shapes is ^^burned^^ at a tile, if you are still present there, you may [[receive]] a circle there",
                     "is_on_cooldown": False,
@@ -22,7 +22,7 @@ class Phoenix(Tile):
                     "data_needed_for_use": ['confirm_choice']
                 },        
                 {
-                    "power_to_reach_tier": 5,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** Same as above but [[receive]] a square instead",
                     "is_on_cooldown": False,
@@ -31,7 +31,7 @@ class Phoenix(Tile):
                     "data_needed_for_use": ['confirm_choice']
                 }, 
                 {
-                    "power_to_reach_tier": 7,
+                    "influence_to_reach_tier": 7,
                     "must_be_ruler": True,                    
                     "description": "**Reaction:** Same as above but [[receive]] a triangle instead",
                     "is_on_cooldown": False,
@@ -47,7 +47,7 @@ class Phoenix(Tile):
         available_actions["select_a_tier"] = {game_utilities.find_index_of_tile_by_name(game_state, self.name): [tier_index]}
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def setup_listener(self, game_state):
         game_state["listeners"]["on_burn"][self.name] = self.on_burn_effect
@@ -57,15 +57,15 @@ class Phoenix(Tile):
         player = game_action_container.whose_action
         ruler = self.determine_ruler(game_state)
         
-        if self.power_tiers[tier_index]['is_on_cooldown']:
+        if self.influence_tiers[tier_index]['is_on_cooldown']:
             await send_clients_log_message(f"Tier {tier_index} at {self.name} is on cooldown")
             return False
 
-        player_power = self.power_per_player[player]
-        required_power = self.power_tiers[tier_index]['power_to_reach_tier']
+        player_influence = self.influence_per_player[player]
+        required_influence = self.influence_tiers[tier_index]['influence_to_reach_tier']
 
-        if player_power < required_power:
-            await send_clients_log_message(f"{player} does not have enough power to use tier {tier_index} of {self.name}")
+        if player_influence < required_influence:
+            await send_clients_log_message(f"{player} does not have enough influence to use tier {tier_index} of {self.name}")
             return False
 
         if tier_index == 2 and player != ruler:
@@ -94,7 +94,7 @@ class Phoenix(Tile):
         await send_clients_log_message(f"{player} used tier {tier_index} of {self.name} to receive a {shape_to_receive} at {game_state['tiles'][index_of_tile_burned_at].name}")
 
         # Set the cooldown for the used tier
-        self.power_tiers[tier_index]['is_on_cooldown'] = True
+        self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True
             
     async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tier_index):
@@ -129,13 +129,13 @@ class Phoenix(Tile):
         
         tiers_that_can_be_reacted_with = []
 
-        if not self.power_tiers[0]['is_on_cooldown'] and self.power_per_player[color_burned] >= self.power_tiers[0]['power_to_reach_tier']:
+        if not self.influence_tiers[0]['is_on_cooldown'] and self.influence_per_player[color_burned] >= self.influence_tiers[0]['influence_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(0)
 
-        if not self.power_tiers[1]['is_on_cooldown'] and self.power_per_player[color_burned] >= self.power_tiers[1]['power_to_reach_tier']:
+        if not self.influence_tiers[1]['is_on_cooldown'] and self.influence_per_player[color_burned] >= self.influence_tiers[1]['influence_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(1)
 
-        if not self.power_tiers[2]['is_on_cooldown'] and self.determine_ruler(game_state) == color_burned:
+        if not self.influence_tiers[2]['is_on_cooldown'] and self.determine_ruler(game_state) == color_burned:
             tiers_that_can_be_reacted_with.append(2)
         
         if tiers_that_can_be_reacted_with:

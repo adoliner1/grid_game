@@ -7,11 +7,11 @@ class Wormhole(Tile):
         super().__init__(
             name="Wormhole",
             type="Tile-Mover",
-            minimum_power_to_rule=3,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 4,
+                    "influence_to_reach_tier": 4,
                     "must_be_ruler": True,
                     "description": "**Action:** Swap the position of two tiles",
                     "is_on_cooldown": False,
@@ -23,15 +23,15 @@ class Wormhole(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         ruler = self.determine_ruler(game_state)
        
-        if (self.power_per_player[whose_turn_is_it] >= self.power_tiers[0]['power_to_reach_tier'] and
-            not self.power_tiers[0]["is_on_cooldown"] and
+        if (self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and
+            not self.influence_tiers[0]["is_on_cooldown"] and
             whose_turn_is_it == ruler):
                 useable_tiers.append(0)
        
@@ -53,11 +53,11 @@ class Wormhole(Tile):
         user = game_action_container.whose_action
         ruler = self.determine_ruler(game_state)
 
-        if self.power_per_player[user] < self.power_tiers[0]['power_to_reach_tier']:
-            await send_clients_log_message(f"Not enough power to use {self.name}")
+        if self.influence_per_player[user] < self.influence_tiers[0]['influence_to_reach_tier']:
+            await send_clients_log_message(f"Not enough influence to use {self.name}")
             return False
 
-        if self.power_tiers[tier_index]["is_on_cooldown"]:
+        if self.influence_tiers[tier_index]["is_on_cooldown"]:
             await send_clients_log_message(f"{self.name} is on cooldown")
             return False
 
@@ -80,5 +80,5 @@ class Wormhole(Tile):
         # Swap the tiles
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
        
-        self.power_tiers[tier_index]["is_on_cooldown"] = True
+        self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

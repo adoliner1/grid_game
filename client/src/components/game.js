@@ -103,7 +103,7 @@ const Game = () => {
         }
     }
 
-    const handlePowerTierClick = (tile_index, tier_index) => {
+    const handleInfluenceTierClick = (tile_index, tier_index) => {
         clickSound.current.play();
         if (availableActions.hasOwnProperty('select_a_tier')) {
             request.current.client_action = "select_a_tier"
@@ -220,8 +220,8 @@ const Game = () => {
               clients_color={clientColor.current}
               points={gameState.points.red}
               presence={gameState.presence.red}
-              stamina={gameState.stamina.red}
-              peak_power={gameState.peak_power.red}
+              power={gameState.power.red}
+              peak_influence={gameState.peak_influence.red}
               available_actions={availableActions}
               costs_to_exile={gameState.costs_to_exile.red}
               costs_to_recruit={gameState.costs_to_recruit.red}
@@ -234,8 +234,8 @@ const Game = () => {
               clients_color={clientColor.current}
               points={gameState.points.blue}
               presence={gameState.presence.blue}
-              stamina={gameState.stamina.blue}
-              peak_power={gameState.peak_power.blue}
+              power={gameState.power.blue}
+              peak_influence={gameState.peak_influence.blue}
               available_actions={availableActions}
               costs_to_exile={gameState.costs_to_exile.blue}
               costs_to_recruit={gameState.costs_to_recruit.blue}
@@ -265,12 +265,12 @@ const Game = () => {
               <Tile
                 key={tile_index}
                 name={tile.name}
-                minimum_power_to_rule={tile.minimum_power_to_rule}
+                minimum_influence_to_rule={tile.minimum_influence_to_rule}
                 type={tile.type}
-                red_power={tile.power_per_player.red}
-                blue_power={tile.power_per_player.blue}
+                red_influence={tile.influence_per_player.red}
+                blue_influence={tile.influence_per_player.blue}
                 description={tile.description}
-                power_tiers={tile.power_tiers}
+                influence_tiers={tile.influence_tiers}
                 slots_for_shapes={tile.slots_for_shapes}
                 tile_index={tile_index}
                 leaders_here = {tile.leaders_here}
@@ -278,7 +278,7 @@ const Game = () => {
                 available_actions={availableActions}
                 onTileClick={() => handleTileClick(tile_index)}
                 onSlotClick={(slotIndex) => handleSlotClick(tile_index, slotIndex)}
-                onPowerTierClick={(tier_index) => handlePowerTierClick(tile_index, tier_index)}
+                onInfluenceTierClick={(tier_index) => handleInfluenceTierClick(tile_index, tier_index)}
               />
             ))}
           </div>

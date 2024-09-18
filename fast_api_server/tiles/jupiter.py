@@ -6,23 +6,23 @@ class Jupiter(Tile):
     def __init__(self):
         super().__init__(
             name="Jupiter",
-            type="Stamina",
-            minimum_power_to_rule=2,
+            type="power",
+            minimum_influence_to_rule=5,
             number_of_slots=5,
-            power_tiers=[
+            influence_tiers=[
                 {
-                    "power_to_reach_tier": 3,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ one of your squares here for +3 stamina",
+                    "description": "**Action:** ^^Burn^^ one of your squares here for +3 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                  
                     "data_needed_for_use": [],
                 },
                 {
-                    "power_to_reach_tier": 6,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** ^^Burn^^ one of your circles here for +3 stamina",
+                    "description": "**Action:** ^^Burn^^ one of your circles here for +3 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                  
@@ -32,17 +32,17 @@ class Jupiter(Tile):
         )
 
     def determine_ruler(self, game_state):
-        return super().determine_ruler(game_state, self.minimum_power_to_rule)
+        return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         user = game_state["whose_turn_is_it"]
-        if (not self.power_tiers[0]['is_on_cooldown'] and 
-            self.power_per_player[user] >= self.power_tiers[0]['power_to_reach_tier'] and 
+        if (not self.influence_tiers[0]['is_on_cooldown'] and 
+            self.influence_per_player[user] >= self.influence_tiers[0]['influence_to_reach_tier'] and 
             any(slot and slot["shape"] == "square" and slot["color"] == user for slot in self.slots_for_shapes)):
             useable_tiers.append(0)
-        if (not self.power_tiers[1]['is_on_cooldown'] and 
-            self.power_per_player[user] >= self.power_tiers[1]['power_to_reach_tier'] and 
+        if (not self.influence_tiers[1]['is_on_cooldown'] and 
+            self.influence_per_player[user] >= self.influence_tiers[1]['influence_to_reach_tier'] and 
             self.determine_ruler(game_state) == user and
             any(slot and slot["shape"] == "circle" and slot["color"] == user for slot in self.slots_for_shapes)):
             useable_tiers.append(1)
@@ -52,12 +52,12 @@ class Jupiter(Tile):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
        
-        if self.power_tiers[tier_index]['is_on_cooldown']:
+        if self.influence_tiers[tier_index]['is_on_cooldown']:
             await send_clients_log_message(f"{self.name} tier {tier_index} is on cooldown")
             return False
        
-        if self.power_per_player[user] < self.power_tiers[tier_index]['power_to_reach_tier']:
-            await send_clients_log_message(f"Not enough power on {self.name} to use tier {tier_index}")
+        if self.influence_per_player[user] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
+            await send_clients_log_message(f"Not enough influence on {self.name} to use tier {tier_index}")
             return False
        
         if tier_index == 1 and self.determine_ruler(game_state) != user:
@@ -78,9 +78,9 @@ class Jupiter(Tile):
        
         await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_shape_from)
         
-        stamina_gained = 3
-        game_state['stamina'][user] += stamina_gained
-        await send_clients_log_message(f"{user} gains {stamina_gained} stamina from {self.name}")
+        power_gained = 3
+        game_state['power'][user] += power_gained
+        await send_clients_log_message(f"{user} gains {power_gained} power from {self.name}")
        
-        self.power_tiers[tier_index]['is_on_cooldown'] = True
+        self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True
