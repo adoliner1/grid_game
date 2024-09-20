@@ -13,7 +13,7 @@ class Queen(Tile):
                 {
                     "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "When your opponent ((recruits)) a disciple on an adjacent tile, +1 point",
+                    "description": "When your opponent ((recruits)) a disciple on an adjacent tile, +1 points",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    

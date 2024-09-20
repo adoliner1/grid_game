@@ -8,27 +8,18 @@ class Captain(Tile):
     def __init__(self):
         super().__init__(
             name="Captain",
-            type="Attacker/Scorer",
+            type="Attacker",
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 4,
-                    "must_be_ruler": False,                    
+                    "must_be_ruler": True,                    
                     "description": "**Reaction:** After you [[receive]] a disciple at a tile, you may ^^burn^^ any disciple at a tile adjacent to that tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False, 
                     "data_needed_for_use": ['slot_and_tile_to_burn_disciple'],
-                },
-                {
-                    "influence_to_reach_tier": 6,
-                    "must_be_ruler": True,                    
-                    "description": "**Reaction:** Same as above but +2 points when you do",
-                    "is_on_cooldown": False,
-                    "has_a_cooldown": True,
-                    "leader_must_be_present": False, 
-                    "data_needed_for_use": ['slot_and_tile_to_burn_disciple'],
-                },                       
+                },                
             ],            
             number_of_slots=5,
         )
@@ -79,11 +70,6 @@ class Captain(Tile):
         await send_clients_log_message(f"Reacting with tier {tier_index} of {self.name}")
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_disciple, slot_index_to_burn_disciple)
         
-        if tier_index == 1:
-            points_gained = 2
-            game_state["points"][player] += points_gained
-            await send_clients_log_message(f"{player} gains {points_gained} points from using {self.name}")
-
         self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True
     
@@ -120,10 +106,8 @@ class Captain(Tile):
         ruler = self.determine_ruler(game_state)
         player_influence = self.influence_per_player[receiver]
 
-        if not self.influence_tiers[0]["is_on_cooldown"] and player_influence >= self.influence_tiers[0]['influence_to_reach_tier']:
+        if not self.influence_tiers[0]["is_on_cooldown"] and player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and ruler == receiver:
             tiers_that_can_be_reacted_with.append(0)
-        if not self.influence_tiers[1]["is_on_cooldown"] and player_influence >= self.influence_tiers[1]['influence_to_reach_tier'] and receiver == ruler:
-            tiers_that_can_be_reacted_with.append(1)
 
         if tiers_that_can_be_reacted_with:
             reactions_by_player[receiver].tiers_to_resolve[game_utilities.find_index_of_tile_by_name(game_state, self.name)] = tiers_that_can_be_reacted_with

@@ -6,11 +6,11 @@ class Calculus(Tile):
     def __init__(self):
         super().__init__(
             name="Calculus",
-            type="Producer",
-            minimum_influence_to_rule=3,
+            type="Power-Creator",
+            minimum_influence_to_rule=4,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 6,
+                    "influence_to_reach_tier": 7,
                     "must_be_ruler": True,                    
                     "description": "At the __start of a round__, +3 power",
                     "is_on_cooldown": False,

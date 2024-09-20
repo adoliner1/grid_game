@@ -9,12 +9,12 @@ class Prince(Tile):
             type="Scorer",
             minimum_influence_to_rule=3,
             number_of_slots=7,
-            description="At the __end of a round__, for each same-disciple pair you have here, +1 point",
+            description="At the __end of a round__, for each same-disciple pair you have here, +1 points",
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
-                    "description": "At the __end of a round__, for each same-disciple pair you have here, +3 additional points",
+                    "description": "+3 points per pair instead",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_a_cooldown": False,                   

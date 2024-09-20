@@ -22,7 +22,7 @@ const RoundBonusesTable = ({ gameState }) => {
     "2 points tile": "Gain 2 points for each tile you rule",
     "1/2 power presence": "Gain power equal to your presence/2 (round down)",
     "1/2 power peak-influence": "Gain power equal to your peak influence/2 (round down)",
-    "power longest-chain": "Gain power equal to the length of your longest connected chain of ruled tiles",
+    "2 power longest-chain": "Gain power equal to the length*2 of your longest connected chain of ruled tiles",
     "points longest-chain": "Gain points equal to the length*3 of your longest connected chain of ruled tiles",
     "points presence": "Gain points equal to your presence",
     "points peak-influence": "Gain points equal to your peak influence",

@@ -47,6 +47,6 @@ class Ember(Tile):
                 winner = "blue"
 
             game_state["points"][winner] += 6
-            await send_clients_log_message(f"Red had {red_count} on ember, blue had {blue_count}. {winner} gains 6 points. {self.name} is emptied")
+            await send_clients_log_message(f"Red had {red_count} disciples on ember, blue had {blue_count}. {winner} gains 6 points. {self.name} is emptied")
 
             self.slots_for_disciples = [None] * self.number_of_slots

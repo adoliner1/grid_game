@@ -13,7 +13,7 @@ class Wolf(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** [[Receive]] a acolyte at an adjacent tile. Your opponent gets +2 power",
+                    "description": "**Action:** [[Receive]] an acolyte at an adjacent tile. Your opponent gets +2 power",
                     "is_on_cooldown": False,
                     "data_needed_for_use": ["tile_to_receive_disciples_at"],
                     "has_a_cooldown": True,             

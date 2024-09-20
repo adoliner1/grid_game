@@ -24,8 +24,8 @@ const Tile = ({
     onInfluenceTierClick,
 }) => {
 
-    const meeple = (color) => createIcon({
-        type: 'meeple',
+    const leader_icon = (color) => createIcon({
+        type: 'leader',
         tooltipText: `${color.charAt(0).toUpperCase() + color.slice(1)} Leader`,
         color: color,
         width: 20,
@@ -35,8 +35,8 @@ const Tile = ({
     const crownIcon = createIcon({
         type: 'crown',
         tooltipText: 'Influence Needed to Rule',
-        width: 24,
-        height: 24,
+        width: 22,
+        height: 22,
         className: 'crown-icon'
     });
 
@@ -62,47 +62,84 @@ const Tile = ({
     const tileClickHandler = isSelectable() ? onTileClick : undefined
 
     function parseCustomMarkup(text) {
-        const parts = text.split(/(\bpower\b|\binfluence\b|\bpoints\b)/gi);
+        const parts = text.split(/(\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b)/gi);
         return parts.map((part, index) => {
           const lowerPart = part.toLowerCase();
-          if (lowerPart === 'power') {
-            return createIcon({
-              type: 'power',
-              tooltipText: 'Power',
-              width: 14,
-              height: 14,
-              className: 'power-icon'
-            });
-          }
-          if (lowerPart === 'influence') {
-            return createIcon({
-              type: 'influence',
-              tooltipText: 'Influence',
-              width: 14,
-              height: 14,
-              className: 'influence-icon'
-            });
-          }
-          if (lowerPart === 'points') {
-            return createIcon({
+          switch(lowerPart) {
+            case 'power':
+              return createIcon({
+                type: 'power',
+                tooltipText: 'Power',
+                width: 16,
+                height: 16,
+                className: 'power-icon'
+              });
+            case 'influence':
+              return createIcon({
+                type: 'influence',
+                tooltipText: 'Influence',
+                width: 16,
+                height: 16,
+                className: 'influence-icon'
+              });
+            case 'point':
+            case 'points':
+              return createIcon({
                 type: 'points',
-                tooltipText: `Points`,
+                tooltipText: 'Points',
                 width: 16,
                 height: 16,
                 className: 'points-icon'
-            });
+              });
+            case 'follower':
+            case 'followers':
+              return createIcon({
+                type: 'follower',
+                tooltipText: 'Follower',
+                width: 16,
+                height: 16,
+                className: 'follower-icon'
+              });
+            case 'acolyte':
+            case 'acolytes':
+              return createIcon({
+                type: 'acolyte',
+                tooltipText: 'Acolyte',
+                width: 16,
+                height: 16,
+                className: 'acolyte-icon'
+              });
+            case 'sage':
+            case 'sages':
+              return createIcon({
+                type: 'sage',
+                tooltipText: 'Sage',
+                width: 16,
+                height: 16,
+                className: 'sage-icon'
+              });
+            case 'leader':
+            case 'leaders':
+              return createIcon({
+                type: 'leader',
+                tooltipText: 'Leader',
+                width: 16,
+                height: 16,
+                className: 'leader-icon'
+              });
+            default:
+              return part
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+                .replace(/__(.*?)__/g, '<i>$1</i>')  // Italic
+                .replace(/\^\^(.*?)\^\^/g, '<span style="color: #ff8700;">$1</span>')  // Burn (orange)
+                .replace(/\[\[(.*?)\]\]/g, '<span style="color: #9f00ff;">$1</span>')  // Receive (purple)
+                .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a;">$1</span>')  // Place (blue)
+                .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000;">$1</span>')  // Produce (green)
+                .replace(/\b(action|reaction)\b/gi, '<u>$1</u>')  // Underline action and reaction
+                .replace(/\n/g, '<br>')  // New line
           }
-          return part
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
-            .replace(/__(.*?)__/g, '<i>$1</i>')  // Italic
-            .replace(/\^\^(.*?)\^\^/g, '<span style="color: #ff8700;">$1</span>')  // Burn (orange)
-            .replace(/\[\[(.*?)\]\]/g, '<span style="color: #9f00ff;">$1</span>')  // Receive (purple)
-            .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a;">$1</span>')  // Place (blue)
-            .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000;">$1</span>')  // Produce (green)
-            .replace(/\b(action|reaction)\b/gi, '<u>$1</u>')  // Underline action and reaction
-            .replace(/\n/g, '<br>')  // New line
         });
-    }
+      }
 
     return (
         <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'} ${is_on_cooldown ? 'tile-on-cooldown' : ''}`} onClick={tileClickHandler}>
@@ -111,9 +148,9 @@ const Tile = ({
                     {crownIcon}
                     {minimum_influence_to_rule}
                 </div>
-                <div className='red-leader-here'>{leaders_here.red && meeple('red')} </div>
+                <div className='red-leader-here'>{leaders_here.red && leader_icon('red')} </div>
                 <h3 className='tile-name'>{name}</h3>
-                <div className='blue-leader-here'>{leaders_here.blue && meeple('blue')} </div>
+                <div className='blue-leader-here'>{leaders_here.blue && leader_icon('blue')} </div>
                 <span className="tile-type">{type}</span>
             </div>
             {description && (

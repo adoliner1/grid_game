@@ -1,8 +1,4 @@
-disciple_influence = {'follower': 1,
-               'acolyte': 2,
-               'sage': 3 }
-
-base_income  = [('follower', 1), ('acolyte', 1), ('sage', 1)]
+disciple_influence = {'follower': 1,'acolyte': 2,'sage': 3 }
 player_colors = ["red", "blue"]
 client_actions = ["pass", "select_a_tile"]
 disciples = ['follower', 'acolyte', 'sage']
@@ -10,6 +6,8 @@ all_tile_indices = list(range(9))
 number_of_initial_followers_to_place = 4
 starting_cost_to_recruit = {'follower': 2, 'acolyte': 3, 'sage': 4}
 starting_cost_to_exile = {'follower': 3, 'acolyte': 4, 'sage': 5}
+initial_recruiting_ranges = {'red': 0, 'blue': 0}
+initial_exiling_ranges = {'red': 0, 'blue': 0}
 starting_movement = 1
 grid_size = 3
 leader_influence = 3

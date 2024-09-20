@@ -21,7 +21,7 @@ class Algebra(Tile):
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                     
-                    "description": "At the __start of a round__, +1 power",
+                    "description": "+2 power instead",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_cooldown": False,

@@ -11,18 +11,18 @@ class Pluto(Tile):
             number_of_slots=7,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 2,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ 2 followers here for +4 power",
+                    "description": "**Action:** ^^Burn^^ a follower here for +3 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                  
                     "data_needed_for_use": []
                 },
                 {
-                    "influence_to_reach_tier": 5,
+                    "influence_to_reach_tier": 8,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** ^^Burn^^ 1 follower here for +4 power",
+                    "description": "**Action:** ^^Burn^^ 2 followers for +8 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False,               
@@ -43,12 +43,12 @@ class Pluto(Tile):
 
         if (not self.influence_tiers[0]['is_on_cooldown'] and 
             self.influence_per_player[user] >= self.influence_tiers[0]['influence_to_reach_tier'] and 
-            len(followers) >= 2):
+            len(followers) >= 1):
             useable_tiers.append(0)
         if (not self.influence_tiers[1]['is_on_cooldown'] and 
             self.influence_per_player[user] >= self.influence_tiers[1]['influence_to_reach_tier'] and 
             user == ruler and
-            len(followers) >= 1):
+            len(followers) >= 2):
             useable_tiers.append(1)
 
         return useable_tiers
@@ -75,7 +75,7 @@ class Pluto(Tile):
         followers_to_burn = [i for i, slot in enumerate(self.slots_for_disciples)
                            if slot and slot["disciple"] == "follower" and slot["color"] == user]
 
-        followers_required = 2 if tier_index == 0 else 1
+        followers_required = 1 if tier_index == 0 else 2
         if len(followers_to_burn) < followers_required:
             await send_clients_log_message(f"Not enough followers to burn on {self.name}")
             return False
@@ -85,7 +85,7 @@ class Pluto(Tile):
         for i in followers_to_burn[:followers_required]:
             await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_pluto, i)
 
-        power_gained = 4
+        power_gained = 3 if tier_index == 0 else 8
         game_state['power'][user] += power_gained
         await send_clients_log_message(f"{user} gains {power_gained} power from {self.name}")
 

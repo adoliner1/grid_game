@@ -76,6 +76,21 @@ class Tile:
     def set_available_actions_for_reaction(game_state, current_action, current_piece_of_data_to_fill_in_current_action, available_actions_with_details):
         return available_actions_with_details
     
+    def modify_recruiting_ranges(self, game_state):
+        pass
+
+    def modify_recruiting_costs(self, game_state):
+        pass
+
+    def modify_movement_ranges(self, game_state):
+        pass
+
+    def modify_exiling_ranges(self, game_state):
+        pass
+
+    def modify_exiling_costs(self, game_state):
+        pass
+
     def serialize(self):
         return {
             "name": self.name,
@@ -87,4 +102,4 @@ class Tile:
             "leaders_here": self.leaders_here,
             "slots_for_disciples": self.slots_for_disciples,
             "ruler": self.ruler,
-        } 
+        }

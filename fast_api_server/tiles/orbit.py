@@ -13,7 +13,7 @@ class Orbit(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** Choose a tile. Shift the row that tile is in left once",
+                    "description": "**Action:** Choose a tile. Rotate the row that tile is in left once. The leftmost tile becomes the rightmost",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,    
                     "leader_must_be_present": False,                  

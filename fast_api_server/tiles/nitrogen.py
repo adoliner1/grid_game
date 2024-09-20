@@ -8,13 +8,13 @@ class Nitrogen(Tile):
             name="Nitrogen",
             type="Giver/Power-Creator",
             minimum_influence_to_rule=3,
-            description="At the __end of a round__, for each sage you have here, [[receive]] a acolyte and a follower here",
+            description="At the __end of a round__, for each sage you have here, [[receive]] an acolyte and a follower here",
             number_of_slots=11,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 0,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ one of your sets here for +5 power",
+                    "description": "**Action:** ^^Burn^^ a follower, acolyte, and sage here for +5 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
                     "leader_must_be_present": False,                      

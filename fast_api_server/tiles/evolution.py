@@ -8,7 +8,7 @@ class Evolution(Tile):
             name="Evolution",
             type="Power-Creator/Giver/Scorer",
             minimum_influence_to_rule=3,
-            description=f"At the __end of a round__, ^^burn^^ each disciple here and [[receive]] the next most powerful disciple. sages yield followers",
+            description=f"At the __end of a round__, ^^burn^^ each disciple here and [[receive]] the next most influential disciple. sages yield followers",
             number_of_slots=7,
             influence_tiers=[
                 {

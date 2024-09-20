@@ -155,10 +155,12 @@ const Game = () => {
             return;
         }
 
-        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
-        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
-        
         //PROD
+        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
+        //DEV
+        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        
+        /*PROD
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
             socket.current.send(JSON.stringify({
@@ -167,9 +169,9 @@ const Game = () => {
                 game_id: game_id
             }));
         };
-        //*/
+        /*/
 
-        /*DEV
+        //DEV
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
         };
@@ -255,6 +257,8 @@ const Game = () => {
               available_actions={availableActions}
               costs_to_exile={gameState.costs_to_exile.red}
               costs_to_recruit={gameState.costs_to_recruit.red}
+              recruiting_range={gameState.recruiting_range.red}
+              exiling_range={gameState.exiling_range.red}
               onDiscipleClick={handleDiscipleInHUDClick}
             />
             <PlayerHUD 
@@ -269,6 +273,8 @@ const Game = () => {
               available_actions={availableActions}
               costs_to_exile={gameState.costs_to_exile.blue}
               costs_to_recruit={gameState.costs_to_recruit.blue}
+              recruiting_range={gameState.recruiting_range.blue}
+              exiling_range={gameState.exiling_range.blue}
               onDiscipleClick={handleDiscipleInHUDClick}
             />
             <div className="action-buttons">
@@ -279,7 +285,7 @@ const Game = () => {
                     Don't Use Reaction
                 </button>
                 <button onClick={handleMoveButtonClick} disabled={!availableActions.hasOwnProperty('move')} className={availableActions.hasOwnProperty('move') ? 'btn-enabled' : 'btn-disabled'}>
-                    Move
+                    Move Leader
                 </button>
                 <button onClick={handleRecruitButtonClick} disabled={!availableActions.hasOwnProperty('recruit')} className={availableActions.hasOwnProperty('recruit') ? 'btn-enabled' : 'btn-disabled'}>
                     Recruit

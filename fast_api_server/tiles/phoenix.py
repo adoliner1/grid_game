@@ -24,7 +24,7 @@ class Phoenix(Tile):
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": False,                    
-                    "description": "**Reaction:** Same as above but [[receive]] a acolyte instead",
+                    "description": "**Reaction:** Same as above but [[receive]] an acolyte instead",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                   

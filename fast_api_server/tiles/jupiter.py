@@ -7,22 +7,22 @@ class Jupiter(Tile):
         super().__init__(
             name="Jupiter",
             type="Power-Creator",
-            minimum_influence_to_rule=5,
-            number_of_slots=5,
+            minimum_influence_to_rule=3,
+            number_of_slots=7,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 3,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ one of your acolytes here for +3 power",
+                    "description": "**Action:** ^^Burn^^ an acolyte here for +4 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                  
                     "data_needed_for_use": [],
                 },
                 {
-                    "influence_to_reach_tier": 6,
+                    "influence_to_reach_tier": 8,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** ^^Burn^^ one of your followers here for +3 power",
+                    "description": "**Action:** ^^Burn^^ an acolyte and a follower here for +10 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                  
@@ -44,7 +44,8 @@ class Jupiter(Tile):
         if (not self.influence_tiers[1]['is_on_cooldown'] and 
             self.influence_per_player[user] >= self.influence_tiers[1]['influence_to_reach_tier'] and 
             self.determine_ruler(game_state) == user and
-            any(slot and slot["disciple"] == "follower" and slot["color"] == user for slot in self.slots_for_disciples)):
+            any(slot and slot["disciple"] == "follower" and slot["color"] == user for slot in self.slots_for_disciples) and
+            any(slot and slot["disciple"] == "acolyte" and slot["color"] == user for slot in self.slots_for_disciples)):
             useable_tiers.append(1)
         return useable_tiers
 
@@ -61,24 +62,40 @@ class Jupiter(Tile):
             return False
        
         if tier_index == 1 and self.determine_ruler(game_state) != user:
-            await send_clients_log_message(f"You must be the ruler to use tier 2 of {self.name}")
+            await send_clients_log_message(f"You must be the ruler to use tier 1 of {self.name}")
             return False
 
         index_of_jupiter = game_utilities.find_index_of_tile_by_name(game_state, self.name)
        
-        disciple_to_burn = "acolyte" if tier_index == 0 else "follower"
-        slot_index_to_burn_disciple_from = next((i for i, slot in enumerate(self.slots_for_disciples)
-                                              if slot and slot["disciple"] == disciple_to_burn and slot["color"] == user), None)
-       
-        if slot_index_to_burn_disciple_from is None:
-            await send_clients_log_message(f"No {disciple_to_burn} available to burn on {self.name}")
-            return False
-       
-        await send_clients_log_message(f"Using {self.name} tier {tier_index}")
-       
-        await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_disciple_from)
+        if tier_index == 0:
+            slot_index_to_burn_acolyte = next((i for i, slot in enumerate(self.slots_for_disciples)
+                                                if slot and slot["disciple"] == "acolyte" and slot["color"] == user), None)
+            
+            if slot_index_to_burn_acolyte is None:
+                await send_clients_log_message(f"No acolyte available to burn on {self.name}")
+                return False
+            
+            await send_clients_log_message(f"Using {self.name} tier {tier_index}")
+            await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_acolyte)
+            
+            power_gained = 4
         
-        power_gained = 3
+        elif tier_index == 1:
+            slot_index_to_burn_acolyte = next((i for i, slot in enumerate(self.slots_for_disciples)
+                                                if slot and slot["disciple"] == "acolyte" and slot["color"] == user), None)
+            slot_index_to_burn_follower = next((i for i, slot in enumerate(self.slots_for_disciples)
+                                                if slot and slot["disciple"] == "follower" and slot["color"] == user), None)
+            
+            if slot_index_to_burn_acolyte is None or slot_index_to_burn_follower is None:
+                await send_clients_log_message(f"No acolyte and follower available to burn on {self.name}")
+                return False
+            
+            await send_clients_log_message(f"Using {self.name} tier {tier_index}")
+            await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_acolyte)
+            await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_follower)
+            
+            power_gained = 10
+        
         game_state['power'][user] += power_gained
         await send_clients_log_message(f"{user} gains {power_gained} power from {self.name}")
        

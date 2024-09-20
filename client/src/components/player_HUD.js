@@ -12,9 +12,12 @@ const ArrowIcon = ({ rotation }) => (
   </svg>
 )
 
-const CostGrid = ({ costs_to_recruit, costs_to_exile, player_color, available_actions, clients_color, onDiscipleClick }) => {
+const CostGrid = ({ costs_to_recruit, costs_to_exile, player_color, available_actions, clients_color, onDiscipleClick, recruiting_range, exiling_range }) => {
   const disciple_types = ['follower', 'acolyte', 'sage'];
   const DiscipleComponents = { follower: Follower, acolyte: Acolyte, sage: Sage };
+  const influenceIcon = createIcon({ type: 'influence', tooltipText: 'Influence per Disciple', width: 18, height: 18 });
+  const rangeIcon = createIcon({ type: 'range', tooltipText: 'Range', width: 18, height: 18 });
+  const discipleInfluence = { follower: 1, acolyte: 2, sage: 3 };
 
   const isSelectable = (disciple_type) => {
     return (
@@ -38,34 +41,41 @@ const CostGrid = ({ costs_to_recruit, costs_to_exile, player_color, available_ac
   return (
     <div className="cost-grid">
       <div className="cost-row disciples-row">
-        <div className="cost-cell"> <b>Costs:</b> </div>
+        <div className="cost-cell"> {influenceIcon} </div>
+        <div className="cost-cell"> {rangeIcon} </div>
         {disciple_types.map(disciple => (
           <div key={`disciple-${disciple}`} className="cost-cell">
-            {renderDiscipleComponent(disciple)}
+            {renderDiscipleComponent(disciple)}  : <b> {discipleInfluence[disciple]} </b>
           </div>
         ))}
       </div>
       <div className="cost-row">
         <div className="cost-cell">
-          <Tooltip text="Recruit">
+          <Tooltip text="Power to Recruit">
             <ArrowIcon rotation={90} />
           </Tooltip>
         </div>
+        <div className="cost-cell">
+          <span><b>{recruiting_range}</b></span>
+        </div>
         {disciple_types.map(disciple => (
           <div key={`recruit-${disciple}`} className="cost-cell">
-            <span>{costs_to_recruit[disciple]}</span>
+            <span><b>{costs_to_recruit[disciple]}</b></span>
           </div>
         ))}
       </div>
       <div className="cost-row">
         <div className="cost-cell">
-          <Tooltip text="Exile">
+          <Tooltip text="Power to Exile">
             <ArrowIcon rotation={0} />
           </Tooltip>
         </div>
+        <div className="cost-cell">
+          <span><b>{exiling_range}</b></span>
+        </div>
         {disciple_types.map(disciple => (
           <div key={`exile-${disciple}`} className="cost-cell">
-            <span>{costs_to_exile[disciple]}</span>
+            <span><b>{costs_to_exile[disciple]}</b></span>
           </div>
         ))}
       </div>
@@ -86,6 +96,8 @@ const PlayerHUD = ({
   onDiscipleClick,
   costs_to_exile,
   costs_to_recruit,
+  recruiting_range,
+  exiling_range,
 }) => {
   const class_for_player_color = player_color === 'red' ? 'player-red' : 'player-blue';
   const active_player_class = whose_turn_is_it === player_color ? 'player-active' : '';
@@ -118,6 +130,8 @@ const PlayerHUD = ({
       <CostGrid
         costs_to_recruit={costs_to_recruit}
         costs_to_exile={costs_to_exile}
+        recruiting_range={recruiting_range}
+        exiling_range={exiling_range}
         player_color={player_color}
         available_actions={available_actions}
         clients_color={clients_color}

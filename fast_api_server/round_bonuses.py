@@ -130,7 +130,7 @@ class PowerForLongestChain(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Gain Power for Longest Chain",
-            description="power longest-chain",
+            description="2 power longest-chain",
             listener_type="end_of_round",
             bonus_type="income"
         )
@@ -144,7 +144,7 @@ class PowerForLongestChain(RoundBonus):
         for player in [first_player, second_player]:
             player_color = "red" if player == "red" else "blue"
             size_of_longest_chain = longest_chains[player_color]
-            power_to_gain = size_of_longest_chain
+            power_to_gain = size_of_longest_chain*2
             game_state['power'][player] += power_to_gain
             await send_clients_log_message(f"{player} has a chain of size of {size_of_longest_chain} and gains {power_to_gain}")
 

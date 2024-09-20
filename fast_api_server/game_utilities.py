@@ -30,7 +30,7 @@ async def place_leader_on_tile(game_state, game_action_container_stack, send_cli
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    await send_clients_log_message(f"{color} placed their leader on {game_state['tiles'][tile_index].name}")
+    await send_clients_log_message(f"{color}_leader starts on {game_state['tiles'][tile_index].name}")
 
 async def player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, tile, disciple_type):
     if None not in tile.slots_for_disciples:
@@ -222,14 +222,17 @@ def get_available_client_actions(game_state, game_action_container, player_color
     return available_client_actions
 
 def calculate_exiling_range(game_state, player_color):
-    pass
+    game_state['exiling_range']['red'] = game_constants.initial_exiling_ranges['red']
+    game_state['exiling_range']['blue'] = game_constants.initial_exiling_ranges['blue']
+    for tile in game_state['tiles']:
+        tile.modify_exiling_ranges(game_state)
 
 def calculate_exiling_costs(game_state, player_color):
     pass
 
 def get_tiles_within_exiling_range(game_state, player_color):
     calculate_exiling_range(game_state, player_color)
-    exile_range = game_state['exile_range'][player_color]
+    exiling_range = game_state['exiling_range'][player_color]
     location_of_leader = get_tile_index_of_leader(game_state, player_color)
     tiles_in_range = []
 
@@ -239,21 +242,24 @@ def get_tiles_within_exiling_range(game_state, player_color):
     for row in range(game_constants.grid_size):
         for col in range(game_constants.grid_size):
             distance = abs(row - leader_row) + abs(col - leader_col) 
-            if distance <= exile_range:
+            if distance <= exiling_range:
                 tile_index = row * game_constants.grid_size + col
                 tiles_in_range.append(tile_index)
     
     return tiles_in_range
 
-def calculate_recruiting_range(game_state, disciple, player_color):
-    pass
+def calculate_recruiting_ranges(game_state):
+    game_state['recruiting_range']['red'] = game_constants.initial_recruiting_ranges['red']
+    game_state['recruiting_range']['blue'] = game_constants.initial_recruiting_ranges['blue']
+    for tile in game_state['tiles']:
+        tile.modify_recruiting_ranges(game_state)
 
 def calculate_recruiting_costs(game_state, player_color):
     pass
 
 def get_tiles_within_recruiting_range(game_state, disciple_to_recruit, player_color):
-    calculate_recruiting_range(game_state, disciple_to_recruit, player_color)
-    recruit_range = game_state['recruit_range'][player_color]
+    calculate_recruiting_ranges(game_state)
+    recruiting_range = game_state['recruiting_range'][player_color]
     location_of_leader = get_tile_index_of_leader(game_state, player_color)
     tiles_in_range = []
 
@@ -264,7 +270,7 @@ def get_tiles_within_recruiting_range(game_state, disciple_to_recruit, player_co
         for col in range(game_constants.grid_size):
             distance = abs(row - leader_row) + abs(col - leader_col)
             
-            if distance <= recruit_range:
+            if distance <= recruiting_range:
                 tile_index = row * game_constants.grid_size + col
                 tiles_in_range.append(tile_index)
     

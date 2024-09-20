@@ -22,7 +22,7 @@ class Road(Tile):
                 {
                     "influence_to_reach_tier": 8,
                     "must_be_ruler": True,
-                    "description": "**Action:** Same as above but choose any disciple",
+                    "description": "**Action:** Same as above but choose a disciple anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False, 
