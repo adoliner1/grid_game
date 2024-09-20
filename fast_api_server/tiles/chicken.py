@@ -8,7 +8,7 @@ class Chicken(Tile):
             name="Chicken",
             type="Power-Creator/Giver",
             number_of_slots=5,
-            minimum_influence_to_rule=3,
+            minimum_influence_to_rule=2,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 2,

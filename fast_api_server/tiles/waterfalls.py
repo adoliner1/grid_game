@@ -11,7 +11,7 @@ class Waterfalls(Tile):
             number_of_slots=5,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 3,
+                    "influence_to_reach_tier": 4,
                     "must_be_ruler": False,
                     "description": "At the __end of a round__, +1 points per tile you're present at",
                     "is_on_cooldown": False,
@@ -19,7 +19,7 @@ class Waterfalls(Tile):
                     "leader_must_be_present": False,                 
                 },
                 {
-                    "influence_to_reach_tier": 5,
+                    "influence_to_reach_tier": 7,
                     "must_be_ruler": True,
                     "description": "At the __end of a round__, +2 points per tile you're present at",
                     "is_on_cooldown": False,

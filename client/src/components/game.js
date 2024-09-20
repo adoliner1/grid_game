@@ -156,11 +156,11 @@ const Game = () => {
         }
 
         //PROD
-        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
+        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
         //DEV
-        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         
-        /*PROD
+        //*PROD
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
             socket.current.send(JSON.stringify({
@@ -171,7 +171,7 @@ const Game = () => {
         };
         /*/
 
-        //DEV
+        /*DEV
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
         };

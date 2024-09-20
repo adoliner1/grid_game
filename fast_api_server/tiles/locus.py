@@ -57,7 +57,7 @@ class Locus(Tile):
             if adjacent_tiles_ruled:
                 game_state['power'][user] += adjacent_tiles_ruled
 
-        await send_clients_log_message(f"{user} uses {self.name} and gains {adjacent_tiles_ruled}") 
+        await send_clients_log_message(f"{user} uses {self.name} and gains {adjacent_tiles_ruled} power") 
        
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True
