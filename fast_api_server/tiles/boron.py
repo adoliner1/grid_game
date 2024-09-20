@@ -7,7 +7,7 @@ class Boron(Tile):
         super().__init__(
             name="Boron",
             type="Giver",
-            description = "At the __end of a round__, per square you have here, [[receive]] a circle here.",
+            description = "At the __end of a round__, per acolyte you have here, [[receive]] a follower here.",
             number_of_slots=11,
             minimum_influence_to_rule=3,
         )
@@ -21,10 +21,10 @@ class Boron(Tile):
 
         await send_clients_log_message(f"Running end of round effect for {self.name}")
         for player in [first_player, second_player]:
-            square_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == player and slot["shape"] == "square")
-            for _ in range(square_count):
-                await game_utilities.player_receives_a_shape_on_tile(
+            acolyte_count = sum(1 for slot in self.slots_for_disciples if slot and slot["color"] == player and slot["disciple"] == "acolyte")
+            for _ in range(acolyte_count):
+                await game_utilities.player_receives_a_disciple_on_tile(
                     game_state, game_action_container_stack, send_clients_log_message, 
                     get_and_send_available_actions, send_clients_game_state, 
-                    player, self, 'circle'
+                    player, self, 'follower'
                 )

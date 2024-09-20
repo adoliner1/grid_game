@@ -2,17 +2,17 @@ import asyncio
 import game_action_container
 import game_constants
 
-async def recruit_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index, shape, color):
+async def recruit_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index, disciple, color):
     tile_to_recruit_on = game_state["tiles"][tile_index]
-    old_shape =  tile_to_recruit_on.slots_for_shapes[slot_index]
-    tile_to_recruit_on.slots_for_shapes[slot_index] = {'shape': shape, 'color': color}
+    old_disciple =  tile_to_recruit_on.slots_for_disciples[slot_index]
+    tile_to_recruit_on.slots_for_disciples[slot_index] = {'disciple': disciple, 'color': color}
     determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    await send_clients_log_message(f"{color} recruited a {color}_{shape} at {tile_to_recruit_on.name}")
-    if old_shape:
-        await send_clients_log_message(f"this replaced a {old_shape['color']}_{old_shape['shape']}")
+    await send_clients_log_message(f"{color} recruited a {color}_{disciple} at {tile_to_recruit_on.name}")
+    if old_disciple:
+        await send_clients_log_message(f"this replaced a {old_disciple['color']}_{old_disciple['disciple']}")
     await call_listener_functions_for_event_type(game_state,
                                                   game_action_container_stack,
                                                     send_clients_log_message,
@@ -20,7 +20,7 @@ async def recruit_shape_on_tile(game_state, game_action_container_stack, send_cl
                                                         send_clients_game_state,
                                                           "on_recruit",
                                                             recruiter=color,
-                                                              shape=shape,
+                                                              disciple=disciple,
                                                                 index_of_tile_recruited_at=tile_index,
                                                                   slot_index_recruited_at=slot_index)
 
@@ -32,55 +32,55 @@ async def place_leader_on_tile(game_state, game_action_container_stack, send_cli
     await send_clients_game_state(game_state)
     await send_clients_log_message(f"{color} placed their leader on {game_state['tiles'][tile_index].name}")
 
-async def player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, tile, shape_type):
-    if None not in tile.slots_for_shapes:
-        await send_clients_log_message(f"{player_color} cannot receive a {shape_type} on {tile.name}, no empty slots")
+async def player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, tile, disciple_type):
+    if None not in tile.slots_for_disciples:
+        await send_clients_log_message(f"{player_color} cannot receive a {disciple_type} on {tile.name}, no empty slots")
         return
     
     tile_index = find_index_of_tile_by_name(game_state, tile.name)
-    next_empty_slot = tile.slots_for_shapes.index(None)
-    tile.slots_for_shapes[next_empty_slot] = {"shape": shape_type, "color": player_color}
-    await send_clients_log_message(f"{player_color} receives a {player_color}_{shape_type} on {tile.name}")
+    next_empty_slot = tile.slots_for_disciples.index(None)
+    tile.slots_for_disciples[next_empty_slot] = {"disciple": disciple_type, "color": player_color}
+    await send_clients_log_message(f"{player_color} receives a {player_color}_{disciple_type} on {tile.name}")
     determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
 
-    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_receive", receiver=player_color, shape=shape_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_receive", receiver=player_color, disciple=disciple_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
 
-async def move_shape_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
-    shape_to_move = game_state["tiles"][from_tile_index].slots_for_shapes[from_slot_index]
+async def move_disciple_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
+    disciple_to_move = game_state["tiles"][from_tile_index].slots_for_disciples[from_slot_index]
     
-    if shape_to_move is None:
+    if disciple_to_move is None:
         return False
 
-    if game_state["tiles"][to_tile_index].slots_for_shapes[to_slot_index] is not None:
+    if game_state["tiles"][to_tile_index].slots_for_disciples[to_slot_index] is not None:
         return False
 
-    game_state["tiles"][from_tile_index].slots_for_shapes[from_slot_index] = None
-    game_state["tiles"][to_tile_index].slots_for_shapes[to_slot_index] = shape_to_move
+    game_state["tiles"][from_tile_index].slots_for_disciples[from_slot_index] = None
+    game_state["tiles"][to_tile_index].slots_for_disciples[to_slot_index] = disciple_to_move
 
-    await send_clients_log_message(f"moved a {shape_to_move['color']}_{shape_to_move['shape']} from {game_state['tiles'][from_tile_index].name} to {game_state['tiles'][to_tile_index].name}")
+    await send_clients_log_message(f"moved a {disciple_to_move['color']}_{disciple_to_move['disciple']} from {game_state['tiles'][from_tile_index].name} to {game_state['tiles'][to_tile_index].name}")
     determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_move", shape=shape_to_move["shape"], from_tile_index=from_tile_index, to_tile_index=to_tile_index)
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_move", disciple=disciple_to_move["disciple"], from_tile_index=from_tile_index, to_tile_index=to_tile_index)
 
     return True
 
-async def burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index):
+async def burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index):
     tile = game_state["tiles"][tile_index]
-    shape = tile.slots_for_shapes[slot_index]["shape"]
-    color = tile.slots_for_shapes[slot_index]["color"]
-    tile.slots_for_shapes[slot_index] = None
-    await send_clients_log_message(f"burning a {color}_{shape} at {tile.name}")
+    disciple = tile.slots_for_disciples[slot_index]["disciple"]
+    color = tile.slots_for_disciples[slot_index]["color"]
+    tile.slots_for_disciples[slot_index] = None
+    await send_clients_log_message(f"burning a {color}_{disciple} at {tile.name}")
     determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
 
-    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_burn", burner=game_action_container_stack[-1].whose_action, shape=shape, color=color, index_of_tile_burned_at=tile_index)
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_burn", burner=game_action_container_stack[-1].whose_action, disciple=disciple, color=color, index_of_tile_burned_at=tile_index)
 
 
 async def call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, event_type, **data):
@@ -139,14 +139,14 @@ def get_tile_index_of_leader(game_state, color):
 
 def has_presence(tile, color):
     """
-    Check if a player has at least one shape or a leader on a given tile.
+    Check if a player has at least one disciple or a leader on a given tile.
    
     :param tile: The tile to check
     :param color: The color of the player ("red" or "blue")
-    :return: True if the player has at least one shape or a leader on the tile, False otherwise
+    :return: True if the player has at least one disciple or a leader on the tile, False otherwise
     """
     return (
-        any(slot is not None and slot["color"] == color for slot in tile.slots_for_shapes)
+        any(slot is not None and slot["color"] == color for slot in tile.slots_for_disciples)
         or tile.leaders_here[color]
     )
 
@@ -167,8 +167,8 @@ def update_presence(game_state):
     # Update the game state with the calculated presence
     game_state["presence"] = presence
 
-def count_all_shapes_for_color_on_tile(color, tile):
-    return sum(1 for slot in tile.slots_for_shapes if slot and slot["color"] == color)
+def count_all_disciples_for_color_on_tile(color, tile):
+    return sum(1 for slot in tile.slots_for_disciples if slot and slot["color"] == color)
 
 def get_available_client_actions(game_state, game_action_container, player_color_to_get_actions_for):
     if game_action_container.whose_action != player_color_to_get_actions_for:
@@ -176,9 +176,9 @@ def get_available_client_actions(game_state, game_action_container, player_color
     
     available_client_actions = {}
 
-    if game_action_container.game_action == 'initial_circle_placement':
-        slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, 'circle', game_action_container.whose_action)
-        available_client_actions["select_a_slot"] = slots_that_can_be_placed_on
+    if game_action_container.game_action == 'initial_follower_placement':
+        slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, 'follower', game_action_container.whose_action)
+        available_client_actions["select_a_slot_on_a_tile"] = slots_that_can_be_placed_on
 
     elif game_action_container.game_action == 'initial_leader_placement':
         available_client_actions["select_a_tile"] = game_constants.all_tile_indices
@@ -193,21 +193,17 @@ def get_available_client_actions(game_state, game_action_container, player_color
         available_client_actions["select_a_tile"] = get_adjacent_tile_indices(get_tile_index_of_leader(game_state, game_action_container.whose_action))
 
     elif game_action_container.game_action == 'recruit':
-        if game_action_container.get_next_piece_of_data_to_fill() == 'shape_type_to_recruit':
-            available_client_actions['select_a_shape_in_the_HUD'] = get_shapes_that_can_be_recruited(game_state, game_action_container.whose_action)
+        if game_action_container.get_next_piece_of_data_to_fill() == 'disciple_type_to_recruit':
+            available_client_actions['select_a_disciple_in_the_HUD'] = get_disciples_that_can_be_recruited(game_state, game_action_container.whose_action)
         else:
-            shape_to_recruit = game_action_container.required_data_for_action['shape_type_to_recruit']
-            tiles_within_recruiting_range = get_tiles_within_recruiting_range(game_state, shape_to_recruit, game_action_container.whose_action)
-            available_client_actions['select_a_slot'] = get_tile_slots_that_can_be_recruited_on(game_state, shape_to_recruit, game_action_container.whose_action, tiles_within_recruiting_range)
+            disciple_to_recruit = game_action_container.required_data_for_action['disciple_type_to_recruit']
+            tiles_within_recruiting_range = get_tiles_within_recruiting_range(game_state, disciple_to_recruit, game_action_container.whose_action)
+            available_client_actions['select_a_slot_on_a_tile'] = get_tile_slots_that_can_be_recruited_on(game_state, disciple_to_recruit, game_action_container.whose_action, tiles_within_recruiting_range)
 
     elif game_action_container.game_action == 'exile':
-        if game_action_container.get_next_piece_of_data_to_fill() == 'tile_slot_to_exile_from':
-            tiles_within_exiling_range = get_tiles_within_exiling_range(game_state, game_action_container.whose_action)
-            available_client_actions['select_a_slot'] = get_tile_slots_that_can_be_exiled(game_state, game_action_container.whose_action, tiles_within_exiling_range)
-        else:
-            adjacent_tile_indices = get_adjacent_tile_indices(game_action_container.required_data_for_action["tile_slot_to_exile_from"]["tile_index"])
-            adjacent_tile_indices_with_empty_slots = [tile_index for tile_index in adjacent_tile_indices if None in game_state['tiles'][tile_index].slots_for_shapes]
-            available_client_actions['select_a_tile'] = adjacent_tile_indices_with_empty_slots
+        tiles_within_exiling_range = get_tiles_within_exiling_range(game_state, game_action_container.whose_action)
+        available_client_actions['select_a_slot_on_a_tile'] = get_tile_slots_that_can_be_exiled(game_state, game_action_container.whose_action, tiles_within_exiling_range)
+
 
     elif game_action_container.game_action == 'choose_a_reaction_to_resolve':
         available_client_actions['select_a_tier'] = game_action_container.tiers_to_resolve
@@ -249,14 +245,14 @@ def get_tiles_within_exiling_range(game_state, player_color):
     
     return tiles_in_range
 
-def calculate_recruiting_range(game_state, shape, player_color):
+def calculate_recruiting_range(game_state, disciple, player_color):
     pass
 
 def calculate_recruiting_costs(game_state, player_color):
     pass
 
-def get_tiles_within_recruiting_range(game_state, shape_to_recruit, player_color):
-    calculate_recruiting_range(game_state, shape_to_recruit, player_color)
+def get_tiles_within_recruiting_range(game_state, disciple_to_recruit, player_color):
+    calculate_recruiting_range(game_state, disciple_to_recruit, player_color)
     recruit_range = game_state['recruit_range'][player_color]
     location_of_leader = get_tile_index_of_leader(game_state, player_color)
     tiles_in_range = []
@@ -274,13 +270,13 @@ def get_tiles_within_recruiting_range(game_state, shape_to_recruit, player_color
     
     return tiles_in_range
 
-def get_shapes_that_can_be_recruited(game_state, player_color):
+def get_disciples_that_can_be_recruited(game_state, player_color):
     calculate_recruiting_costs(game_state, player_color)
-    shapes_that_can_be_recruited = []
-    for shape in game_constants.shapes:
-        if game_state['costs_to_recruit'][player_color][shape] <= game_state['power'][player_color]:
-            shapes_that_can_be_recruited.append(shape)
-    return shapes_that_can_be_recruited
+    disciples_that_can_be_recruited = []
+    for disciple in game_constants.disciples:
+        if game_state['costs_to_recruit'][player_color][disciple] <= game_state['power'][player_color]:
+            disciples_that_can_be_recruited.append(disciple)
+    return disciples_that_can_be_recruited
 
 def get_other_player_color(player_color):
     return 'blue' if player_color == 'red' else 'red'
@@ -325,11 +321,11 @@ def set_peak_influence(game_state):
     game_state["peak_influence"] = peak_influence
 
 def count_sets_on_tile_for_color(tile, color,):
-    shape_counts = {"circle": 0, "square": 0, "triangle": 0}
-    for slot in tile.slots_for_shapes:
+    disciple_counts = {"follower": 0, "acolyte": 0, "sage": 0}
+    for slot in tile.slots_for_disciples:
         if slot and slot["color"] == color:
-            shape_counts[slot["shape"]] += 1
-    return min(shape_counts.values())
+            disciple_counts[slot["disciple"]] += 1
+    return min(disciple_counts.values())
 
 def get_tile_indices_where_player_has_presence(game_state, player):
     """
@@ -353,10 +349,10 @@ def find_index_of_tile_by_name(game_state, name):
             return index
     return None
 
-def count_number_of_shape_for_player_on_tile(shape, player, tile):
+def count_number_of_disciple_for_player_on_tile(disciple, player, tile):
     count = 0
-    for slot in tile.slots_for_shapes:
-        if slot and slot["shape"] == shape and slot["color"] == player:
+    for slot in tile.slots_for_disciples:
+        if slot and slot["disciple"] == disciple and slot["color"] == player:
             count += 1
     return count
 
@@ -391,20 +387,20 @@ def determine_how_many_full_columns_player_rules(game_state, player):
 
     return full_columns
 
-def find_max_unique_pairs(remaining_shapes, current_pairs):
-    if len(remaining_shapes) < 2:
+def find_max_unique_pairs(remaining_disciples, current_pairs):
+    if len(remaining_disciples) < 2:
         return len(current_pairs)
     
     max_pairs = len(current_pairs)
     
-    for i in range(len(remaining_shapes) - 1):
-        for j in range(i + 1, len(remaining_shapes)):
-            shape1, shape2 = remaining_shapes[i], remaining_shapes[j]
-            new_pair = tuple(sorted([shape1, shape2]))
+    for i in range(len(remaining_disciples) - 1):
+        for j in range(i + 1, len(remaining_disciples)):
+            disciple1, disciple2 = remaining_disciples[i], remaining_disciples[j]
+            new_pair = tuple(sorted([disciple1, disciple2]))
             
             if new_pair not in current_pairs:
                 # Make a new pair
-                new_remaining = remaining_shapes[:i] + remaining_shapes[i+1:j] + remaining_shapes[j+1:]
+                new_remaining = remaining_disciples[:i] + remaining_disciples[i+1:j] + remaining_disciples[j+1:]
                 new_current_pairs = current_pairs | {new_pair}
                 
                 # Recursive call
@@ -413,16 +409,16 @@ def find_max_unique_pairs(remaining_shapes, current_pairs):
     
         return max_pairs
 
-def get_tile_slots_that_can_be_recruited_on(game_state, shape_type, color, tile_indices):
+def get_tile_slots_that_can_be_recruited_on(game_state, disciple_type, color, tile_indices):
     
     tile_slots_that_can_be_recruited_on = {}
 
     for tile_index in tile_indices:
         slots_for_tile = []
         tile = game_state['tiles'][tile_index]
-        if shape_type in tile.shapes_which_can_be_recruited_to_this:
-            for slot_index, slot in enumerate(tile.slots_for_shapes):
-                if slot is None or (game_constants.shape_influence[slot['shape']] < game_constants.shape_influence[shape_type] and color == slot['color']):
+        if disciple_type in tile.disciples_which_can_be_recruited_to_this:
+            for slot_index, slot in enumerate(tile.slots_for_disciples):
+                if slot is None or (game_constants.disciple_influence[slot['disciple']] < game_constants.disciple_influence[disciple_type] and color == slot['color']):
                     slots_for_tile.append(slot_index)
             if slots_for_tile:
                 tile_slots_that_can_be_recruited_on[tile_index] = slots_for_tile
@@ -437,8 +433,8 @@ def get_tile_slots_that_can_be_exiled(game_state, color, tile_indices):
     for tile_index in tile_indices:
         slots_for_tile = []
         tile = game_state['tiles'][tile_index]
-        for slot_index, slot in enumerate(tile.slots_for_shapes):
-            if slot is not None and game_state['costs_to_exile'][color][slot['shape']] <= game_state['power'][color]:
+        for slot_index, slot in enumerate(tile.slots_for_disciples):
+            if slot is not None and game_state['costs_to_exile'][color][slot['disciple']] <= game_state['power'][color]:
                 slots_for_tile.append(slot_index)
         if slots_for_tile:
             tile_slots_that_can_be_exiled[tile_index] = slots_for_tile
@@ -446,30 +442,30 @@ def get_tile_slots_that_can_be_exiled(game_state, color, tile_indices):
     return tile_slots_that_can_be_exiled
 
 #returns a dict where the keys are tile indices and the associated list are the indices of the slots on that tile that can be placed on
-def get_tile_slots_that_can_be_placed_on(game_state, shape_type, color):
+def get_tile_slots_that_can_be_placed_on(game_state, disciple_type, color):
     
     tile_slots_that_can_be_placed_on = {}
 
     for tile_index, tile in enumerate(game_state["tiles"]):
         slots_for_tile = []
-        if shape_type in tile.shapes_which_can_be_recruited_to_this:
-            for slot_index, slot in enumerate(tile.slots_for_shapes):
-                if slot is None or (game_constants.shape_influence[slot['shape']] < game_constants.shape_influence[shape_type] and color == slot['color']):
+        if disciple_type in tile.disciples_which_can_be_recruited_to_this:
+            for slot_index, slot in enumerate(tile.slots_for_disciples):
+                if slot is None or (game_constants.disciple_influence[slot['disciple']] < game_constants.disciple_influence[disciple_type] and color == slot['color']):
                     slots_for_tile.append(slot_index)
             if slots_for_tile:
                 tile_slots_that_can_be_placed_on[tile_index] = slots_for_tile
     
     return tile_slots_that_can_be_placed_on
 
-def get_slots_with_a_shape_of_player_color_at_tile_index(game_state, player_color, tile_index):
-    slots_with_shape = []
+def get_slots_with_a_disciple_of_player_color_at_tile_index(game_state, player_color, tile_index):
+    slots_with_disciple = []
     tile = game_state["tiles"][tile_index]
     
-    for slot_index, slot in enumerate(tile.slots_for_shapes):
+    for slot_index, slot in enumerate(tile.slots_for_disciples):
         if slot and slot["color"] == player_color:
-            slots_with_shape.append(slot_index)
+            slots_with_disciple.append(slot_index)
     
-    return slots_with_shape
+    return slots_with_disciple
 
 def determine_if_directly_adjacent(index1, index2):
     return index1 in get_adjacent_tile_indices(index2)

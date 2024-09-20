@@ -13,10 +13,10 @@ class Chicken(Tile):
                 {
                     "influence_to_reach_tier": 2,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** [[Receive]] a circle at an adjacent tile. Your opponent gets +1 power",
+                    "description": "**Action:** [[Receive]] a follower at an adjacent tile. Your opponent gets +1 power",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
-                    "data_needed_for_use": ["tile_to_receive_shapes_at"],
+                    "data_needed_for_use": ["tile_to_receive_disciples_at"],
                     "has_a_cooldown": True,                    
                 },                
             ],      
@@ -54,16 +54,16 @@ class Chicken(Tile):
             await send_clients_log_message(f"{self.name} is on cooldown and cannot be used this round")
             return False
 
-        index_of_tile_to_receive_shapes_on = game_action_container.required_data_for_action['tile_to_receive_shapes_at']
-        tile_to_receive_shapes_on = game_state['tiles'][index_of_tile_to_receive_shapes_on]
+        index_of_tile_to_receive_disciples_on = game_action_container.required_data_for_action['tile_to_receive_disciples_at']
+        tile_to_receive_disciples_on = game_state['tiles'][index_of_tile_to_receive_disciples_on]
         
-        if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_shapes_on, game_utilities.find_index_of_tile_by_name(game_state, self.name)):
+        if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_disciples_on, game_utilities.find_index_of_tile_by_name(game_state, self.name)):
             await send_clients_log_message(f"Chose non-adjacent tile while using {self.name}")
             return False
 
         await send_clients_log_message(f"{self.name} is used")
         self.influence_tiers[0]['is_on_cooldown'] = True
-        await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, ruler, tile_to_receive_shapes_on, 'circle')
+        await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, ruler, tile_to_receive_disciples_on, 'follower')
         other_player = game_utilities.get_other_player_color(ruler)
         await send_clients_log_message(f"{other_player} gets +1 power")
         game_state['power'][other_player] += 1 

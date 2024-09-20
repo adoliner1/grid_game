@@ -15,7 +15,7 @@
   .round-bonuses-table thead tr {
     background-color: #f7fafc;
   }
-  
+
   .round-bonuses-table tbody tr:nth-child(even) {
     background-color: #f9fafb;
   }
@@ -35,7 +35,6 @@
   
   .round-bonuses-table th {
     font-weight: bold;
-    text-transform: uppercase;
     font-size: 0.75rem;
     color: #4a5568;
   }

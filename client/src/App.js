@@ -1,5 +1,5 @@
-/* PROD
 
+//prod
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Lobby from './components/lobby';
@@ -19,8 +19,9 @@ const App = () => {
 };
 
 export default App;
-*/
 
+
+/*dev
 import React from 'react';
 import Lobby from './components/lobby'
 import Game from './components/game';
@@ -37,4 +38,5 @@ const App = () => {
 };
 
 export default App;
+*/
 

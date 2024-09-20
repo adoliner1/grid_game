@@ -8,7 +8,7 @@ class Nitrogen(Tile):
             name="Nitrogen",
             type="Giver/Power-Creator",
             minimum_influence_to_rule=3,
-            description="At the __end of a round__, for each triangle you have here, [[receive]] a square and a circle here",
+            description="At the __end of a round__, for each sage you have here, [[receive]] a acolyte and a follower here",
             number_of_slots=11,
             influence_tiers=[
                 {
@@ -27,11 +27,11 @@ class Nitrogen(Tile):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         
-        circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "circle" and slot["color"] == whose_turn_is_it)
-        square_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "square" and slot["color"] == whose_turn_is_it)
-        triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "triangle" and slot["color"] == whose_turn_is_it)
+        follower_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "follower" and slot["color"] == whose_turn_is_it)
+        acolyte_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "acolyte" and slot["color"] == whose_turn_is_it)
+        sage_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "sage" and slot["color"] == whose_turn_is_it)
         
-        if circle_count >= 1 and square_count >= 1 and triangle_count >= 1:
+        if follower_count >= 1 and acolyte_count >= 1 and sage_count >= 1:
             useable_tiers.append(0)
 
         return useable_tiers
@@ -46,32 +46,32 @@ class Nitrogen(Tile):
         await send_clients_log_message(f"{self.name} runs")
 
         for player in [first_player, second_player]:
-            triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["color"] == player and slot["shape"] == "triangle")
+            sage_count = sum(1 for slot in self.slots_for_disciples if slot and slot["color"] == player and slot["disciple"] == "sage")
             
-            for _ in range(triangle_count):
-                await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player, self, 'square')
-                await game_utilities.player_receives_a_shape_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player, self, 'circle')
+            for _ in range(sage_count):
+                await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player, self, 'acolyte')
+                await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player, self, 'follower')
             
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         player = game_action_container.whose_action
         
-        circle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "circle" and slot["color"] == player)
-        square_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "square" and slot["color"] == player)
-        triangle_count = sum(1 for slot in self.slots_for_shapes if slot and slot["shape"] == "triangle" and slot["color"] == player)
+        follower_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "follower" and slot["color"] == player)
+        acolyte_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "acolyte" and slot["color"] == player)
+        sage_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "sage" and slot["color"] == player)
         
-        if circle_count < 1 or square_count < 1 or triangle_count < 1:
-            await send_clients_log_message(f"Not enough shapes to burn a set on {self.name}")
+        if follower_count < 1 or acolyte_count < 1 or sage_count < 1:
+            await send_clients_log_message(f"Not enough disciples to burn a set on {self.name}")
             return False
         
         await send_clients_log_message(f"{self.name} is used")
         nitrogen_tile_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        shapes_burned = {'circle': 0, 'square': 0, 'triangle': 0}
-        for i, slot in enumerate(self.slots_for_shapes):
-            if slot and slot["color"] == player and shapes_burned[slot["shape"]] < 1:
-                await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, nitrogen_tile_index, i)
-                shapes_burned[slot["shape"]] += 1
-                if all(count == 1 for count in shapes_burned.values()):
+        disciples_burned = {'follower': 0, 'acolyte': 0, 'sage': 0}
+        for i, slot in enumerate(self.slots_for_disciples):
+            if slot and slot["color"] == player and disciples_burned[slot["disciple"]] < 1:
+                await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, nitrogen_tile_index, i)
+                disciples_burned[slot["disciple"]] += 1
+                if all(count == 1 for count in disciples_burned.values()):
                     break
         
         await send_clients_log_message(f"{player} burns a set on {self.name}")

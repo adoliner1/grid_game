@@ -1,6 +1,6 @@
 import React from 'react'
 import '../stylesheets/tile.css'
-import ShapesOnTile from './shapes_on_tile'
+import DisciplesOnTile from './disciples_on_tile'
 import InfluenceTier from './influence_tier'
 import Tooltip from './tooltip';
 import createIcon from './icons';
@@ -14,7 +14,7 @@ const Tile = ({
     red_influence,
     blue_influence,
     is_on_cooldown,
-    slots_for_shapes,
+    slots_for_disciples,
     tile_index,
     leaders_here,
     ruler,
@@ -142,8 +142,8 @@ const Tile = ({
                 <p className='red-influence'>{influenceIcon('red')} {red_influence}</p>
                 <p className='blue-influence'>{influenceIcon('blue')} {blue_influence}</p>
             </div>
-            <ShapesOnTile 
-                slots_for_shapes={slots_for_shapes} 
+            <DisciplesOnTile 
+                slots_for_disciples={slots_for_disciples} 
                 tile_index={tile_index}
                 available_actions={available_actions}
                 onSlotClick={onSlotClick}

@@ -27,8 +27,8 @@ class Jester(Tile):
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         for color in ['red', 'blue']:
-            shapes = [slot["shape"] for slot in self.slots_for_shapes if slot and slot["color"] == color]
-            max_pairs = game_utilities.find_max_unique_pairs(shapes, set())
+            disciples = [slot["disciple"] for slot in self.slots_for_disciples if slot and slot["color"] == color]
+            max_pairs = game_utilities.find_max_unique_pairs(disciples, set())
             points_earned = max_pairs * 5
             game_state["points"][color] += points_earned
             if points_earned > 0:

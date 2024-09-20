@@ -8,7 +8,7 @@ class Combinatorics(Tile):
             name="Combinatorics",
             type="Producer/Scorer",
             minimum_influence_to_rule=3,
-            description="At the __end of a round__, for each unique, same-shape pair you have here, +1 power\nIf you have a triangle here, +2 points per power you gained this way",
+            description="At the __end of a round__, for each unique, same-disciple pair you have here, +1 power\nIf you have a sage here, +2 points per power you gained this way",
             number_of_slots=9,
         )
 
@@ -20,13 +20,13 @@ class Combinatorics(Tile):
         second_player = game_utilities.get_other_player_color(first_player)
         
         for color in [first_player, second_player]:
-            shape_counts = {"circle": 0, "square": 0, "triangle": 0}
-            for slot in self.slots_for_shapes:
+            disciple_counts = {"follower": 0, "acolyte": 0, "sage": 0}
+            for slot in self.slots_for_disciples:
                 if slot and slot["color"] == color:
-                    shape_counts[slot["shape"]] += 1
+                    disciple_counts[slot["disciple"]] += 1
             
             power_gained = 0
-            for shape, count in shape_counts.items():
+            for disciple, count in disciple_counts.items():
                 if count >= 2:
                     power_gained += 1
             
@@ -34,7 +34,7 @@ class Combinatorics(Tile):
                 game_state["power"][color] += power_gained
                 await send_clients_log_message(f"{color} gains {power_gained} power from {self.name}")
             
-            if shape_counts["triangle"] > 0:
+            if disciple_counts["sage"] > 0:
                 bonus_points = power_gained * 2
                 game_state["points"][color] += bonus_points
                 await send_clients_log_message(f"{color} gains {bonus_points} points from {self.name} (2 points per {power_gained} power gained)")

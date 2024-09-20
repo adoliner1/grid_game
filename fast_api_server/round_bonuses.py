@@ -102,7 +102,7 @@ class PowerPerPresence(RoundBonus):
 
         for player in [first_player, second_player]:
             presence = game_state["presence"][player]
-            power_to_gain = presence/2
+            power_to_gain = presence//2
             game_state['power'][player] += power_to_gain
             await send_clients_log_message(f"{player} has {presence} presence and gains {power_to_gain}")
 
@@ -122,7 +122,7 @@ class PowerPerPeakInfluence(RoundBonus):
 
         for player in [first_player, second_player]:
             peak_influence = game_state["peak_influence"][player]
-            power_to_gain = peak_influence/2
+            power_to_gain = peak_influence//2
             game_state['power'][player] += power_to_gain
             await send_clients_log_message(f"{player} has a peak influence of {peak_influence} and gains {power_to_gain}")
             

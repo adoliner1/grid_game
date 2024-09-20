@@ -37,14 +37,14 @@ class GameEngine:
     async def perform_initial_placements(self):
         await self.send_clients_log_message(f"players must make their initial placements")  
         await self.send_clients_game_state(self.game_state)
-        for number_of_initial_circles_placed in range(game_constants.number_of_initial_circles_to_place):
-            player = 'red' if number_of_initial_circles_placed % 2 == 0 else 'blue'
+        for number_of_initial_followers_placed in range(game_constants.number_of_initial_followers_to_place):
+            player = 'red' if number_of_initial_followers_placed % 2 == 0 else 'blue'
             self.game_state['whose_turn_is_it'] = player
             await self.send_clients_game_state(self.game_state)
-            await self.send_clients_log_message(f"{player} must place a circle")            
+            await self.send_clients_log_message(f"{player} must place a follower")            
             action = game_action_container.GameActionContainer(
                 event=asyncio.Event(),
-                game_action="initial_circle_placement",
+                game_action="initial_follower_placement",
                 required_data_for_action={
                     'tile_slot_to_place_on': {}
                 },
@@ -148,15 +148,15 @@ class GameEngine:
                 await self.get_and_send_available_actions()
             return
 
-        if self.game_action_container_stack[-1].game_action == "initial_circle_placement":
-            await game_utilities.recruit_shape_on_tile(self.game_state,
+        if self.game_action_container_stack[-1].game_action == "initial_follower_placement":
+            await game_utilities.recruit_disciple_on_tile(self.game_state,
                                               self.game_action_container_stack,
                                                 self.send_clients_log_message,
                                                   self.get_and_send_available_actions,
                                                     self.send_clients_game_state, 
                                                      data['tile_slot_to_place_on']['tile_index'],
                                                        data['tile_slot_to_place_on']['slot_index'],
-                                                         'circle',
+                                                         'follower',
                                                            player_color)
             
             self.game_action_container_stack.pop().event.set()
@@ -205,15 +205,7 @@ class GameEngine:
         #figure out if we need to have the client make another decision, or if we're ready to execute the action.
         #execute it if we're ready. If it was a reaction, we need to remove that tile from the reactions to resolve and reset the tier to react with in case there are more
 
-        #need to do specific checks for exiling here so we can short-circuit it if necessary
         next_piece_of_data_to_fill = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
-        if self.game_action_container_stack[-1].game_action == "exile" and next_piece_of_data_to_fill == 'tile_to_exile_to':
-            adjacent_tile_indices = game_utilities.get_adjacent_tile_indices(self.game_action_container_stack[-1].required_data_for_action["tile_slot_to_exile_from"]["tile_index"])
-            adjacent_tile_indices_with_empty_slots = [tile_index for tile_index in adjacent_tile_indices if None in self.game_state['tiles'][tile_index].slots_for_shapes]
-            if not adjacent_tile_indices_with_empty_slots:
-                self.game_action_container_stack[-1].required_data_for_action['tile_to_exile_to'] = "NO_AVAILABLE_EXILE_SLOTS"
-                next_piece_of_data_to_fill = None
-
         if not next_piece_of_data_to_fill:
             action_to_execute = self.game_action_container_stack[-1]
             await self.execute_game_action(action_to_execute)
@@ -278,6 +270,7 @@ class GameEngine:
 
         self.game_state['power'][mover] -= 1
 
+        await self.send_clients_log_message(f"{mover} leader moves from {tile_of_players_leader.name} to {tile_to_move_to.name}")
         tile_of_players_leader.leaders_here[mover] = False
         tile_to_move_to.leaders_here[mover] = True
         return True
@@ -285,44 +278,44 @@ class GameEngine:
     async def player_takes_recruit_action(self, game_action_container):
         tile_index = game_action_container.required_data_for_action["tile_slot_to_recruit_on"]["tile_index"]
         slot_index = game_action_container.required_data_for_action["tile_slot_to_recruit_on"]["slot_index"]
-        shape_type = game_action_container.required_data_for_action["shape_type_to_recruit"]
+        disciple_type = game_action_container.required_data_for_action["disciple_type_to_recruit"]
         color_of_player_recruiting = game_action_container.whose_action
         tile = self.game_state["tiles"][tile_index]
-        slot = tile.slots_for_shapes[slot_index]
+        slot = tile.slots_for_disciples[slot_index]
         
         if self.game_state["whose_turn_is_it"] != color_of_player_recruiting:
             await self.send_clients_log_message("Not your turn")
             return False
 
-        if tile_index not in game_utilities.get_tiles_within_recruiting_range(self.game_state, shape_type, game_action_container.whose_action):
+        if tile_index not in game_utilities.get_tiles_within_recruiting_range(self.game_state, disciple_type, game_action_container.whose_action):
             await self.send_clients_log_message("Not in range of that tile")
             return False               
 
-        if shape_type not in tile.shapes_which_can_be_recruited_to_this:
-            await self.send_clients_log_message("Cannot recruit this shape here")
+        if disciple_type not in tile.disciples_which_can_be_recruited_to_this:
+            await self.send_clients_log_message("Cannot recruit this disciple here")
             return False    
 
-        if slot and not (game_constants.shape_influence[slot['shape']] < game_constants.shape_influence[shape_type] and color_of_player_recruiting == slot['color']):
-            await self.send_clients_log_message("Cannot recruit on this slot, it's not empty or contains one of your weaker shapes")
+        if slot and not (game_constants.disciple_influence[slot['disciple']] < game_constants.disciple_influence[disciple_type] and color_of_player_recruiting == slot['color']):
+            await self.send_clients_log_message("Cannot recruit on this slot, it's not empty or contains one of your weaker disciples")
             return False
         
-        if self.game_state['costs_to_recruit'][color_of_player_recruiting][shape_type] > self.game_state['power'][color_of_player_recruiting]:
+        if self.game_state['costs_to_recruit'][color_of_player_recruiting][disciple_type] > self.game_state['power'][color_of_player_recruiting]:
             await self.send_clients_log_message("Don't have enough power to recruit this")
             return False
         
 
-        self.game_state['power'][color_of_player_recruiting] -= self.game_state['costs_to_recruit'][color_of_player_recruiting][shape_type]
-        await game_utilities.recruit_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index, slot_index, shape_type, color_of_player_recruiting)
+        self.game_state['power'][color_of_player_recruiting] -= self.game_state['costs_to_recruit'][color_of_player_recruiting][disciple_type]
+        await game_utilities.recruit_disciple_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index, slot_index, disciple_type, color_of_player_recruiting)
         game_utilities.determine_rulers(self.game_state)
         return True
      
     async def player_takes_exile_action(self, game_action_container):
         tile_index_to_exile_from = game_action_container.required_data_for_action["tile_slot_to_exile_from"]["tile_index"]
         slot_index_to_exile_from = game_action_container.required_data_for_action["tile_slot_to_exile_from"]["slot_index"]
-        tile_index_to_exile_to = game_action_container.required_data_for_action["tile_to_exile_to"]
-        tile_to_exile_to = None if tile_index_to_exile_to=='NO_AVAILABLE_EXILE_SLOTS' else self.game_state['tiles'][tile_index_to_exile_to]
         tile_to_exile_from = self.game_state['tiles'][tile_index_to_exile_from]
-        slot_to_exile_from = tile_to_exile_from.slots_for_shapes[slot_index_to_exile_from]
+        slot_to_exile_from = tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from]
+        exiled_color = tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from]['color']
+        exiled_disciple = tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from]['disciple']
         color_of_player_exiling = game_action_container.whose_action
 
         if tile_index_to_exile_from not in game_utilities.get_tiles_within_exiling_range(self.game_state, game_action_container.whose_action):
@@ -333,19 +326,14 @@ class GameEngine:
             await self.send_clients_log_message("Nothing to exile here")
             return False
         
-        if self.game_state['costs_to_exile'][color_of_player_exiling][slot_to_exile_from['shape']] > self.game_state['power'][color_of_player_exiling]:
+        if self.game_state['costs_to_exile'][color_of_player_exiling][slot_to_exile_from['disciple']] > self.game_state['power'][color_of_player_exiling]:
             await self.send_clients_log_message("Not enough power to exile")
             return False            
 
-        exiled_shape = slot_to_exile_from
-        tile_to_exile_from.slots_for_shapes[slot_index_to_exile_from] = None
-
-        if tile_index_to_exile_to == 'NO_AVAILABLE_EXILE_SLOTS':
-            await self.send_clients_log_message("Nowhere for the exile to find a home. They are lost")
-        else:
-            await game_utilities.player_receives_a_shape_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, exiled_shape['color'], tile_to_exile_to ,exiled_shape['shape'])
+        self.game_state['power'][color_of_player_exiling] -= self.game_state['costs_to_exile'][color_of_player_exiling][slot_to_exile_from['disciple']]
+        tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from] = None
+        await self.send_clients_log_message(f"{color_of_player_exiling} exiled a {exiled_color}_{exiled_disciple} from {tile_to_exile_from.name} for {self.game_state['costs_to_exile'][color_of_player_exiling][exiled_disciple]} power")
         return True
-
     def create_new_game_action_container_from_initial_decision(self, data):
         match data['client_action']:
             case 'move':
@@ -363,7 +351,6 @@ class GameEngine:
                     game_action="exile",
                     required_data_for_action={
                         "tile_slot_to_exile_from": {},
-                        "tile_to_exile_to": None
                     },
                     whose_action=self.game_state['whose_turn_is_it']
                 )
@@ -372,7 +359,7 @@ class GameEngine:
                     event=asyncio.Event(),
                     game_action="recruit",
                     required_data_for_action={
-                        "shape_type_to_recruit": None,
+                        "disciple_type_to_recruit": None,
                         "tile_slot_to_recruit_on": {}
                     },
                     whose_action=self.game_state['whose_turn_is_it']
@@ -463,6 +450,7 @@ class GameEngine:
             "exile_range": {"red": 0, "blue": 0},
             "costs_to_recruit": {"red": game_constants.starting_cost_to_recruit, "blue": game_constants.starting_cost_to_recruit},
             "costs_to_exile": {"red": game_constants.starting_cost_to_exile, "blue": game_constants.starting_cost_to_exile},
+            "power_given_at_start_of_round": game_constants.power_given_at_start_of_round,
             "movement": {"red": game_constants.starting_movement, "blue": game_constants.starting_movement},
             "tiles": [tile() for tile in chosen_tiles],
             "whose_turn_is_it": "red",

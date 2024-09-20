@@ -13,7 +13,7 @@ class RedDwarf(Tile):
                 {
                     "influence_to_reach_tier": 1,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ one of your shapes here to swap the position of 2 tiles",
+                    "description": "**Action:** ^^Burn^^ one of your disciples here to swap the position of 2 tiles",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,            
                     "leader_must_be_present": False,         
@@ -29,7 +29,7 @@ class RedDwarf(Tile):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         
-        if self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and any(slot for slot in self.slots_for_shapes if slot and slot["color"] == whose_turn_is_it):
+        if self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and any(slot for slot in self.slots_for_disciples if slot and slot["color"] == whose_turn_is_it):
             useable_tiers.append(0)
 
         return useable_tiers
@@ -38,7 +38,7 @@ class RedDwarf(Tile):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
         
         if current_piece_of_data_to_fill == "slot_to_burn_from_on_red_dwarf":
-            slots_that_can_be_burned_from = game_utilities.get_slots_with_a_shape_of_player_color_at_tile_index(game_state, game_action_container.whose_action, game_action_container.required_data_for_action["index_of_tile_in_use"])
+            slots_that_can_be_burned_from = game_utilities.get_slots_with_a_disciple_of_player_color_at_tile_index(game_state, game_action_container.whose_action, game_action_container.required_data_for_action["index_of_tile_in_use"])
             available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_that_can_be_burned_from}
         elif current_piece_of_data_to_fill == "first_tile":
             available_actions["select_a_tile"] = list(range(len(game_state["tiles"])))
@@ -62,19 +62,19 @@ class RedDwarf(Tile):
         tile2_index = game_action_container.required_data_for_action['second_tile']
 
         if any(index is None for index in [slot_to_burn_from, tile1_index, tile2_index]):
-            await send_clients_log_message(f"Invalid shape or tiles selected for using {self.name}")
+            await send_clients_log_message(f"Invalid disciple or tiles selected for using {self.name}")
             return False
 
         if tile1_index == tile2_index:
             await send_clients_log_message(f"Cannot swap a tile with itself using {self.name}")
             return False
 
-        if self.slots_for_shapes[slot_to_burn_from]["color"] != player:
-            await send_clients_log_message(f"Cannot burn another player's shape on {self.name}")
+        if self.slots_for_disciples[slot_to_burn_from]["color"] != player:
+            await send_clients_log_message(f"Cannot burn another player's disciple on {self.name}")
             return False
         
         red_dwarf_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, red_dwarf_index, slot_to_burn_from)
+        await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, red_dwarf_index, slot_to_burn_from)
         await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
 

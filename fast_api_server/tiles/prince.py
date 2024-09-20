@@ -9,12 +9,12 @@ class Prince(Tile):
             type="Scorer",
             minimum_influence_to_rule=3,
             number_of_slots=7,
-            description="At the __end of a round__, for each same-shape pair you have here, +1 point",
+            description="At the __end of a round__, for each same-disciple pair you have here, +1 point",
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
-                    "description": "At the __end of a round__, for each same-shape pair you have here, +3 additional points",
+                    "description": "At the __end of a round__, for each same-disciple pair you have here, +3 additional points",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_a_cooldown": False,                   
@@ -29,12 +29,12 @@ class Prince(Tile):
         ruler = self.determine_ruler(game_state)
         
         for color in ['red', 'blue']:
-            shape_count = {'circle': 0, 'square': 0, 'triangle': 0}
-            for slot in self.slots_for_shapes:
+            disciple_count = {'follower': 0, 'acolyte': 0, 'sage': 0}
+            for slot in self.slots_for_disciples:
                 if slot and slot["color"] == color:
-                    shape_count[slot["shape"]] += 1
+                    disciple_count[slot["disciple"]] += 1
             
-            pairs = sum(count // 2 for count in shape_count.values())
+            pairs = sum(count // 2 for count in disciple_count.values())
             
             base_points = pairs
             additional_points = 0
@@ -46,4 +46,4 @@ class Prince(Tile):
             game_state["points"][color] += total_points
             
             if total_points > 0:
-                await send_clients_log_message(f"{color} player earned {total_points} points ({base_points} base + {additional_points} additional) from {pairs} pairs of shapes on {self.name}")
+                await send_clients_log_message(f"{color} player earned {total_points} points ({base_points} base + {additional_points} additional) from {pairs} pairs of disciples on {self.name}")

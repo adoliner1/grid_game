@@ -164,8 +164,8 @@ async def start_game(lobby_table: models.LobbyTable):
 def generate_player_token():
     return str(uuid.uuid4())
 
-'''
-PROD
+
+#-------------PROD------------
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
     global connections_to_games, game_engines
@@ -226,9 +226,9 @@ async def websocket_game_endpoint(websocket: WebSocket):
         else:
             print(f"Player disconnected")
         connections_to_games[:] = [connection for connection in connections_to_games if connection["websocket"] != websocket]
-'''
+#-------------PROD------------'''
 
-# DEV game websocket
+'''#--------------DEV-----------------
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
     global game_engine, current_players
@@ -260,9 +260,8 @@ async def websocket_game_endpoint(websocket: WebSocket):
         current_players = [p for p in current_players if p["websocket"] != websocket]
         print(f"{player_color} player disconnected")
         if not current_players:
-            game_engine = None
+            game_engine = None'''
 
-#--------------DEV-----------------
 async def send_clients_new_log_message(message):
         for player in current_players:
             await player["websocket"].send_json({

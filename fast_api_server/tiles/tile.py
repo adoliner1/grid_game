@@ -2,18 +2,18 @@ import game_utilities
 import game_constants
 
 class Tile:
-    def __init__(self, name, type, number_of_slots, influence_tiers=[], minimum_influence_to_rule=0, description=None, data_needed_for_use=[], is_on_cooldown=False, shapes_which_can_be_recruited_to_this=["circle", "square", "triangle"]):
+    def __init__(self, name, type, number_of_slots, influence_tiers=[], minimum_influence_to_rule=0, description=None, data_needed_for_use=[], is_on_cooldown=False, disciples_which_can_be_recruited_to_this=["follower", "acolyte", "sage"]):
         self.name = name
         self.type = type
         self.description = description
         self.influence_tiers = influence_tiers
         self.number_of_slots = number_of_slots
         self.minimum_influence_to_rule = minimum_influence_to_rule
-        self.slots_for_shapes = [None] * number_of_slots
+        self.slots_for_disciples = [None] * number_of_slots
         self.influence_modifiers = []
         self.ruler = None
         self.influence_per_player = {"red": 0, "blue": 0}
-        self.shapes_which_can_be_recruited_to_this=shapes_which_can_be_recruited_to_this
+        self.disciples_which_can_be_recruited_to_this=disciples_which_can_be_recruited_to_this
         self.leaders_here = {"red": False, "blue": False}
 
     def determine_ruler(self, game_state, minimum_influence_needed_to_rule=0):
@@ -30,11 +30,11 @@ class Tile:
     def determine_influence(self):
         new_influence_per_player = {"red": 0, "blue": 0}
 
-        for slot in self.slots_for_shapes:
+        for slot in self.slots_for_disciples:
             if slot is not None:
                 color = slot["color"]
-                shape = slot["shape"]
-                new_influence_per_player[color] += game_constants.shape_influence[shape]
+                disciple = slot["disciple"]
+                new_influence_per_player[color] += game_constants.disciple_influence[disciple]
 
         # Apply influence modifiers
         for modifier in self.influence_modifiers:
@@ -85,6 +85,6 @@ class Tile:
             "description": self.description,
             "influence_per_player": self.influence_per_player,
             "leaders_here": self.leaders_here,
-            "slots_for_shapes": self.slots_for_shapes,
+            "slots_for_disciples": self.slots_for_disciples,
             "ruler": self.ruler,
         } 

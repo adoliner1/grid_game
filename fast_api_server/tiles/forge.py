@@ -2,18 +2,18 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Ash(Tile):
+class Forge(Tile):
     def __init__(self):
         super().__init__(
-            name="Ash",
-            type="Scorer",
+            name="Forge",
+            type="Power-Creator",
             number_of_slots=5,
-            minimum_influence_to_rule=3,
+            minimum_influence_to_rule=5,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": False,
-                    "description": "After one of your disciples is ^^burned^^ on a tile, if you're still present there, +2 points",
+                    "description": "After one of your disciples is ^^burned^^ on a tile, if you're still present there, +1 power",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_cooldown": False,
@@ -21,7 +21,7 @@ class Ash(Tile):
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": True,
-                    "description": "+3 points instead",
+                    "description": "+2 power instead",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_cooldown": False,
@@ -46,7 +46,7 @@ class Ash(Tile):
         ruler = self.determine_ruler(game_state)
         for player in [first_player, second_player]:
             player_influence = self.influence_per_player[player]
-            if player_influence >= 3 and game_utilities.has_presence(tile_burned_at, player) and color == player:
-                points_gained = 3 if player == ruler else 2
-                game_state["points"][player] += points_gained
-                await send_clients_log_message(f"{player} gains {points_gained} points from {self.name} due to their {color}_{disciple} being burned on {tile_burned_at.name}")
+            if player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and game_utilities.has_presence(tile_burned_at, player) and color == player:
+                power_gained = 2 if player == ruler else 2
+                game_state["power"][player] += power_gained
+                await send_clients_log_message(f"{player} gains {power_gained} power from {self.name} due to their {color}_{disciple} being burned on {tile_burned_at.name}")

@@ -11,6 +11,12 @@
 .player-red {
     border-color: red;
 }
+
+.selectable {
+    border: 2px solid gold;
+    cursor: pointer;
+}
+
 .player-blue {
     border-color: blue;
 }
@@ -61,7 +67,6 @@
     flex: 1;
     min-width: 40px; /* Ensure minimum width for cost cells */
 }
-
 
 .cost-cell svg {
     width: 15px;

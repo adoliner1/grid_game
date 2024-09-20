@@ -13,7 +13,7 @@ class Caves(Tile):
                 {
                     "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "After you ((recruit)) at an adjacent tile, if you have less than 5 influence there, [[receive]] a circle there",
+                    "description": "After you ((recruit)) at an adjacent tile, if you have less than 5 influence there, [[receive]] a follower there",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
@@ -57,20 +57,20 @@ class Caves(Tile):
         if not is_adjacent:
             return      
 
-        recruiter_receives_circle = False
+        recruiter_receives_follower = False
 
         if recruiter_influence_here >= self.influence_tiers[0]['influence_to_reach_tier'] and recruiter_influence_at_tile_recruited_at <= 5:
-            recruiter_receives_circle = True
+            recruiter_receives_follower = True
         elif recruiter_influence_here >= self.influence_tiers[1]['influence_to_reach_tier'] and recruiter_influence_at_tile_recruited_at <= 7:
-            recruiter_receives_circle = True
+            recruiter_receives_follower = True
         elif recruiter_influence_here >= self.influence_tiers[2]['influence_to_reach_tier'] and recruiter == ruler and recruiter_influence_at_tile_recruited_at <= 9:
-            recruiter_receives_circle = True
+            recruiter_receives_follower = True
     
-        if recruiter_receives_circle:
-            await game_utilities.player_receives_a_shape_on_tile(
+        if recruiter_receives_follower:
+            await game_utilities.player_receives_a_disciple_on_tile(
                 game_state, game_action_container_stack, send_clients_log_message,
                 get_and_send_available_actions, send_clients_game_state,
-                recruiter, tile_recruited_at, 'circle'
+                recruiter, tile_recruited_at, 'follower'
             )
         
-        await send_clients_log_message(f"{recruiter} receives a {recruiter}_circle at {tile_recruited_at.name} from {self.name}")
+        await send_clients_log_message(f"{recruiter} receives a {recruiter}_follower at {tile_recruited_at.name} from {self.name}")

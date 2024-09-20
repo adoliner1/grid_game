@@ -6,25 +6,48 @@ import PlayerHUD from './player_HUD';
 import RoundBonusesTable from './round_bonuses_table';
 
 const Game = () => {
-    const [gameState, setGameState] = useState(null)
-    const [availableActions, setAvailableActions] = useState({}) 
-    const [currentPieceOfDataToFill, setcurrentPieceOfDataToFill] = useState("") 
-    const [logs, setLogs] = useState([])
+    const [gameState, setGameState] = useState(null);
+    const [availableActions, setAvailableActions] = useState({});
+    const [currentPieceOfDataToFill, setcurrentPieceOfDataToFill] = useState("");
+    const [logs, setLogs] = useState([]);
+    const [audioEnabled, setAudioEnabled] = useState(true);
 
-    const oldAvailableActions = useRef({})
-    const socket = useRef(null)
-    const clientColor = useRef(null)
-    const request = useRef({})
-    const userHasInteracted = useRef(false)
-    const clickSound = useRef(new Audio('/sounds/click.wav'));
-    const yourTurnSound = useRef(new Audio('/sounds/your_turn.wav'));
+    const oldAvailableActions = useRef({});
+    const socket = useRef(null);
+    const clientColor = useRef(null);
+    const request = useRef({});
+    const userHasInteracted = useRef(false);
+    const clickSound = useRef(null);
+    const yourTurnSound = useRef(null);
 
     const addLog = (message) => {
-        setLogs((prevLogs) => [...prevLogs, message])
-    }
+        setLogs((prevLogs) => [...prevLogs, message]);
+    };
 
-    //just used so we can play "your turn" sound for now - probably not necessary in future
+    const loadAudio = (audioRef, src) => {
+        const audio = new Audio(src);
+        audio.addEventListener('error', () => {
+            console.warn(`Failed to load audio: ${src}`);
+            setAudioEnabled(false);
+        });
+        audio.addEventListener('canplaythrough', () => {
+            audioRef.current = audio;
+        });
+    };
+
+    const playSound = (soundRef) => {
+        if (audioEnabled && soundRef.current) {
+            soundRef.current.play().catch(error => {
+                console.warn('Audio playback failed', error);
+                setAudioEnabled(false);
+            });
+        }
+    };
+
     useEffect(() => {
+        loadAudio(clickSound, '/sounds/click.wav');
+        loadAudio(yourTurnSound, '/sounds/your_turn.wav');
+
         const handleUserInteraction = () => {
             userHasInteracted.current = true;
         };
@@ -35,93 +58,95 @@ const Game = () => {
         return () => {
             window.removeEventListener('click', handleUserInteraction);
             window.removeEventListener('keypress', handleUserInteraction);
+            if (clickSound.current) clickSound.current.removeEventListener('error', () => {});
+            if (yourTurnSound.current) yourTurnSound.current.removeEventListener('error', () => {});
         };
     }, []);
 
     const handlePassButtonClick = () => {
-        clickSound.current.play();
-        request.current.client_action = "pass"
-        sendRequest()
-    }
+        playSound(clickSound);
+        request.current.client_action = "pass";
+        sendRequest();
+    };
 
     const handleChooseNotToReactClick = () => {
-        clickSound.current.play();
-        request.current.client_action = "do_not_react"
-        sendRequest()
-    }
+        playSound(clickSound);
+        request.current.client_action = "do_not_react";
+        sendRequest();
+    };
 
-    const handleShapeInHUDClick = (shape_type) => {
-        if (availableActions.hasOwnProperty('select_a_shape_in_the_HUD')) {
-            clickSound.current.play();
-            request.current.client_action = 'select_a_shape_in_the_HUD'
-            request.current[currentPieceOfDataToFill] = shape_type
-            sendRequest()
+    const handleDiscipleInHUDClick = (disciple_type) => {
+        if (availableActions.hasOwnProperty('select_a_disciple_in_the_HUD')) {
+            playSound(clickSound);
+            request.current.client_action = 'select_a_disciple_in_the_HUD';
+            request.current[currentPieceOfDataToFill] = disciple_type;
+            sendRequest();
         }
-    }
+    };
 
     const handleMoveButtonClick = () => {
         if (availableActions.hasOwnProperty('move')) {
-            clickSound.current.play();
-            request.current.client_action = 'move'
-            sendRequest()
+            playSound(clickSound);
+            request.current.client_action = 'move';
+            sendRequest();
         }
-    }
+    };
 
     const handleRecruitButtonClick = () => {
         if (availableActions.hasOwnProperty('recruit')) {
-            clickSound.current.play();
-            request.current.client_action = 'recruit'
-            sendRequest()
+            playSound(clickSound);
+            request.current.client_action = 'recruit';
+            sendRequest();
         }
-    }
+    };
 
     const handleExileButtonClick = () => {
         if (availableActions.hasOwnProperty('exile')) {
-            clickSound.current.play();
-            request.current.client_action = 'exile'
-            sendRequest()
+            playSound(clickSound);
+            request.current.client_action = 'exile';
+            sendRequest();
         }
-    }
+    };
 
     const handleTileClick = (tile_index) => {
         if (availableActions.hasOwnProperty('select_a_tile')) {
-            clickSound.current.play();
-            request.current.client_action = "select_a_tile"
-            request.current[currentPieceOfDataToFill] = tile_index
-            sendRequest() 
+            playSound(clickSound);
+            request.current.client_action = "select_a_tile";
+            request.current[currentPieceOfDataToFill] = tile_index;
+            sendRequest();
         }
-    }
+    };
 
     const handleSlotClick = (tile_index, slot_index) => {
-        clickSound.current.play();
-        if (availableActions.hasOwnProperty('select_a_slot')) {
-            request.current.client_action = "select_a_slot"
-            request.current[currentPieceOfDataToFill] = {}
-            request.current[currentPieceOfDataToFill].slot_index = slot_index
-            request.current[currentPieceOfDataToFill].tile_index = tile_index
-            sendRequest()
+        playSound(clickSound);
+        if (availableActions.hasOwnProperty('select_a_slot_on_a_tile')) {
+            request.current.client_action = "select_a_slot_on_a_tile";
+            request.current[currentPieceOfDataToFill] = {
+                slot_index: slot_index,
+                tile_index: tile_index
+            };
+            sendRequest();
         }
-    }
+    };
 
     const handleInfluenceTierClick = (tile_index, tier_index) => {
-        clickSound.current.play();
+        playSound(clickSound);
         if (availableActions.hasOwnProperty('select_a_tier')) {
-            request.current.client_action = "select_a_tier"
-            request.current[currentPieceOfDataToFill] = {}
-            request.current[currentPieceOfDataToFill].tier_index = tier_index
-            request.current[currentPieceOfDataToFill].tile_index = tile_index
-            sendRequest()
+            request.current.client_action = "select_a_tier";
+            request.current[currentPieceOfDataToFill] = {
+                tier_index: tier_index,
+                tile_index: tile_index
+            };
+            sendRequest();
         }
-    }
+    };
 
     const sendRequest = () => {
-        socket.current.send(JSON.stringify(request.current))
-        request.current = {}
-    }
+        socket.current.send(JSON.stringify(request.current));
+        request.current = {};
+    };
     
     useEffect(() => {
-
-        /* PROD
         const game_id = localStorage.getItem('game_id');
         const player_token = localStorage.getItem('player_token');
     
@@ -129,83 +154,88 @@ const Game = () => {
             console.error('Game ID or player token not found');
             return;
         }
-            */
 
-        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`)
-        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
+        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        
+        //PROD
         socket.current.onopen = () => {
-            console.log("WebSocket connection established"); }
-            // Send the player token for authentication - PROD
-
-            /*
+            console.log("WebSocket connection established");
             socket.current.send(JSON.stringify({
                 action: "authenticate",
                 player_token: player_token,
                 game_id: game_id
             }));
-        };*/ 
+        };
+        //*/
 
+        /*DEV
+        socket.current.onopen = () => {
+            console.log("WebSocket connection established");
+        };
+        //DEV*/
+        
         socket.current.onmessage = (event) => {
-            const data = JSON.parse(event.data)
+            const data = JSON.parse(event.data);
             switch (data.action) {
                 case "error":
-                    addLog(`Error: ${data.message}`)
-                    break
+                    addLog(`Error: ${data.message}`);
+                    break;
                 case "message":
-                    addLog(`${data.message}`)
-                    break 
+                    addLog(`${data.message}`);
+                    break;
                 case "initialize":
-                    clientColor.current = data.player_color
-                    break
+                    clientColor.current = data.player_color;
+                    break;
                 case "update_game_state":
-                    setGameState(data.game_state)
-                    break
+                    setGameState(data.game_state);
+                    break;
                 case "current_available_actions":
-                    setAvailableActions(data.available_actions)
-                    setcurrentPieceOfDataToFill(data.current_piece_of_data_to_fill_in_current_action)
-                    break
+                    setAvailableActions(data.available_actions);
+                    setcurrentPieceOfDataToFill(data.current_piece_of_data_to_fill_in_current_action);
+                    break;
                 default:
-                    addLog("Unknown action received")
-                    break
+                    addLog("Unknown action received");
+                    break;
             }
-        }
+        };
 
         socket.current.onclose = () => {
-            console.log("WebSocket connection closed")
-        }
+            console.log("WebSocket connection closed");
+        };
 
         return () => {
             if (socket.current) {
-                socket.current.close()
+                socket.current.close();
             }
-        }
-    }, [])
+        };
+    }, []);
 
     useEffect(() => {
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
-                request.current.client_action = "reset_current_action"
-                sendRequest()
+                request.current.client_action = "reset_current_action";
+                sendRequest();
             }
-        }
+        };
     
-        window.addEventListener('keydown', handleKeyDown)
+        window.addEventListener('keydown', handleKeyDown);
         return () => {
-            window.removeEventListener('keydown', handleKeyDown)
-        }
+            window.removeEventListener('keydown', handleKeyDown);
+        };
     }, []);
 
     useEffect(() => {
         if (userHasInteracted.current && 
             Object.keys(oldAvailableActions.current).length === 0 && 
             Object.keys(availableActions).length !== 0) {
-            yourTurnSound.current.play();
+            playSound(yourTurnSound);
         }
         oldAvailableActions.current = availableActions;
     }, [availableActions]);
 
     if (!gameState) {
-        return <div>Loading...</div>
+        return <div>Loading...</div>;
     }
 
     return (
@@ -225,7 +255,7 @@ const Game = () => {
               available_actions={availableActions}
               costs_to_exile={gameState.costs_to_exile.red}
               costs_to_recruit={gameState.costs_to_recruit.red}
-              onShapeClick={handleShapeInHUDClick}
+              onDiscipleClick={handleDiscipleInHUDClick}
             />
             <PlayerHUD 
               player_color="blue" 
@@ -239,22 +269,22 @@ const Game = () => {
               available_actions={availableActions}
               costs_to_exile={gameState.costs_to_exile.blue}
               costs_to_recruit={gameState.costs_to_recruit.blue}
-              onShapeClick={handleShapeInHUDClick}
+              onDiscipleClick={handleDiscipleInHUDClick}
             />
             <div className="action-buttons">
-                <button onClick={handlePassButtonClick} disabled={!availableActions.hasOwnProperty('pass')} className={availableActions.hasOwnProperty('pass') ? 'btn-enabled' : 'btn-disabled'} >
+                <button onClick={handlePassButtonClick} disabled={!availableActions.hasOwnProperty('pass')} className={availableActions.hasOwnProperty('pass') ? 'btn-enabled' : 'btn-disabled'}>
                     Pass
                 </button>
-                <button onClick={handleChooseNotToReactClick} disabled={!availableActions.hasOwnProperty('do_not_react')} className={availableActions.hasOwnProperty('do_not_react') ? 'btn-enabled' : 'btn-disabled'} >
+                <button onClick={handleChooseNotToReactClick} disabled={!availableActions.hasOwnProperty('do_not_react')} className={availableActions.hasOwnProperty('do_not_react') ? 'btn-enabled' : 'btn-disabled'}>
                     Don't Use Reaction
                 </button>
-                <button onClick={handleMoveButtonClick} disabled={!availableActions.hasOwnProperty('move')}className={availableActions.hasOwnProperty('move') ? 'btn-enabled' : 'btn-disabled'} >
+                <button onClick={handleMoveButtonClick} disabled={!availableActions.hasOwnProperty('move')} className={availableActions.hasOwnProperty('move') ? 'btn-enabled' : 'btn-disabled'}>
                     Move
                 </button>
-                <button onClick={handleRecruitButtonClick} disabled={!availableActions.hasOwnProperty('recruit')}className={availableActions.hasOwnProperty('recruit') ? 'btn-enabled' : 'btn-disabled'} >
+                <button onClick={handleRecruitButtonClick} disabled={!availableActions.hasOwnProperty('recruit')} className={availableActions.hasOwnProperty('recruit') ? 'btn-enabled' : 'btn-disabled'}>
                     Recruit
                 </button>
-                <button onClick={handleExileButtonClick} disabled={!availableActions.hasOwnProperty('exile')}className={availableActions.hasOwnProperty('exile') ? 'btn-enabled' : 'btn-disabled'} >
+                <button onClick={handleExileButtonClick} disabled={!availableActions.hasOwnProperty('exile')} className={availableActions.hasOwnProperty('exile') ? 'btn-enabled' : 'btn-disabled'}>
                     Exile
                 </button>                                     
             </div>
@@ -271,9 +301,9 @@ const Game = () => {
                 blue_influence={tile.influence_per_player.blue}
                 description={tile.description}
                 influence_tiers={tile.influence_tiers}
-                slots_for_shapes={tile.slots_for_shapes}
+                slots_for_disciples={tile.slots_for_disciples}
                 tile_index={tile_index}
-                leaders_here = {tile.leaders_here}
+                leaders_here={tile.leaders_here}
                 ruler={tile.ruler}
                 available_actions={availableActions}
                 onTileClick={() => handleTileClick(tile_index)}
@@ -283,7 +313,7 @@ const Game = () => {
             ))}
           </div>
         </div>
-      );
-    };
-    
-    export default Game;
+    );
+};
+
+export default Game;

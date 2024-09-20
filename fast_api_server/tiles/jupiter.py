@@ -6,14 +6,14 @@ class Jupiter(Tile):
     def __init__(self):
         super().__init__(
             name="Jupiter",
-            type="power",
+            type="Power-Creator",
             minimum_influence_to_rule=5,
             number_of_slots=5,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ one of your squares here for +3 power",
+                    "description": "**Action:** ^^Burn^^ one of your acolytes here for +3 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                  
@@ -22,7 +22,7 @@ class Jupiter(Tile):
                 {
                     "influence_to_reach_tier": 6,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** ^^Burn^^ one of your circles here for +3 power",
+                    "description": "**Action:** ^^Burn^^ one of your followers here for +3 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                  
@@ -39,12 +39,12 @@ class Jupiter(Tile):
         user = game_state["whose_turn_is_it"]
         if (not self.influence_tiers[0]['is_on_cooldown'] and 
             self.influence_per_player[user] >= self.influence_tiers[0]['influence_to_reach_tier'] and 
-            any(slot and slot["shape"] == "square" and slot["color"] == user for slot in self.slots_for_shapes)):
+            any(slot and slot["disciple"] == "acolyte" and slot["color"] == user for slot in self.slots_for_disciples)):
             useable_tiers.append(0)
         if (not self.influence_tiers[1]['is_on_cooldown'] and 
             self.influence_per_player[user] >= self.influence_tiers[1]['influence_to_reach_tier'] and 
             self.determine_ruler(game_state) == user and
-            any(slot and slot["shape"] == "circle" and slot["color"] == user for slot in self.slots_for_shapes)):
+            any(slot and slot["disciple"] == "follower" and slot["color"] == user for slot in self.slots_for_disciples)):
             useable_tiers.append(1)
         return useable_tiers
 
@@ -66,17 +66,17 @@ class Jupiter(Tile):
 
         index_of_jupiter = game_utilities.find_index_of_tile_by_name(game_state, self.name)
        
-        shape_to_burn = "square" if tier_index == 0 else "circle"
-        slot_index_to_burn_shape_from = next((i for i, slot in enumerate(self.slots_for_shapes)
-                                              if slot and slot["shape"] == shape_to_burn and slot["color"] == user), None)
+        disciple_to_burn = "acolyte" if tier_index == 0 else "follower"
+        slot_index_to_burn_disciple_from = next((i for i, slot in enumerate(self.slots_for_disciples)
+                                              if slot and slot["disciple"] == disciple_to_burn and slot["color"] == user), None)
        
-        if slot_index_to_burn_shape_from is None:
-            await send_clients_log_message(f"No {shape_to_burn} available to burn on {self.name}")
+        if slot_index_to_burn_disciple_from is None:
+            await send_clients_log_message(f"No {disciple_to_burn} available to burn on {self.name}")
             return False
        
         await send_clients_log_message(f"Using {self.name} tier {tier_index}")
        
-        await game_utilities.burn_shape_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_shape_from)
+        await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_disciple_from)
         
         power_gained = 3
         game_state['power'][user] += power_gained

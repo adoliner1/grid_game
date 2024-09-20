@@ -13,7 +13,7 @@ class SolarArray(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "**Action:** ^^Burn^^ all your shapes here. If you burned 2 or more and your peak influence is:\n **>= 6:** +3 points\n**>= 10:** +7 points\n**>= 14:** +12 points",
+                    "description": "**Action:** ^^Burn^^ all your disciples here. If you burned 2 or more and your peak influence is:\n **>= 6:** +3 points\n**>= 10:** +7 points\n**>= 14:** +12 points",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,  
                     "leader_must_be_present": False,                
@@ -43,19 +43,19 @@ class SolarArray(Tile):
             await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
             return False
         solar_array_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        shapes_burned = 0
-        for i, slot in enumerate(self.slots_for_shapes):
+        disciples_burned = 0
+        for i, slot in enumerate(self.slots_for_disciples):
             if slot and slot["color"] == ruler:
-                await game_utilities.burn_shape_at_tile_at_index(
+                await game_utilities.burn_disciple_at_tile_at_index(
                     game_state, game_action_container_stack, send_clients_log_message,
                     get_and_send_available_actions, send_clients_game_state,
                     solar_array_index, i
                 )
-                shapes_burned += 1
-        await send_clients_log_message(f"{ruler} burned {shapes_burned} shapes on {self.name}")
+                disciples_burned += 1
+        await send_clients_log_message(f"{ruler} burned {disciples_burned} disciples on {self.name}")
         peak_influence = game_state["peak_influence"][ruler]
         points_gained = 0
-        if shapes_burned >= 2:
+        if disciples_burned >= 2:
             if peak_influence >= 14:
                 points_gained = 12
             elif peak_influence >= 10:

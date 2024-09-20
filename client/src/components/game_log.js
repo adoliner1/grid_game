@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import Circle from './shapes/circle';
-import Triangle from './shapes/triangle';
-import Square from './shapes/square';
+import Follower from './disciples/follower';
+import Sage from './disciples/sage';
+import Acolyte from './disciples/acolyte';
 
 const GameLog = ({ logs }) => {
     const logContainerRef = useRef(null);
@@ -12,25 +12,24 @@ const GameLog = ({ logs }) => {
         }
     }, [logs]);
 
-    const shapeSymbols = {
-        'circle': Circle,
-        'square': Square,
-        'triangle': Triangle,
+    const discipleSymbols = {
+        'follower': Follower,
+        'acolyte': Acolyte,
+        'sage': Sage,
     }
 
     const formatLine = (line, index) => {
         const words = line.split(" ");
         let formatted = words.map((w) => {
-            const syms = w.match(/(red|blue)_(circle|square|triangle)/);
+            const syms = w.match(/(red|blue)_(follower|acolyte|sage)/);
             if (syms) {
-                const [, color, shape] = syms;
-                const Component = shapeSymbols[shape];
-                return <Component playerColor={ color } size={12} />;
+                const [, color, disciple] = syms;
+                const Component = discipleSymbols[disciple];
+                return <Component playerColor={color} size={12} />;
             } else {
                 return w;
             }
         });
-
         formatted = formatted.flatMap((w) => [w, " "]).slice(0, -1);
         return <p key={index}>{formatted}</p>;
     };

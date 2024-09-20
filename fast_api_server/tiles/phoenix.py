@@ -9,13 +9,13 @@ class Phoenix(Tile):
         super().__init__(
             name="Phoenix",
             type="Giver",
-            minimum_influence_to_rule=3,
+            minimum_influence_to_rule=5,
             number_of_slots=5,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": False,                    
-                    "description": "**Reaction:** After one of your shapes is ^^burned^^ at a tile, if you are still present there, you may [[receive]] a circle there",
+                    "description": "**Reaction:** After one of your disciples is ^^burned^^ at a tile, if you are still present there, you may [[receive]] a follower there",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,         
                     "leader_must_be_present": False,             
@@ -24,7 +24,7 @@ class Phoenix(Tile):
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": False,                    
-                    "description": "**Reaction:** Same as above but [[receive]] a square instead",
+                    "description": "**Reaction:** Same as above but [[receive]] a acolyte instead",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                   
@@ -33,7 +33,7 @@ class Phoenix(Tile):
                 {
                     "influence_to_reach_tier": 7,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** Same as above but [[receive]] a triangle instead",
+                    "description": "**Reaction:** Same as above but [[receive]] a sage instead",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,            
                     "leader_must_be_present": False,          
@@ -77,10 +77,10 @@ class Phoenix(Tile):
             await send_clients_log_message(f"{player} is not present at the site of burning")  
             return False
         
-        shape_to_receive = game_constants.shapes[tier_index]
+        disciple_to_receive = game_constants.disciples[tier_index]
 
-        # Receive the shape
-        await game_utilities.player_receives_a_shape_on_tile(
+        # Receive the disciple
+        await game_utilities.player_receives_a_disciple_on_tile(
             game_state, 
             game_action_container_stack, 
             send_clients_log_message, 
@@ -88,12 +88,10 @@ class Phoenix(Tile):
             send_clients_game_state, 
             player, 
             game_state['tiles'][index_of_tile_burned_at], 
-            shape_to_receive
+            disciple_to_receive
         )
 
-        await send_clients_log_message(f"{player} used tier {tier_index} of {self.name} to receive a {shape_to_receive} at {game_state['tiles'][index_of_tile_burned_at].name}")
-
-        # Set the cooldown for the used tier
+        await send_clients_log_message(f"{player} used tier {tier_index} of {self.name} to receive a {disciple_to_receive} at {game_state['tiles'][index_of_tile_burned_at].name}")
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True
             
@@ -135,7 +133,7 @@ class Phoenix(Tile):
         if not self.influence_tiers[1]['is_on_cooldown'] and self.influence_per_player[color_burned] >= self.influence_tiers[1]['influence_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(1)
 
-        if not self.influence_tiers[2]['is_on_cooldown'] and self.determine_ruler(game_state) == color_burned:
+        if not self.influence_tiers[2]['is_on_cooldown'] and self.determine_ruler(game_state) == color_burned and self.influence_per_player[color_burned] >= self.influence_tiers[2]['influence_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(2)
         
         if tiers_that_can_be_reacted_with:
