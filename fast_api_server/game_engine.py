@@ -248,6 +248,8 @@ class GameEngine:
         game_utilities.determine_influence_levels(self.game_state)
         game_utilities.update_presence(self.game_state)
         game_utilities.determine_rulers(self.game_state)
+        game_utilities.calculate_exiling_ranges(self.game_state)
+        game_utilities.calculate_recruiting_ranges(self.game_state)
         #if we fail before here... we need to reset some data in required data i think
         self.game_action_container_stack.pop()
         await self.send_clients_game_state(self.game_state)

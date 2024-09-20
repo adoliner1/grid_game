@@ -19,9 +19,9 @@ class Waterfalls(Tile):
                     "leader_must_be_present": False,                 
                 },
                 {
-                    "influence_to_reach_tier": 7,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": True,
-                    "description": "At the __end of a round__, +2 points per tile you're present at",
+                    "description": "+2 points instead",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,         
                     "leader_must_be_present": False,            

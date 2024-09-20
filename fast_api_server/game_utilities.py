@@ -211,9 +211,13 @@ def get_available_client_actions(game_state, game_action_container, player_color
     #giving actions for the initial_decision
     else:
         available_client_actions['pass'] = []
-        available_client_actions['move'] = []
-        available_client_actions['recruit'] = []
-        available_client_actions['exile'] = []
+
+        if game_state['power'][game_action_container.whose_action] > 0:
+            available_client_actions['move'] = []
+        if game_state['power'][game_action_container.whose_action] > 1:    
+            available_client_actions['recruit'] = []
+        if game_state['power'][game_action_container.whose_action] > 2:    
+            available_client_actions['exile'] = []
 
         available_client_actions['select_a_tier'] = {}
         for tile_index, tile in enumerate(game_state["tiles"]):
@@ -221,17 +225,17 @@ def get_available_client_actions(game_state, game_action_container, player_color
 
     return available_client_actions
 
-def calculate_exiling_range(game_state, player_color):
+def calculate_exiling_ranges(game_state):
     game_state['exiling_range']['red'] = game_constants.initial_exiling_ranges['red']
     game_state['exiling_range']['blue'] = game_constants.initial_exiling_ranges['blue']
     for tile in game_state['tiles']:
         tile.modify_exiling_ranges(game_state)
 
-def calculate_exiling_costs(game_state, player_color):
+def calculate_exiling_costs(game_state):
     pass
 
 def get_tiles_within_exiling_range(game_state, player_color):
-    calculate_exiling_range(game_state, player_color)
+    calculate_exiling_ranges(game_state, player_color)
     exiling_range = game_state['exiling_range'][player_color]
     location_of_leader = get_tile_index_of_leader(game_state, player_color)
     tiles_in_range = []
@@ -254,7 +258,7 @@ def calculate_recruiting_ranges(game_state):
     for tile in game_state['tiles']:
         tile.modify_recruiting_ranges(game_state)
 
-def calculate_recruiting_costs(game_state, player_color):
+def calculate_recruiting_costs(game_state):
     pass
 
 def get_tiles_within_recruiting_range(game_state, disciple_to_recruit, player_color):
@@ -277,7 +281,7 @@ def get_tiles_within_recruiting_range(game_state, disciple_to_recruit, player_co
     return tiles_in_range
 
 def get_disciples_that_can_be_recruited(game_state, player_color):
-    calculate_recruiting_costs(game_state, player_color)
+    calculate_recruiting_costs(game_state)
     disciples_that_can_be_recruited = []
     for disciple in game_constants.disciples:
         if game_state['costs_to_recruit'][player_color][disciple] <= game_state['power'][player_color]:
@@ -433,7 +437,7 @@ def get_tile_slots_that_can_be_recruited_on(game_state, disciple_type, color, ti
 
 def get_tile_slots_that_can_be_exiled(game_state, color, tile_indices):
     
-    calculate_exiling_costs(game_state, color)
+    calculate_exiling_costs(game_state)
     tile_slots_that_can_be_exiled = {}
 
     for tile_index in tile_indices:
