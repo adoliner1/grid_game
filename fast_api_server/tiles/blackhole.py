@@ -11,7 +11,7 @@ class Blackhole(Tile):
             number_of_slots=3,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 1,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
                     "description": "**Action:** Pay 1 power to swap the position of two tiles",
                     "is_on_cooldown": False,

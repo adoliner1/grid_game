@@ -70,14 +70,6 @@ const GameLog = ({ logs }) => {
                     });
                 default:
                     return part
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/__(.*?)__/g, '<i>$1</i>')
-                        .replace(/\^\^(.*?)\^\^/g, '<span style="color: #ff8700">$1</span>')
-                        .replace(/\[\[(.*?)\]\]/g, '<span style="color: #9f00ff">$1</span>')
-                        .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a">$1</span>')
-                        .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000">$1</span>')
-                        .replace(/\b(action|reaction)\b/gi, '<u>$1</u>')
-                        .replace(/\n/g, '<br>');
             }
         });
     }

@@ -14,8 +14,8 @@ class Phoenix(Tile):
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
-                    "must_be_ruler": False,                    
-                    "description": "**Reaction:** After one of your disciples is ^^burned^^ at a tile, if you are still present there, you may [[receive]] a follower there",
+                    "must_be_ruler": False,
+                    "description": "**Reaction:** After one of your disciples is ^^burned^^ at a tile, if you still have at least 2 influence there, you may [[receive]] a follower there",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,         
                     "leader_must_be_present": False,             
@@ -23,20 +23,20 @@ class Phoenix(Tile):
                 },        
                 {
                     "influence_to_reach_tier": 5,
-                    "must_be_ruler": False,                    
+                    "must_be_ruler": False,
                     "description": "**Reaction:** Same as above but [[receive]] an acolyte instead",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,   
-                    "leader_must_be_present": False,                   
+                    "has_a_cooldown": True,
+                    "leader_must_be_present": False,
                     "data_needed_for_use": ['confirm_choice']
                 }, 
                 {
                     "influence_to_reach_tier": 7,
-                    "must_be_ruler": True,                    
+                    "must_be_ruler": True,
                     "description": "**Reaction:** Same as above but [[receive]] a sage instead",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,            
-                    "leader_must_be_present": False,          
+                    "has_a_cooldown": True,
+                    "leader_must_be_present": False,
                     "data_needed_for_use": ['confirm_choice']
                 },     
             ]  
@@ -73,8 +73,8 @@ class Phoenix(Tile):
             return False
 
         index_of_tile_burned_at = game_action_container.required_data_for_action['index_of_tile_burned_at']    
-        if not game_utilities.has_presence(game_state['tiles'][index_of_tile_burned_at], player):
-            await send_clients_log_message(f"{player} is not present at the site of burning")  
+        if game_state['tiles'][index_of_tile_burned_at].influence_per_player[player] < 2:
+            await send_clients_log_message(f"{player} doesn't have 2 influence at the site of burning")  
             return False
         
         disciple_to_receive = game_constants.disciples[tier_index]
@@ -122,7 +122,7 @@ class Phoenix(Tile):
         color_burned = data.get('color')
         index_of_tile_burned_at = data.get('index_of_tile_burned_at')
 
-        if not game_utilities.has_presence(game_state['tiles'][index_of_tile_burned_at], color_burned):
+        if game_state['tiles'][index_of_tile_burned_at].influence_per_player[color_burned] < 2:
             return
         
         tiers_that_can_be_reacted_with = []

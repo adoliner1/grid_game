@@ -6,7 +6,7 @@ class Algebra(Tile):
     def __init__(self):
         super().__init__(
             name="Algebra",
-            type="Producer",
+            type="Power-Creator",
             number_of_slots=5,
             minimum_influence_to_rule=3,
             influence_tiers=[

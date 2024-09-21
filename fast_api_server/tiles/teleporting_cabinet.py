@@ -95,7 +95,7 @@ class TeleportingCabinet(Tile):
         game_utilities.determine_influence_levels(game_state)
         game_utilities.update_presence(game_state)
         game_utilities.determine_rulers(game_state)
-        await send_clients_log_message(f"Swapped {slot_data_from['disciple']} from {game_state['tiles'][tile_index_from].name} with {slot_data_to['disciple']} at {game_state['tiles'][tile_index_to].name}")
+        await send_clients_log_message(f"Swapped a {slot_data_from['color']}_{slot_data_from['disciple']} from {game_state['tiles'][tile_index_from].name} with a {slot_data_to['color']}_{slot_data_to['disciple']} at {game_state['tiles'][tile_index_to].name}")
         
         self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

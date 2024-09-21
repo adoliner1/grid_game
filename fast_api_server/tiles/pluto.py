@@ -12,20 +12,20 @@ class Pluto(Tile):
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 6,
-                    "must_be_ruler": False,                    
+                    "must_be_ruler": False,
                     "description": "**Action:** ^^Burn^^ a follower here for +3 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
-                    "leader_must_be_present": False,                  
+                    "leader_must_be_present": False,
                     "data_needed_for_use": []
                 },
                 {
                     "influence_to_reach_tier": 8,
-                    "must_be_ruler": True,                    
+                    "must_be_ruler": True,
                     "description": "**Action:** ^^Burn^^ 2 followers for +8 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
-                    "leader_must_be_present": False,               
+                    "leader_must_be_present": False,
                     "data_needed_for_use": [],
                 },
             ]

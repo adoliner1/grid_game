@@ -212,7 +212,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
     else:
         available_client_actions['pass'] = []
 
-        if game_state['power'][game_action_container.whose_action] > 0:
+        if game_state['power'][game_action_container.whose_action] >= 0:
             available_client_actions['move'] = []
         if game_state['power'][game_action_container.whose_action] > 1:    
             available_client_actions['recruit'] = []
@@ -235,7 +235,7 @@ def calculate_exiling_costs(game_state):
     pass
 
 def get_tiles_within_exiling_range(game_state, player_color):
-    calculate_exiling_ranges(game_state, player_color)
+    calculate_exiling_ranges(game_state)
     exiling_range = game_state['exiling_range'][player_color]
     location_of_leader = get_tile_index_of_leader(game_state, player_color)
     tiles_in_range = []

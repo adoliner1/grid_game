@@ -41,7 +41,7 @@ class GameEngine:
             player = 'red' if number_of_initial_followers_placed % 2 == 0 else 'blue'
             self.game_state['whose_turn_is_it'] = player
             await self.send_clients_game_state(self.game_state)
-            await self.send_clients_log_message(f"{player} must place a follower")            
+            await self.send_clients_log_message(f"{player} must recruit a {player}_follower anywhere")            
             action = game_action_container.GameActionContainer(
                 event=asyncio.Event(),
                 game_action="initial_follower_placement",
@@ -59,7 +59,7 @@ class GameEngine:
         for player in game_constants.player_colors:
             self.game_state['whose_turn_is_it'] = player
             await self.send_clients_game_state(self.game_state)    
-            await self.send_clients_log_message(f"{player} must place their leader")
+            await self.send_clients_log_message(f"{player} must place their {player}_leader")
             action = game_action_container.GameActionContainer(
                 event=asyncio.Event(),
                 game_action="initial_leader_placement",
@@ -133,17 +133,16 @@ class GameEngine:
                 return
 
         if data['client_action'] == "reset_current_action":
-            #only have initial decision container - do nothing
-            if len(self.game_action_container_stack) < 2:
+            #the initial decision container and the container to choose reactions to resolve cannot be reset
+            if (len(self.game_action_container_stack) < 2 or
+            self.game_action_container_stack[-1].game_action == 'choose_a_reaction_to_resolve' or
+            self.game_action_container_stack[-1].game_action == 'initial_follower_placement' or
+            self.game_action_container_stack[-1].game_action == 'initial_leader_placement'):
+                await self.send_clients_log_message(f"Can't cancel this action")
                 return
-            #can't remove a reaction - reset the resettable data in it. then resend available actions.
-            elif self.game_action_container_stack[-1].is_a_reaction:
-                await self.send_clients_log_message(f"Resetting current action")
-                self.reset_resettable_values(self.game_action_container_stack[-1].required_data_for_action)
-                self.get_and_send_available_actions()
-            #game action pushed from an initial decision, we can just remove it entirely and then resend available actions for the initial decision
+            #the action is resettable, we just pop it off and resend the available actions
             else:
-                await self.send_clients_log_message(f"Resetting current action")
+                await self.send_clients_log_message(f"Cancelling action")
                 self.game_action_container_stack.pop()
                 await self.get_and_send_available_actions()
             return
@@ -193,8 +192,8 @@ class GameEngine:
             #nothing more to resolve. we can pop it and set it
             if not reactions_to_resolve_container.tiers_to_resolve:
                 self.game_action_container_stack.pop().event.set()
-                #need to return here to stop the task that was handling the resolution of reactions. It no longer has any more game containers to add to the stack
-                #so it would erroneously execute the action that spawned the reactions again if we were to let it keep running
+                #need to return here to stop the task that was handling the resolution of reactions. It no longer has any more game-reaction containers to add to the stack
+                #so it would erroneously execute the action that spawned the reactions for a second time if we let it keep running
                 return
 
         #ongoing action that data needs to be added to
@@ -202,13 +201,18 @@ class GameEngine:
             data_key = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
             self.game_action_container_stack[-1].required_data_for_action[data_key] = data[data_key]
 
-        #figure out if we need to have the client make another decision, or if we're ready to execute the action.
+        #figure out if we need to have the client make another decision or if we're ready to execute the action.
         #execute it if we're ready. If it was a reaction, we need to remove that tile from the reactions to resolve and reset the tier to react with in case there are more
 
         next_piece_of_data_to_fill = self.game_action_container_stack[-1].get_next_piece_of_data_to_fill()
         if not next_piece_of_data_to_fill:
             action_to_execute = self.game_action_container_stack[-1]
-            await self.execute_game_action(action_to_execute)
+            if not await self.execute_game_action(action_to_execute):
+                #the action failed for some reason. We just treat it like a reset, we pop it off and resend the available actions based on the container below it
+                await self.send_clients_log_message(f"Action failed, resetting")
+                self.game_action_container_stack.pop()
+                await self.get_and_send_available_actions()
+                return
             if action_to_execute.is_a_reaction:
                 #the reaction just got popped and executed, the container that was under it should be the reactions to resolve container
                 reactions_to_resolve_container = self.game_action_container_stack[-1]
@@ -229,7 +233,6 @@ class GameEngine:
             case 'use_a_tier':
                 tile = self.game_state["tiles"][game_action_container.required_data_for_action["index_of_tile_in_use"]]
                 tier_index = game_action_container.required_data_for_action["index_of_tier_in_use"]
-                # if use tile returns false, the action failed, so don't update the rest of the game state
                 if not await tile.use_a_tier(self.game_state, tier_index, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state):
                     return False
             case 'pass':

@@ -13,7 +13,7 @@ class Forge(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": False,
-                    "description": "After one of your disciples is ^^burned^^ on a tile, if you're still present there, +1 power",
+                    "description": "After one of your disciples is ^^burned^^ on a tile, if you still have at least 2 influence there, +1 power",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_cooldown": False,
@@ -40,13 +40,16 @@ class Forge(Tile):
         tile_burned_at = game_state['tiles'][index_of_tile_burned_at]
         color = data.get('color')
         disciple = data.get('disciple')
-        first_player = game_state['first_player']
-        second_player = game_utilities.get_other_player_color(first_player)
         self.determine_influence()        
         ruler = self.determine_ruler(game_state)
-        for player in [first_player, second_player]:
-            player_influence = self.influence_per_player[player]
-            if player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and game_utilities.has_presence(tile_burned_at, player) and color == player:
-                power_gained = 2 if player == ruler else 2
-                game_state["power"][player] += power_gained
-                await send_clients_log_message(f"{player} gains {power_gained} power from {self.name} due to their {disciple} being burned on {tile_burned_at.name}")
+        player_influence = self.influence_per_player[color]
+
+        if player_influence >= self.influence_tiers[1]['influence_to_reach_tier'] and ruler == color and tile_burned_at.infuence_per_player[color] >= 2:
+            power_gained = 2
+            game_state["power"][color] += power_gained
+            await send_clients_log_message(f"{color} gains {power_gained} power from {self.name} due to their {disciple} being burned on {tile_burned_at.name}")
+
+        elif player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and tile_burned_at.infuence_per_player[color] >= 2:
+            power_gained = 1
+            game_state["power"][color] += power_gained
+            await send_clients_log_message(f"{color} gains {power_gained} power from {self.name} due to their {disciple} being burned on {tile_burned_at.name}")

@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Chicken(Tile):
+class CircleOfTheCricket(Tile):
     def __init__(self):
         super().__init__(
-            name="Chicken",
+            name="Circle of the Cricket",
             type="Power-Creator/Giver",
             number_of_slots=5,
             minimum_influence_to_rule=2,

@@ -8,13 +8,13 @@ class Jester(Tile):
             name="Jester",
             type="Scorer",
             minimum_influence_to_rule=1,
-            description = f"At the __end of a round__, per unique type of pair you have here, +5 points",
+            description = f"At the __end of a round__, per unique type of pair you have here, +3 points",
             number_of_slots=9,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 1,
                     "must_be_ruler": True,                    
-                    "description": "At the __end of the game__, -10 points",
+                    "description": "At the __end of the game__, -7 points",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_a_cooldown": False,                     
@@ -29,7 +29,7 @@ class Jester(Tile):
         for color in ['red', 'blue']:
             disciples = [slot["disciple"] for slot in self.slots_for_disciples if slot and slot["color"] == color]
             max_pairs = game_utilities.find_max_unique_pairs(disciples, set())
-            points_earned = max_pairs * 5
+            points_earned = max_pairs * 3
             game_state["points"][color] += points_earned
             if points_earned > 0:
                 await send_clients_log_message(f"{color} player earned {points_earned} points from unique pairs on {self.name}")
@@ -37,5 +37,5 @@ class Jester(Tile):
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler is not None:
-            await send_clients_log_message(f"{ruler} rules {self.name}, -10 points")
-            game_state["points"][ruler] -= 10
+            await send_clients_log_message(f"{ruler} rules {self.name}, -7 points")
+            game_state["points"][ruler] -= 7
