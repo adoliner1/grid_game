@@ -24,7 +24,7 @@ class Ember(Tile):
         burned_disciple = data.get('disciple')
         burned_color = data.get('color')
 
-        await send_clients_log_message(f"{self.name} triggers")
+        await send_clients_log_message(f"**{self.name}** triggers")
         await game_utilities.player_receives_a_disciple_on_tile(
             game_state, 
             game_action_container_stack, 
@@ -47,6 +47,6 @@ class Ember(Tile):
                 winner = "blue"
 
             game_state["points"][winner] += 6
-            await send_clients_log_message(f"Red had {red_count} disciples on ember, blue had {blue_count}. {winner} gains 6 points. {self.name} is emptied")
+            await send_clients_log_message(f"Red had {red_count} disciples on ember, blue had {blue_count}. {winner} gains 6 points. **{self.name}** is emptied")
 
             self.slots_for_disciples = [None] * self.number_of_slots

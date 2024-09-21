@@ -37,10 +37,10 @@ class SolarArray(Tile):
         game_action_container = game_action_container_stack[-1]
         ruler = self.determine_ruler(game_state)
         if ruler != game_action_container.whose_action:
-            await send_clients_log_message(f"{game_action_container.whose_action} is not the ruler of {self.name} and cannot use it")
+            await send_clients_log_message(f"{game_action_container.whose_action} is not the ruler of **{self.name}** and cannot use it")
             return False
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
+            await send_clients_log_message(f"Tier {tier_index} of **{self.name}** is on cooldown")
             return False
         solar_array_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         disciples_burned = 0
@@ -52,7 +52,7 @@ class SolarArray(Tile):
                     solar_array_index, i
                 )
                 disciples_burned += 1
-        await send_clients_log_message(f"{ruler} burned {disciples_burned} disciples on {self.name}")
+        await send_clients_log_message(f"{ruler} burned {disciples_burned} disciples on **{self.name}**")
         peak_influence = game_state["peak_influence"][ruler]
         points_gained = 0
         if disciples_burned >= 2:
@@ -64,6 +64,6 @@ class SolarArray(Tile):
                 points_gained = 3
         if points_gained > 0:
             game_state["points"][ruler] += points_gained
-            await send_clients_log_message(f"{ruler} gains {points_gained} points from {self.name}")
+            await send_clients_log_message(f"{ruler} gains {points_gained} points from **{self.name}**")
         self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

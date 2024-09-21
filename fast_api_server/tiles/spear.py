@@ -62,15 +62,15 @@ class Spear(Tile):
         ruler = self.determine_ruler(game_state)
 
         if user_influence < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of {self.name}")
+            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of **{self.name}**")
             return False
 
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
+            await send_clients_log_message(f"Tier {tier_index} of **{self.name}** is on cooldown")
             return False
 
         if user != ruler:
-            await send_clients_log_message(f"Only the ruler can use tier {tier_index} of {self.name}")
+            await send_clients_log_message(f"Only the ruler can use tier {tier_index} of **{self.name}**")
             return False
 
         index_of_spear = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -79,22 +79,22 @@ class Spear(Tile):
         index_of_tile_to_burn_disciple_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple_at']['tile_index']
 
         if not game_utilities.has_presence(game_state["tiles"][index_of_tile_to_burn_disciple_at], user):
-            await send_clients_log_message(f"Tried to use {self.name} but chose a tile where they're not present")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a tile where they're not present")
             return False
 
         if self.slots_for_disciples[slot_index_to_burn_disciple_from_here] is None:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no disciple to burn at {self.name}")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to burn at **{self.name}**")
             return False
 
         if game_state["tiles"][index_of_tile_to_burn_disciple_at].slots_for_disciples[slot_index_to_burn_disciple_at] is None:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no disciple to burn at {game_state['tiles'][index_of_tile_to_burn_disciple_at].name}")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to burn at {game_state['tiles'][index_of_tile_to_burn_disciple_at].name}")
             return False
 
         if self.slots_for_disciples[slot_index_to_burn_disciple_from_here]["color"] != user:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a disciple that didn't belong to them")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a disciple that didn't belong to them")
             return False
 
-        await send_clients_log_message(f"Using tier {tier_index} of {self.name}")
+        await send_clients_log_message(f"Using tier {tier_index} of **{self.name}**")
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_spear, slot_index_to_burn_disciple_from_here)
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_disciple_at, slot_index_to_burn_disciple_at)
 

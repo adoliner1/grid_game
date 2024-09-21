@@ -19,7 +19,7 @@ class Boron(Tile):
         first_player = game_state["first_player"]
         second_player = game_utilities.get_other_player_color(first_player)
 
-        await send_clients_log_message(f"Running end of round effect for {self.name}")
+        await send_clients_log_message(f"Running end of round effect for **{self.name}**")
         for player in [first_player, second_player]:
             acolyte_count = sum(1 for slot in self.slots_for_disciples if slot and slot["color"] == player and slot["disciple"] == "acolyte")
             for _ in range(acolyte_count):

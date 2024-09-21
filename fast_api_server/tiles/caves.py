@@ -73,4 +73,4 @@ class Caves(Tile):
                 recruiter, tile_recruited_at, 'follower'
             )
         
-        await send_clients_log_message(f"{recruiter} receives a {recruiter}_follower at {tile_recruited_at.name} from {self.name}")
+        await send_clients_log_message(f"{recruiter} receives a {recruiter}_follower at {tile_recruited_at.name} from **{self.name}**")

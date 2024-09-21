@@ -43,5 +43,5 @@ class Algebra(Tile):
                 power_to_gain += 1
             
             if power_to_gain > 0:
-                await send_clients_log_message(f'{self.name} gives {power_to_gain} to {player}')  
+                await send_clients_log_message(f'**{self.name}** gives {power_to_gain} to {player}')  
                 game_state['power'][player] += power_to_gain

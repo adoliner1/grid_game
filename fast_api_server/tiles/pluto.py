@@ -59,15 +59,15 @@ class Pluto(Tile):
         ruler = self.determine_ruler(game_state)
 
         if self.influence_tiers[tier_index]['is_on_cooldown']:
-            await send_clients_log_message(f"{self.name} tier {tier_index} is on cooldown")
+            await send_clients_log_message(f"**{self.name}** tier {tier_index} is on cooldown")
             return False
 
         if self.influence_per_player[user] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
-            await send_clients_log_message(f"Not enough influence on {self.name} to use tier {tier_index}")
+            await send_clients_log_message(f"Not enough influence on **{self.name}** to use tier {tier_index}")
             return False
 
         if tier_index == 1 and user != ruler:
-            await send_clients_log_message(f"You must be the ruler to use {tier_index} of {self.name}")
+            await send_clients_log_message(f"You must be the ruler to use {tier_index} of **{self.name}**")
             return False
 
         index_of_pluto = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -77,17 +77,17 @@ class Pluto(Tile):
 
         followers_required = 1 if tier_index == 0 else 2
         if len(followers_to_burn) < followers_required:
-            await send_clients_log_message(f"Not enough followers to burn on {self.name}")
+            await send_clients_log_message(f"Not enough followers to burn on **{self.name}**")
             return False
 
-        await send_clients_log_message(f"Using {self.name} tier {tier_index}")
+        await send_clients_log_message(f"Using **{self.name}** tier {tier_index}")
 
         for i in followers_to_burn[:followers_required]:
             await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_pluto, i)
 
         power_gained = 3 if tier_index == 0 else 8
         game_state['power'][user] += power_gained
-        await send_clients_log_message(f"{user} gains {power_gained} power from {self.name}")
+        await send_clients_log_message(f"{user} gains {power_gained} power from **{self.name}**")
 
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True

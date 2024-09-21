@@ -50,15 +50,15 @@ class Sword(Tile):
         ruler = self.determine_ruler(game_state)
         
         if user != ruler:
-            await send_clients_log_message(f"Only the ruler can use {self.name}")
+            await send_clients_log_message(f"Only the ruler can use **{self.name}**")
             return False            
 
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"{self.name} is on cooldown")
+            await send_clients_log_message(f"**{self.name}** is on cooldown")
             return False
         
         if game_state['power'][user] < 1:
-            await send_clients_log_message(f"Not enough power to use {self.name}")
+            await send_clients_log_message(f"Not enough power to use **{self.name}**")
             return False
 
         index_of_sword = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -66,14 +66,14 @@ class Sword(Tile):
         index_of_tile_to_burn_disciple_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple_at']['tile_index']
 
         if not game_utilities.determine_if_directly_adjacent(index_of_sword, index_of_tile_to_burn_disciple_at):
-            await send_clients_log_message(f"Tried to use {self.name} but chose a non-adjacent tile")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a non-adjacent tile")
             return False
         
         if game_state["tiles"][index_of_tile_to_burn_disciple_at].slots_for_disciples[slot_index_to_burn_disciple_at] is None:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no disciple to burn at {game_state['tiles'][index_of_tile_to_burn_disciple_at].name}")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to burn at {game_state['tiles'][index_of_tile_to_burn_disciple_at].name}")
             return False
         
-        await send_clients_log_message(f"{user} uses {self.name} and loses one power")
+        await send_clients_log_message(f"{user} uses **{self.name}** and loses one power")
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_disciple_at, slot_index_to_burn_disciple_at)
 
         self.influence_tiers[tier_index]["is_on_cooldown"] = True

@@ -32,10 +32,10 @@ class Combinatorics(Tile):
             
             #if it's 3, they have all 3 possible pairs
             if power_gained == 3:
-                await send_clients_log_message(f"{color} has all three possible pairs at {self.name}")
+                await send_clients_log_message(f"{color} has all three possible pairs at **{self.name}**")
                 #4 power per pair instead
                 power_gained = 12
 
             if power_gained > 0:
                 game_state["power"][color] += power_gained
-                await send_clients_log_message(f"{color} gains {power_gained} power from {self.name}")
+                await send_clients_log_message(f"{color} gains {power_gained} power from **{self.name}**")

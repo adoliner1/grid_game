@@ -54,16 +54,16 @@ class Maestro(Tile):
         
         if tier_index == 0:
             if self.influence_per_player[game_action_container.whose_action] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
-                await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, not enough influence")
+                await send_clients_log_message(f"Cannot react with tier {tier_index} of **{self.name}**, not enough influence")
                 return False
             
             if self.influence_tiers[tier_index]['is_on_cooldown']:
-                await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, it's on cooldown")
+                await send_clients_log_message(f"Cannot react with tier {tier_index} of **{self.name}**, it's on cooldown")
                 return False
             
         elif tier_index == 1:
             if game_action_container.whose_action != ruler:
-                await send_clients_log_message(f"Cannot react with tier {tier_index} of {self.name}, not the ruler")
+                await send_clients_log_message(f"Cannot react with tier {tier_index} of **{self.name}**, not the ruler")
                 return False    
 
         slot_index_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['slot_index']
@@ -72,18 +72,18 @@ class Maestro(Tile):
         tile_index_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['tile_index']
 
         if not game_utilities.determine_if_directly_adjacent(tile_index_from, tile_index_to):
-            await send_clients_log_message(f"Tried to react with {self.name} but destination tile isn't adjacent to the tile where the disciple was received")
+            await send_clients_log_message(f"Tried to react with **{self.name}** but destination tile isn't adjacent to the tile where the disciple was received")
             return False
 
         if game_state["tiles"][tile_index_from].slots_for_disciples[slot_index_from] is None:
-            await send_clients_log_message(f"Tried to react with {self.name} but there is no disciple to move")
+            await send_clients_log_message(f"Tried to react with **{self.name}** but there is no disciple to move")
             return False
 
         if game_state["tiles"][tile_index_to].slots_for_disciples[slot_index_to] is not None:
-            await send_clients_log_message(f"Tried to react with {self.name} but chose a non-empty slot to move to")
+            await send_clients_log_message(f"Tried to react with **{self.name}** but chose a non-empty slot to move to")
             return False
 
-        await send_clients_log_message(f"Reacting with tier {tier_index} of {self.name}")
+        await send_clients_log_message(f"Reacting with tier {tier_index} of **{self.name}**")
         await game_utilities.move_disciple_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index_from, slot_index_from, tile_index_to, slot_index_to)
         
         if tier_index == 0:
@@ -97,7 +97,7 @@ class Maestro(Tile):
         receiver = game_action_container_stack[-1].data_from_event['receiver']
         index_of_slot_received_at = game_action_container_stack[-1].data_from_event['index_of_slot_received_at']
         index_of_tile_received_at = game_action_container_stack[-1].data_from_event['index_of_tile_received_at']
-        await send_clients_log_message(f"{receiver} may react with {self.name}")
+        await send_clients_log_message(f"{receiver} may react with **{self.name}**")
 
         new_container = game_action_container.GameActionContainer(
             event=asyncio.Event(),

@@ -10,7 +10,7 @@ async def recruit_disciple_on_tile(game_state, game_action_container_stack, send
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    await send_clients_log_message(f"{color} recruited a {color}_{disciple} at {tile_to_recruit_on.name}")
+    await send_clients_log_message(f"{color} recruited a {color}_{disciple} at **{tile_to_recruit_on.name}**")
     if old_disciple:
         await send_clients_log_message(f"this replaced a {old_disciple['color']}_{old_disciple['disciple']}")
     await call_listener_functions_for_event_type(game_state,
@@ -30,17 +30,17 @@ async def place_leader_on_tile(game_state, game_action_container_stack, send_cli
     update_presence(game_state)
     determine_rulers(game_state)
     await send_clients_game_state(game_state)
-    await send_clients_log_message(f"{color}_leader starts on {game_state['tiles'][tile_index].name}")
+    await send_clients_log_message(f"{color}_leader starts on **{game_state['tiles'][tile_index].name}**")
 
 async def player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, tile, disciple_type):
     if None not in tile.slots_for_disciples:
-        await send_clients_log_message(f"{player_color} cannot receive a {disciple_type} on {tile.name}, no empty slots")
+        await send_clients_log_message(f"{player_color} cannot receive a {disciple_type} on **{tile.name}**, no empty slots")
         return
     
     tile_index = find_index_of_tile_by_name(game_state, tile.name)
     next_empty_slot = tile.slots_for_disciples.index(None)
     tile.slots_for_disciples[next_empty_slot] = {"disciple": disciple_type, "color": player_color}
-    await send_clients_log_message(f"{player_color} receives a {player_color}_{disciple_type} on {tile.name}")
+    await send_clients_log_message(f"{player_color} receives a {player_color}_{disciple_type} on **{tile.name}**")
     determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
@@ -60,7 +60,7 @@ async def move_disciple_between_tiles(game_state, game_action_container_stack, s
     game_state["tiles"][from_tile_index].slots_for_disciples[from_slot_index] = None
     game_state["tiles"][to_tile_index].slots_for_disciples[to_slot_index] = disciple_to_move
 
-    await send_clients_log_message(f"moved a {disciple_to_move['color']}_{disciple_to_move['disciple']} from {game_state['tiles'][from_tile_index].name} to {game_state['tiles'][to_tile_index].name}")
+    await send_clients_log_message(f"moved a {disciple_to_move['color']}_{disciple_to_move['disciple']} from **{game_state['tiles'][from_tile_index].name}** to **{game_state['tiles'][to_tile_index].name}**")
     determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)
@@ -74,7 +74,7 @@ async def burn_disciple_at_tile_at_index(game_state, game_action_container_stack
     disciple = tile.slots_for_disciples[slot_index]["disciple"]
     color = tile.slots_for_disciples[slot_index]["color"]
     tile.slots_for_disciples[slot_index] = None
-    await send_clients_log_message(f"burning a {color}_{disciple} at {tile.name}")
+    await send_clients_log_message(f"burning a {color}_{disciple} at **{tile.name}**")
     determine_influence_levels(game_state)
     update_presence(game_state)
     determine_rulers(game_state)

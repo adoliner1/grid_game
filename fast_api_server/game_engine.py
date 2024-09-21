@@ -30,18 +30,23 @@ class GameEngine:
         self.send_available_actions = send_clients_available_actions
 
     async def start_game(self):
-        await self.start_round()
         await self.perform_initial_placements()
+        await self.start_round()
         await self.run_game_loop()
 
     async def perform_initial_placements(self):
-        await self.send_clients_log_message(f"players must make their initial placements")  
+        await self.send_clients_log_message(f"Starting a new game. Players must make their initial follower recruitments and then place their leaders")  
         await self.send_clients_game_state(self.game_state)
+
+        #set up listeners outside of start round here here in case an initial recruitment triggers one
+        for _ , listener_function in self.game_state["listeners"]["start_of_round"].values():
+            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
+
         for number_of_initial_followers_placed in range(game_constants.number_of_initial_followers_to_place):
             player = 'red' if number_of_initial_followers_placed % 2 == 0 else 'blue'
             self.game_state['whose_turn_is_it'] = player
             await self.send_clients_game_state(self.game_state)
-            await self.send_clients_log_message(f"{player} must recruit a {player}_follower anywhere")            
+            await self.send_clients_log_message(f"{player} must recruit a {player}_follower (they can choose any tile because it's the start of the game)")            
             action = game_action_container.GameActionContainer(
                 event=asyncio.Event(),
                 game_action="initial_follower_placement",
@@ -275,7 +280,7 @@ class GameEngine:
 
         self.game_state['power'][mover] -= 1
 
-        await self.send_clients_log_message(f"{mover} leader moves from {tile_of_players_leader.name} to {tile_to_move_to.name}")
+        await self.send_clients_log_message(f"{mover} leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_to.name}**")
         tile_of_players_leader.leaders_here[mover] = False
         tile_to_move_to.leaders_here[mover] = True
         return True
@@ -337,7 +342,7 @@ class GameEngine:
 
         self.game_state['power'][color_of_player_exiling] -= self.game_state['costs_to_exile'][color_of_player_exiling][slot_to_exile_from['disciple']]
         tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from] = None
-        await self.send_clients_log_message(f"{color_of_player_exiling} exiled a {exiled_color}_{exiled_disciple} from {tile_to_exile_from.name} for {self.game_state['costs_to_exile'][color_of_player_exiling][exiled_disciple]} power")
+        await self.send_clients_log_message(f"{color_of_player_exiling} exiled a {exiled_color}_{exiled_disciple} from **{tile_to_exile_from.name}** for {self.game_state['costs_to_exile'][color_of_player_exiling][exiled_disciple]} power")
         return True
     def create_new_game_action_container_from_initial_decision(self, data):
         match data['client_action']:
@@ -513,7 +518,7 @@ class GameEngine:
         
         #base power-income
         if round == 0:
-            await self.send_clients_log_message(f"Blue gets 1 extra power for being second player")
+            await self.send_clients_log_message(f"Blue gets 1 extra power for the first round for being second player")
             self.game_state['power']['blue'] += 1          
         
         game_utilities.determine_rulers(self.game_state)

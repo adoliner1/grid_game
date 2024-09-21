@@ -33,13 +33,13 @@ class Duke(Tile):
             if disciple_counts['red'][disciple] > disciple_counts['blue'][disciple]:
                 game_state['points']['red'] += 3
                 disciples_dominated['red'] += 1
-                await send_clients_log_message(f"Red has more {disciple}s on {self.name}, +3 points")
+                await send_clients_log_message(f"Red has more {disciple}s on **{self.name}**, +3 points")
             elif disciple_counts['blue'][disciple] > disciple_counts['red'][disciple]:
                 game_state['points']['blue'] += 3
                 disciples_dominated['blue'] += 1
-                await send_clients_log_message(f"Blue has more {disciple}s on {self.name}, +3 points")
+                await send_clients_log_message(f"Blue has more {disciple}s on **{self.name}**, +3 points")
 
         for color in ['red', 'blue']:
             if disciples_dominated[color] == len(game_constants.disciples):
                 game_state['points'][color] += 5
-                await send_clients_log_message(f"{color} has more of all disciple types on {self.name}, +5 points")
+                await send_clients_log_message(f"{color} has more of all disciple types on **{self.name}**, +5 points")

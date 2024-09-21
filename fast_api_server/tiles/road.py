@@ -79,11 +79,11 @@ class Road(Tile):
         user_influence = self.influence_per_player[user]
 
         if user_influence < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of {self.name}")
+            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of **{self.name}**")
             return False
 
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
+            await send_clients_log_message(f"Tier {tier_index} of **{self.name}** is on cooldown")
             return False
 
         index_of_road = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -93,18 +93,18 @@ class Road(Tile):
         tile_index_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['tile_index']
 
         if tier_index == 0 and not game_utilities.determine_if_directly_adjacent(index_of_road, tile_index_from):
-            await send_clients_log_message(f"Tried to use {self.name} but chose a non-adjacent tile")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a non-adjacent tile")
             return False
 
         if game_state["tiles"][tile_index_from].slots_for_disciples[slot_index_from] is None:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no disciple to move from {game_state['tiles'][tile_index_from].name}")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to move from {game_state['tiles'][tile_index_from].name}")
             return False
 
         if game_state["tiles"][tile_index_to].slots_for_disciples[slot_index_to] is not None:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a slot that is not empty to move to at {game_state['tiles'][tile_index_to].name}")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot that is not empty to move to at {game_state['tiles'][tile_index_to].name}")
             return False
 
-        await send_clients_log_message(f"Using tier {tier_index} of {self.name}")
+        await send_clients_log_message(f"Using tier {tier_index} of **{self.name}**")
         await game_utilities.move_disciple_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index_from, slot_index_from, tile_index_to, slot_index_to)
         
         self.influence_tiers[tier_index]["is_on_cooldown"] = True 

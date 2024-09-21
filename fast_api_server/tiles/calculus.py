@@ -27,5 +27,5 @@ class Calculus(Tile):
         self.determine_influence()
         ruler = self.determine_ruler(game_state)
         if ruler: 
-            await send_clients_log_message(f'{self.name} gives 3 power to {ruler}')  
+            await send_clients_log_message(f'**{self.name}** gives 3 power to {ruler}')  
             game_state['power'][ruler] += 3

@@ -2,7 +2,7 @@
 .player-info {
     border: 2px solid;
     border-radius: 5px;
-    padding: 2px;
+    padding: 0px;
     margin-bottom: 5px;
     display: flex;
     flex-direction: column;
@@ -30,7 +30,7 @@
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    padding: 2px;
+    padding: 0px;
     flex-direction: row;
     width: 100%;
     border-bottom: 2px dotted grey;
@@ -54,6 +54,7 @@
 }
 .cost-grid {
     width: 100%;
+    padding: 0px;
 }
 .cost-row {
     display: flex;
@@ -65,7 +66,6 @@
     justify-content: center;
     align-items: center;
     flex: 1;
-    min-width: 40px; /* Ensure minimum width for cost cells */
 }
 
 .cost-cell svg {

@@ -46,4 +46,4 @@ class Prince(Tile):
             game_state["points"][color] += total_points
             
             if total_points > 0:
-                await send_clients_log_message(f"{color} player earned {total_points} points ({base_points} base + {additional_points} additional) from {pairs} pairs of disciples on {self.name}")
+                await send_clients_log_message(f"{color} player earned {total_points} points ({base_points} base + {additional_points} additional) from {pairs} pairs of disciples on **{self.name}**")

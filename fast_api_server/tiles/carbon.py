@@ -55,10 +55,10 @@ class Carbon(Tile):
         follower_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "follower" and slot["color"] == player)
         
         if follower_count < 3:
-            await send_clients_log_message(f"Not enough followers to burn on {self.name}")
+            await send_clients_log_message(f"Not enough followers to burn on **{self.name}**")
             return False
         
-        await send_clients_log_message(f"{self.name} is used")
+        await send_clients_log_message(f"**{self.name}** is used")
         followers_burned = 0
         for index, slot in enumerate(self.slots_for_disciples):
             if slot and slot["disciple"] == "follower" and slot["color"] == player:
@@ -68,7 +68,7 @@ class Carbon(Tile):
                     break
 
         if followers_burned < 3:
-            await send_clients_log_message(f"Not enough followers were burned on {self.name}")
+            await send_clients_log_message(f"Not enough followers were burned on **{self.name}**")
             return False
         
         await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player, self, 'sage')

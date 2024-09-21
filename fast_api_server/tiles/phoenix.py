@@ -58,18 +58,18 @@ class Phoenix(Tile):
         ruler = self.determine_ruler(game_state)
         
         if self.influence_tiers[tier_index]['is_on_cooldown']:
-            await send_clients_log_message(f"Tier {tier_index} at {self.name} is on cooldown")
+            await send_clients_log_message(f"Tier {tier_index} at **{self.name}** is on cooldown")
             return False
 
         player_influence = self.influence_per_player[player]
         required_influence = self.influence_tiers[tier_index]['influence_to_reach_tier']
 
         if player_influence < required_influence:
-            await send_clients_log_message(f"{player} does not have enough influence to use tier {tier_index} of {self.name}")
+            await send_clients_log_message(f"{player} does not have enough influence to use tier {tier_index} of **{self.name}**")
             return False
 
         if tier_index == 2 and player != ruler:
-            await send_clients_log_message(f"Only the ruler can use tier 2 of {self.name}")
+            await send_clients_log_message(f"Only the ruler can use tier 2 of **{self.name}**")
             return False
 
         index_of_tile_burned_at = game_action_container.required_data_for_action['index_of_tile_burned_at']    
@@ -91,14 +91,14 @@ class Phoenix(Tile):
             disciple_to_receive
         )
 
-        await send_clients_log_message(f"{player} used tier {tier_index} of {self.name} to receive a {disciple_to_receive} at {game_state['tiles'][index_of_tile_burned_at].name}")
+        await send_clients_log_message(f"{player} used tier {tier_index} of **{self.name}** to receive a {disciple_to_receive} at {game_state['tiles'][index_of_tile_burned_at].name}")
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True
             
     async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tier_index):
         color_burned = game_action_container_stack[-1].data_from_event['color']
         index_of_tile_burned_at = game_action_container_stack[-1].data_from_event['index_of_tile_burned_at']
-        await send_clients_log_message(f"{color_burned} may react with {self.name}")
+        await send_clients_log_message(f"{color_burned} may react with **{self.name}**")
 
         new_container = game_action_container.GameActionContainer(
             event=asyncio.Event(),

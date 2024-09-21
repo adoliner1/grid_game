@@ -129,62 +129,66 @@ const Tile = ({
               });
             default:
               return part
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
-                .replace(/__(.*?)__/g, '<i>$1</i>')  // Italic
-                .replace(/\^\^(.*?)\^\^/g, '<span style="color: #ff8700;">$1</span>')  // Burn (orange)
-                .replace(/\[\[(.*?)\]\]/g, '<span style="color: #9f00ff;">$1</span>')  // Receive (purple)
-                .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a;">$1</span>')  // Place (blue)
-                .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000;">$1</span>')  // Produce (green)
-                .replace(/\b(action|reaction)\b/gi, '<u>$1</u>')  // Underline action and reaction
-                .replace(/\n/g, '<br>')  // New line
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/__(.*?)__/g, '<i>$1</i>')
+                .replace(/\^\^(.*?)\^\^/g, '<span style="color: #ff8700;">$1</span>')
+                .replace(/\[\[(.*?)\]\]/g, '<span style="color: #9f00ff;">$1</span>')
+                .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a;">$1</span>')
+                .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000;">$1</span>')
+                .replace(/\b(action|reaction)\b/gi, '<u>$1</u>')
+                .replace(/\n/g, '<br>')
           }
         });
-      }
+    }
 
     return (
-        <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'} ${is_on_cooldown ? 'tile-on-cooldown' : ''}`} onClick={tileClickHandler}>
-            <div className="tile-header">
-                <div className={`ruler-crown-in-header ${ruler ? `ruler-crown-${ruler}` : ''}`}>
-                    {crownIcon}
-                    {minimum_influence_to_rule}
+        <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'}`} onClick={tileClickHandler}>
+            <div className="tile-content">
+                <div className="tile-header">
+                    <div className={`ruler-crown-in-header ${ruler ? `ruler-crown-${ruler}` : ''}`}>
+                        {crownIcon}
+                        {minimum_influence_to_rule}
+                    </div>
+                    <div className='red-leader-here'>{leaders_here.red && leader_icon('red')} </div>
+                    <h3 className='tile-name'>{name}</h3>
+                    <div className='blue-leader-here'>{leaders_here.blue && leader_icon('blue')} </div>
+                    <span className="tile-type">{type}</span>
                 </div>
-                <div className='red-leader-here'>{leaders_here.red && leader_icon('red')} </div>
-                <h3 className='tile-name'>{name}</h3>
-                <div className='blue-leader-here'>{leaders_here.blue && leader_icon('blue')} </div>
-                <span className="tile-type">{type}</span>
+                {description && (
+                    <div className="tile-description">
+                        {parseCustomMarkup(description).map((part, index) =>
+                            typeof part === 'string' ?
+                                <span key={`text-${index}`} dangerouslySetInnerHTML={{ __html: part }} /> :
+                                React.cloneElement(part, { key: `icon-${index}` })
+                        )}
+                    </div>
+                )}
+                <div className="influence-tiers">
+                    {influence_tiers.map((tier, tier_index) => (
+                        <InfluenceTier
+                            key={tier_index}
+                            tier={tier}
+                            tile_index={tile_index}
+                            isSelectable={isSelectableTier(tier_index)}
+                            onTierClick={() => onInfluenceTierClick(tier_index)}
+                            redAtThisLevel={tier.must_be_ruler ? ruler === 'red' && red_influence >= tier.influence_to_reach_tier : red_influence >= tier.influence_to_reach_tier}
+                            blueAtThisLevel={tier.must_be_ruler ? ruler === 'blue' && blue_influence >= tier.influence_to_reach_tier : blue_influence >= tier.influence_to_reach_tier}
+                        />
+                    ))}
+                </div>
             </div>
-            {description && (
-                <div className="tile-description">
-                    {parseCustomMarkup(description).map((part, index) =>
-                        typeof part === 'string' ?
-                            <span key={`text-${index}`} dangerouslySetInnerHTML={{ __html: part }} /> :
-                            React.cloneElement(part, { key: `icon-${index}` })
-                    )}
+            <div className="tile-bottom">
+                <div className="influence-per-player">
+                    <p className='red-influence'>{influenceIcon('red')} {red_influence}</p>
+                    <p className='blue-influence'>{influenceIcon('blue')} {blue_influence}</p>
                 </div>
-            )}
-            <div className="influence-tiers">
-                {influence_tiers.map((tier, tier_index) => (
-                    <InfluenceTier
-                        key={tier_index}
-                        tier={tier}
+                    <DisciplesOnTile 
+                        slots_for_disciples={slots_for_disciples} 
                         tile_index={tile_index}
-                        isSelectable={isSelectableTier(tier_index)}
-                        onTierClick={() => onInfluenceTierClick(tier_index)}
-                        redAtThisLevel={tier.must_be_ruler ? ruler === 'red' && red_influence >= tier.influence_to_reach_tier : red_influence >= tier.influence_to_reach_tier}
-                        blueAtThisLevel={tier.must_be_ruler ? ruler === 'blue' && blue_influence >= tier.influence_to_reach_tier : blue_influence >= tier.influence_to_reach_tier}
+                        available_actions={available_actions}
+                        onSlotClick={onSlotClick}
                     />
-                ))}
             </div>
-            <div className="influence-per-player">
-                <p className='red-influence'>{influenceIcon('red')} {red_influence}</p>
-                <p className='blue-influence'>{influenceIcon('blue')} {blue_influence}</p>
-            </div>
-            <DisciplesOnTile 
-                slots_for_disciples={slots_for_disciples} 
-                tile_index={tile_index}
-                available_actions={available_actions}
-                onSlotClick={onSlotClick}
-            />
         </div>
     )
 }

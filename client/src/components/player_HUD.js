@@ -15,9 +15,7 @@ const ArrowIcon = ({ rotation }) => (
 const CostGrid = ({ costs_to_recruit, costs_to_exile, player_color, available_actions, clients_color, onDiscipleClick, recruiting_range, exiling_range }) => {
   const disciple_types = ['follower', 'acolyte', 'sage'];
   const DiscipleComponents = { follower: Follower, acolyte: Acolyte, sage: Sage };
-  const influenceIcon = createIcon({ type: 'influence', tooltipText: 'Influence per Disciple', width: 18, height: 18 });
   const rangeIcon = createIcon({ type: 'range', tooltipText: 'Range', width: 18, height: 18 });
-  const discipleInfluence = { follower: 1, acolyte: 2, sage: 3 };
 
   const isSelectable = (disciple_type) => {
     return (
@@ -40,12 +38,12 @@ const CostGrid = ({ costs_to_recruit, costs_to_exile, player_color, available_ac
 
   return (
     <div className="cost-grid">
-      <div className="cost-row disciples-row">
-        <div className="cost-cell"> {influenceIcon} </div>
+      <div className="cost-row">
+        <div className="cost-cell"> </div>
         <div className="cost-cell"> {rangeIcon} </div>
         {disciple_types.map(disciple => (
           <div key={`disciple-${disciple}`} className="cost-cell">
-            {renderDiscipleComponent(disciple)}  : <b> {discipleInfluence[disciple]} </b>
+            {renderDiscipleComponent(disciple)}
           </div>
         ))}
       </div>
@@ -141,4 +139,4 @@ const PlayerHUD = ({
   )
 }
 
-export default PlayerHUD;
+export default PlayerHUD 

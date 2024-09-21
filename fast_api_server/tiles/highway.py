@@ -87,15 +87,15 @@ class Highway(Tile):
         users_power = game_state['power'][user]
         
         if self.influence_tiers[tier_index]['is_on_cooldown']:
-            await send_clients_log_message(f"Tried to use {self.name} but it's on cooldown")
+            await send_clients_log_message(f"Tried to use **{self.name}** but it's on cooldown")
             return False
         
         if self.influence_per_player[user] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
-            await send_clients_log_message(f"Not enough influence on {self.name} to use")
+            await send_clients_log_message(f"Not enough influence on **{self.name}** to use")
             return False
         
         if users_power < 1:
-            await send_clients_log_message(f"Not enough power to use {self.name}")
+            await send_clients_log_message(f"Not enough power to use **{self.name}**")
             return False            
 
         index_of_highway = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -108,25 +108,25 @@ class Highway(Tile):
             slot_index_to_move_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['slot_index']
 
             if self.slots_for_disciples[slot_index_to_burn_disciple_from]["color"] != game_action_container.whose_action:
-                await send_clients_log_message(f"Tried to use {self.name} but chose a disciple owned by opponent to burn")
+                await send_clients_log_message(f"Tried to use **{self.name}** but chose a disciple owned by opponent to burn")
                 return False
 
         if tier_index == 1:
 
             if user != self.determine_ruler(game_state):
                 if not self.slots_for_disciples[slot_index_to_burn_disciple_from]:
-                    await send_clients_log_message(f"Tried to use {self.name} but not the ruler")
+                    await send_clients_log_message(f"Tried to use **{self.name}** but not the ruler")
                     return False
 
         if game_state["tiles"][index_of_tile_to_move_disciple_from].slots_for_disciples[slot_index_to_move_disciple_from] is None:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no disciple to move from {game_state['tiles'][index_of_tile_to_move_disciple_from].name}")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to move from {game_state['tiles'][index_of_tile_to_move_disciple_from].name}")
             return False
 
         if game_state["tiles"][index_of_tile_to_move_disciple_to].slots_for_disciples[slot_index_to_move_disciple_to] is not None:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a slot that is not empty to move to at {game_state['tiles'][index_of_tile_to_move_disciple_to].name}")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot that is not empty to move to at {game_state['tiles'][index_of_tile_to_move_disciple_to].name}")
             return False
 
-        await send_clients_log_message(f"Using tier {tier_index} of {self.name}")
+        await send_clients_log_message(f"Using tier {tier_index} of **{self.name}**")
 
         if tier_index == 0:
             await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_highway, slot_index_to_burn_disciple_from)
@@ -135,7 +135,7 @@ class Highway(Tile):
 
         disciple_moved = game_state['tiles'][index_of_tile_to_move_disciple_to].slots_for_disciples[slot_index_to_move_disciple_to]["disciple"]
         color_of_disciple_moved = game_state['tiles'][index_of_tile_to_move_disciple_to].slots_for_disciples[slot_index_to_move_disciple_to]["color"]
-        await send_clients_log_message(f"{user} used {self.name} to move a {color_of_disciple_moved}_{disciple_moved} from {game_state['tiles'][index_of_tile_to_move_disciple_from].name} to {game_state['tiles'][index_of_tile_to_move_disciple_to].name}. They paid one power")
+        await send_clients_log_message(f"{user} used **{self.name}** to move a {color_of_disciple_moved}_{disciple_moved} from {game_state['tiles'][index_of_tile_to_move_disciple_from].name} to {game_state['tiles'][index_of_tile_to_move_disciple_to].name}. They paid one power")
         game_state['power'][user] -= 1
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True

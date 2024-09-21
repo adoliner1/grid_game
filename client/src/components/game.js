@@ -4,6 +4,24 @@ import Tile from './tile';
 import GameLog from './game_log';
 import PlayerHUD from './player_HUD';
 import RoundBonusesTable from './round_bonuses_table';
+import createIcon from './icons';
+
+const DiscipleInfluenceSection = () => {
+    const disciple_types = ['follower', 'acolyte', 'sage'];
+    const discipleInfluence = { 'follower': 1, 'acolyte': 2, 'sage': 3 };
+    const influenceIcon = createIcon({ type: 'influence', tooltipText: 'Influence per Disciple', width: 18, height: 18 });
+    
+    return (
+      <div className="disciple-influence-section">
+        <div className="influence-icon">{influenceIcon}</div>
+        {disciple_types.map(disciple => (
+          <div key={`disciple-influence-${disciple}`} className="disciple-influence">
+            {createIcon({ type: disciple, tooltipText: disciple.charAt(0).toUpperCase() + disciple.slice(1), width: 18, height: 18 })} : <b>{discipleInfluence[disciple]}</b>
+          </div>
+        ))}
+      </div>
+    )
+  }
 
 const Game = () => {
     const [gameState, setGameState] = useState(null);
@@ -245,6 +263,7 @@ const Game = () => {
           <div className="info_section">
             <div className={clientColor.current === 'red' ? 'red-text' : 'blue-text'}> You are {clientColor.current} </div>
             <RoundBonusesTable gameState={gameState} />
+            <DiscipleInfluenceSection/>
             <PlayerHUD   
               player_color="red"
               whose_turn_is_it={gameState.whose_turn_is_it}

@@ -54,15 +54,15 @@ class Blackhole(Tile):
         ruler = self.determine_ruler(game_state)
 
         if self.influence_per_player[user] < self.influence_tiers[0]['influence_to_reach_tier']:
-            await send_clients_log_message(f"Not enough influence to use {self.name}")
+            await send_clients_log_message(f"Not enough influence to use **{self.name}**")
             return False
 
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"{self.name} is on cooldown")
+            await send_clients_log_message(f"**{self.name}** is on cooldown")
             return False
 
         if user != ruler:
-            await send_clients_log_message(f"Only the ruler can use {self.name}")
+            await send_clients_log_message(f"Only the ruler can use **{self.name}**")
             return False
         
         if not self.leaders_here[user]:
@@ -70,21 +70,21 @@ class Blackhole(Tile):
             return False
         
         if not game_state['power'][user] > 0:
-            await send_clients_log_message(f"Not enough power to use {self.name}")
+            await send_clients_log_message(f"Not enough power to use **{self.name}**")
             return False              
 
         tile1_index = game_action_container.required_data_for_action['tile1']
         tile2_index = game_action_container.required_data_for_action['tile2']
        
         if tile1_index is None or tile2_index is None:
-            await send_clients_log_message(f"Invalid tiles selected for using {self.name}")
+            await send_clients_log_message(f"Invalid tiles selected for using **{self.name}**")
             return False
        
         if tile1_index == tile2_index:
-            await send_clients_log_message(f"Cannot select the same tile twice for {self.name}")
+            await send_clients_log_message(f"Cannot select the same tile twice for **{self.name}**")
             return False
 
-        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}. They lose one power")
+        await send_clients_log_message(f"Used **{self.name}** to swap **{game_state['tiles'][tile1_index].name}** and **{game_state['tiles'][tile2_index].name}**. They lose a power")
         # Swap the tiles
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
         game_state['power'][user] -= 1       

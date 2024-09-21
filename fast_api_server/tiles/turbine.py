@@ -41,11 +41,11 @@ class Turbine(Tile):
         peak_influence = game_state["peak_influence"][user]
 
         if self.influence_per_player[user] < self.influence_tiers[0]["influence_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough influence to use {self.name}")
+            await send_clients_log_message(f"Not enough influence to use **{self.name}**")
             return False
 
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"{self.name} is on cooldown")
+            await send_clients_log_message(f"**{self.name}** is on cooldown")
             return False
 
         power_to_give = 0
@@ -56,10 +56,10 @@ class Turbine(Tile):
         elif peak_influence >= 6:
             power_to_give = 1
         else:
-            await send_clients_log_message(f"{user}'s peak influence is not high enough to gain any power with {self.name}")
+            await send_clients_log_message(f"{user}'s peak influence is not high enough to gain any power with **{self.name}**")
             return True
 
-        await send_clients_log_message(f"{self.name} gives {user} {power_to_give} power")
+        await send_clients_log_message(f"**{self.name}** gives {user} {power_to_give} power")
         game_state['power'][user] += power_to_give
         self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

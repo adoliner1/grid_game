@@ -54,15 +54,15 @@ class Jupiter(Tile):
         user = game_action_container.whose_action
        
         if self.influence_tiers[tier_index]['is_on_cooldown']:
-            await send_clients_log_message(f"{self.name} tier {tier_index} is on cooldown")
+            await send_clients_log_message(f"**{self.name}** tier {tier_index} is on cooldown")
             return False
        
         if self.influence_per_player[user] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
-            await send_clients_log_message(f"Not enough influence on {self.name} to use tier {tier_index}")
+            await send_clients_log_message(f"Not enough influence on **{self.name}** to use tier {tier_index}")
             return False
        
         if tier_index == 1 and self.determine_ruler(game_state) != user:
-            await send_clients_log_message(f"You must be the ruler to use tier 1 of {self.name}")
+            await send_clients_log_message(f"You must be the ruler to use tier 1 of **{self.name}**")
             return False
 
         index_of_jupiter = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -72,10 +72,10 @@ class Jupiter(Tile):
                                                 if slot and slot["disciple"] == "acolyte" and slot["color"] == user), None)
             
             if slot_index_to_burn_acolyte is None:
-                await send_clients_log_message(f"No acolyte available to burn on {self.name}")
+                await send_clients_log_message(f"No acolyte available to burn on **{self.name}**")
                 return False
             
-            await send_clients_log_message(f"Using {self.name} tier {tier_index}")
+            await send_clients_log_message(f"Using **{self.name}** tier {tier_index}")
             await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_acolyte)
             
             power_gained = 4
@@ -87,17 +87,17 @@ class Jupiter(Tile):
                                                 if slot and slot["disciple"] == "follower" and slot["color"] == user), None)
             
             if slot_index_to_burn_acolyte is None or slot_index_to_burn_follower is None:
-                await send_clients_log_message(f"No acolyte and follower available to burn on {self.name}")
+                await send_clients_log_message(f"No acolyte and follower available to burn on **{self.name}**")
                 return False
             
-            await send_clients_log_message(f"Using {self.name} tier {tier_index}")
+            await send_clients_log_message(f"Using **{self.name}** tier {tier_index}")
             await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_acolyte)
             await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_jupiter, slot_index_to_burn_follower)
             
             power_gained = 10
         
         game_state['power'][user] += power_gained
-        await send_clients_log_message(f"{user} gains {power_gained} power from {self.name}")
+        await send_clients_log_message(f"{user} gains {power_gained} power from **{self.name}**")
        
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True

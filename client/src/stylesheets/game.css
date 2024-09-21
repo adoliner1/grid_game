@@ -3,7 +3,6 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden;
 }
 
 .game-container {
@@ -181,4 +180,28 @@ svg.selectable:active {
   border-width: 5px;
   border-style: solid;
   border-color: #333 transparent transparent transparent;
+}
+
+.disciple-influence-section {
+  display: flex;
+  justify-content: space-around;
+  padding: 2px;
+  border: 1px solid #ddd;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  margin-bottom: 1px;
+}
+
+.influence-icon {
+  margin-right: 10px;
+}
+
+.disciple-influence {
+  display: flex;
+  align-items: center;
+  margin: 0 5px;
+}
+
+.disciple-influence > *:first-child {
+  margin-right: 5px;
 }

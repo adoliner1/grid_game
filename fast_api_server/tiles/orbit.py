@@ -42,20 +42,20 @@ class Orbit(Tile):
         ruler = self.determine_ruler(game_state)
         
         if not ruler:
-            await send_clients_log_message(f"No ruler determined for {self.name}, cannot use")
+            await send_clients_log_message(f"No ruler determined for **{self.name}**, cannot use")
             return False
         
         if ruler != game_action_container.whose_action:
-            await send_clients_log_message(f"Non-ruler tried to use {self.name}")
+            await send_clients_log_message(f"Non-ruler tried to use **{self.name}**")
             return False
         
         if self.influence_tiers[0]['is_on_cooldown']:
-            await send_clients_log_message(f"{self.name} is on cooldown")
+            await send_clients_log_message(f"**{self.name}** is on cooldown")
             return False
 
         tile_to_shift_row = game_action_container.required_data_for_action['tile_to_shift_row']
         if tile_to_shift_row is None:
-            await send_clients_log_message(f"Invalid tile selected for using {self.name}")
+            await send_clients_log_message(f"Invalid tile selected for using **{self.name}**")
             return False
 
         # Determine the row from the tile index
@@ -67,7 +67,7 @@ class Orbit(Tile):
         # Perform the shift
         shifted_row_tiles = row_tiles[1:] + row_tiles[:1]
         tile_names = [tile.name for tile in row_tiles]
-        await send_clients_log_message(f"Using {self.name} to rotate the row containing tiles ({', '.join(tile_names)})")
+        await send_clients_log_message(f"Using **{self.name}** to rotate the row containing tiles ({', '.join(tile_names)})")
         # Update the game state with the shifted row
         game_state["tiles"][row_start_index:row_end_index] = shifted_row_tiles
         

@@ -38,23 +38,23 @@ class LilyPad(Tile):
         user = game_action_container.whose_action
        
         if self.influence_tiers[tier_index]['is_on_cooldown']:
-            await send_clients_log_message(f"{self.name} tier {tier_index} is on cooldown")
+            await send_clients_log_message(f"**{self.name}** tier {tier_index} is on cooldown")
             return False
        
         if self.influence_per_player[user] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
-            await send_clients_log_message(f"Not enough influence on {self.name} to use tier {tier_index}")
+            await send_clients_log_message(f"Not enough influence on **{self.name}** to use tier {tier_index}")
             return False
        
         if self.determine_ruler(game_state) != user:
-            await send_clients_log_message(f"You must be the ruler to use {self.name}")
+            await send_clients_log_message(f"You must be the ruler to use **{self.name}**")
             return False
         
         if game_state['power'][user] < 1:
-            await send_clients_log_message(f"Not enough power to use {self.name}")
+            await send_clients_log_message(f"Not enough power to use **{self.name}**")
             return False
 
         game_state['power'][user] += 1
-        await send_clients_log_message(f"{user} loses 1 power and then gains 2 from {self.name}") 
+        await send_clients_log_message(f"{user} loses 1 power and then gains 2 from **{self.name}**") 
        
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True

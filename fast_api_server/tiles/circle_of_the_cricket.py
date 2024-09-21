@@ -43,25 +43,25 @@ class CircleOfTheCricket(Tile):
         ruler = self.determine_ruler(game_state)
                                                                      
         if not ruler:
-            await send_clients_log_message(f"No ruler determined for {self.name}, cannot use")
+            await send_clients_log_message(f"No ruler determined for **{self.name}**, cannot use")
             return False
        
         if ruler != game_action_container.whose_action:
-            await send_clients_log_message(f"Only the ruler can use {self.name}")
+            await send_clients_log_message(f"Only the ruler can use **{self.name}**")
             return False
 
         if self.influence_tiers[0]['is_on_cooldown']:
-            await send_clients_log_message(f"{self.name} is on cooldown and cannot be used this round")
+            await send_clients_log_message(f"**{self.name}** is on cooldown and cannot be used this round")
             return False
 
         index_of_tile_to_receive_disciples_on = game_action_container.required_data_for_action['tile_to_receive_disciples_at']
         tile_to_receive_disciples_on = game_state['tiles'][index_of_tile_to_receive_disciples_on]
         
         if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_disciples_on, game_utilities.find_index_of_tile_by_name(game_state, self.name)):
-            await send_clients_log_message(f"Chose non-adjacent tile while using {self.name}")
+            await send_clients_log_message(f"Chose non-adjacent tile while using **{self.name}**")
             return False
 
-        await send_clients_log_message(f"{self.name} is used")
+        await send_clients_log_message(f"**{self.name}** is used")
         self.influence_tiers[0]['is_on_cooldown'] = True
         await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, ruler, tile_to_receive_disciples_on, 'follower')
         other_player = game_utilities.get_other_player_color(ruler)

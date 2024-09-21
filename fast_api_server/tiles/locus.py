@@ -38,15 +38,15 @@ class Locus(Tile):
         user = game_action_container.whose_action
        
         if self.influence_tiers[tier_index]['is_on_cooldown']:
-            await send_clients_log_message(f"{self.name} tier {tier_index} is on cooldown")
+            await send_clients_log_message(f"**{self.name}** tier {tier_index} is on cooldown")
             return False
        
         if self.influence_per_player[user] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
-            await send_clients_log_message(f"Not enough influence on {self.name} to use tier {tier_index}")
+            await send_clients_log_message(f"Not enough influence on **{self.name}** to use tier {tier_index}")
             return False
        
         if self.determine_ruler(game_state) != user:
-            await send_clients_log_message(f"You must be the ruler to use {self.name}")
+            await send_clients_log_message(f"You must be the ruler to use **{self.name}**")
             return False
 
         index_of_locus = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -57,7 +57,7 @@ class Locus(Tile):
             if adjacent_tiles_ruled:
                 game_state['power'][user] += adjacent_tiles_ruled
 
-        await send_clients_log_message(f"{user} uses {self.name} and gains {adjacent_tiles_ruled} power") 
+        await send_clients_log_message(f"{user} uses **{self.name}** and gains {adjacent_tiles_ruled} power") 
        
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True

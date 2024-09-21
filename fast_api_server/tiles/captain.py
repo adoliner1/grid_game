@@ -44,15 +44,15 @@ class Captain(Tile):
         ruler = self.determine_ruler(game_state)
 
         if self.influence_tiers[tier_index]["must_be_ruler"] and player != ruler:
-            await send_clients_log_message(f"Only the ruler can use tier {tier_index} of {self.name}")
+            await send_clients_log_message(f"Only the ruler can use tier {tier_index} of **{self.name}**")
             return False
 
         if self.influence_per_player[player] < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of {self.name}")
+            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of **{self.name}**")
             return False
 
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"Tier {tier_index} of {self.name} is on cooldown")
+            await send_clients_log_message(f"Tier {tier_index} of **{self.name}** is on cooldown")
             return False
 
         slot_index_to_burn_disciple = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple']['slot_index']
@@ -60,14 +60,14 @@ class Captain(Tile):
         index_of_tile_received_at = game_action_container.required_data_for_action['index_of_tile_received_at']
 
         if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_burn_disciple, index_of_tile_received_at):
-            await send_clients_log_message(f"Tried to react with {self.name} but chose a non-adjacent tile to burn at")
+            await send_clients_log_message(f"Tried to react with **{self.name}** but chose a non-adjacent tile to burn at")
             return False            
 
         if game_state["tiles"][index_of_tile_to_burn_disciple].slots_for_disciples[slot_index_to_burn_disciple] is None:
-            await send_clients_log_message(f"Tried to react with {self.name} but there is no disciple to burn at {game_state['tiles'][index_of_tile_to_burn_disciple].name} at slot {slot_index_to_burn_disciple}")
+            await send_clients_log_message(f"Tried to react with **{self.name}** but there is no disciple to burn at {game_state['tiles'][index_of_tile_to_burn_disciple].name} at slot {slot_index_to_burn_disciple}")
             return False
 
-        await send_clients_log_message(f"Reacting with tier {tier_index} of {self.name}")
+        await send_clients_log_message(f"Reacting with tier {tier_index} of **{self.name}**")
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_disciple, slot_index_to_burn_disciple)
         
         self.influence_tiers[tier_index]["is_on_cooldown"] = True
@@ -79,7 +79,7 @@ class Captain(Tile):
     async def create_append_and_send_available_actions_for_container(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tier_index):
         receiver = game_action_container_stack[-1].data_from_event['receiver']
         index_of_tile_received_at = game_action_container_stack[-1].data_from_event['index_of_tile_received_at']
-        await send_clients_log_message(f"{receiver} may react with {self.name}")
+        await send_clients_log_message(f"{receiver} may react with **{self.name}**")
 
         new_container = game_action_container.GameActionContainer(
             event=asyncio.Event(),

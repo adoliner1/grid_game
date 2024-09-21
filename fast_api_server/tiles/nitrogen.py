@@ -43,7 +43,7 @@ class Nitrogen(Tile):
         first_player = game_state["first_player"]
         second_player = game_utilities.get_other_player_color(first_player)
 
-        await send_clients_log_message(f"{self.name} runs")
+        await send_clients_log_message(f"**{self.name}** runs")
 
         for player in [first_player, second_player]:
             sage_count = sum(1 for slot in self.slots_for_disciples if slot and slot["color"] == player and slot["disciple"] == "sage")
@@ -61,10 +61,10 @@ class Nitrogen(Tile):
         sage_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "sage" and slot["color"] == player)
         
         if follower_count < 1 or acolyte_count < 1 or sage_count < 1:
-            await send_clients_log_message(f"Not enough disciples to burn a set on {self.name}")
+            await send_clients_log_message(f"Not enough disciples to burn a set on **{self.name}**")
             return False
         
-        await send_clients_log_message(f"{self.name} is used")
+        await send_clients_log_message(f"**{self.name}** is used")
         nitrogen_tile_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         disciples_burned = {'follower': 0, 'acolyte': 0, 'sage': 0}
         for i, slot in enumerate(self.slots_for_disciples):
@@ -74,10 +74,10 @@ class Nitrogen(Tile):
                 if all(count == 1 for count in disciples_burned.values()):
                     break
         
-        await send_clients_log_message(f"{player} burns a set on {self.name}")
+        await send_clients_log_message(f"{player} burns a set on **{self.name}**")
         
         power_to_gain = 5
         game_state["power"][player] += power_to_gain
-        await send_clients_log_message(f"{player} gains {power_to_gain} power from burning a set on {self.name}")
+        await send_clients_log_message(f"{player} gains {power_to_gain} power from burning a set on **{self.name}**")
 
         return True

@@ -16,7 +16,7 @@ class Evolution(Tile):
         return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
-        await send_clients_log_message(f"Applying end of round effect for {self.name}")
+        await send_clients_log_message(f"Applying end of round effect for **{self.name}**")
         
         for i in range(len(self.slots_for_disciples)):
             if self.slots_for_disciples[i]:

@@ -31,7 +31,7 @@ class King(Tile):
 
         if points_to_add > 0:
             winner = 'red' if red_influence > blue_influence else 'blue'
-            await send_clients_log_message(f"influence differential on {self.name} is {influence_differential} in favor of {winner}")
+            await send_clients_log_message(f"influence differential on **{self.name}** is {influence_differential} in favor of {winner}")
             game_state["points"][winner] += points_to_add
         else:
-            await send_clients_log_message(f"influence differential on {self.name} is less than 3, no points awarded")
+            await send_clients_log_message(f"influence differential on **{self.name}** is less than 3, no points awarded")

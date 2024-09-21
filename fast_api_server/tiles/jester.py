@@ -32,10 +32,10 @@ class Jester(Tile):
             points_earned = max_pairs * 3
             game_state["points"][color] += points_earned
             if points_earned > 0:
-                await send_clients_log_message(f"{color} player earned {points_earned} points from unique pairs on {self.name}")
+                await send_clients_log_message(f"{color} player earned {points_earned} points from unique pairs on **{self.name}**")
 
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler is not None:
-            await send_clients_log_message(f"{ruler} rules {self.name}, -7 points")
+            await send_clients_log_message(f"{ruler} rules **{self.name}**, -7 points")
             game_state["points"][ruler] -= 7

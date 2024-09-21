@@ -54,7 +54,7 @@ class RedDwarf(Tile):
         player = game_action_container.whose_action
 
         if self.influence_per_player[player] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
-            await send_clients_log_message(f"{player} does not have enough influence to use tier {tier_index} of {self.name}")
+            await send_clients_log_message(f"{player} does not have enough influence to use tier {tier_index} of **{self.name}**")
             return False
 
         slot_to_burn_from = game_action_container.required_data_for_action['slot_to_burn_from_on_red_dwarf']['slot_index']
@@ -62,20 +62,20 @@ class RedDwarf(Tile):
         tile2_index = game_action_container.required_data_for_action['second_tile']
 
         if any(index is None for index in [slot_to_burn_from, tile1_index, tile2_index]):
-            await send_clients_log_message(f"Invalid disciple or tiles selected for using {self.name}")
+            await send_clients_log_message(f"Invalid disciple or tiles selected for using **{self.name}**")
             return False
 
         if tile1_index == tile2_index:
-            await send_clients_log_message(f"Cannot swap a tile with itself using {self.name}")
+            await send_clients_log_message(f"Cannot swap a tile with itself using **{self.name}**")
             return False
 
         if self.slots_for_disciples[slot_to_burn_from]["color"] != player:
-            await send_clients_log_message(f"Cannot burn another player's disciple on {self.name}")
+            await send_clients_log_message(f"Cannot burn another player's disciple on **{self.name}**")
             return False
         
         red_dwarf_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, red_dwarf_index, slot_to_burn_from)
-        await send_clients_log_message(f"Used {self.name} to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
+        await send_clients_log_message(f"Used **{self.name}** to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
 
         return True

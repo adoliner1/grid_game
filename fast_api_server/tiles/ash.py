@@ -49,4 +49,4 @@ class Ash(Tile):
             if player_influence >= 3 and game_utilities.has_presence(tile_burned_at, player) and color == player:
                 points_gained = 3 if player == ruler else 2
                 game_state["points"][player] += points_gained
-                await send_clients_log_message(f"{player} gains {points_gained} points from {self.name} due to their {color}_{disciple} being burned on {tile_burned_at.name}")
+                await send_clients_log_message(f"{player} gains {points_gained} points from **{self.name}** due to their {color}_{disciple} being burned on {tile_burned_at.name}")

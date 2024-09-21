@@ -58,11 +58,11 @@ class TeleportingCabinet(Tile):
         user = game_action_container.whose_action
 
         if self.influence_per_player[user] < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough influence to use {self.name}")
+            await send_clients_log_message(f"Not enough influence to use **{self.name}**")
             return False
 
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"{self.name} is on cooldown")
+            await send_clients_log_message(f"**{self.name}** is on cooldown")
             return False
 
         index_of_cabinet = game_utilities.find_index_of_tile_by_name(game_state, self.name)
@@ -72,21 +72,21 @@ class TeleportingCabinet(Tile):
         tile_index_to = game_action_container.required_data_for_action['slot_and_tile_to_swap_disciple_to']['tile_index']
 
         if not game_utilities.determine_if_directly_adjacent(index_of_cabinet, tile_index_from):
-            await send_clients_log_message(f"Tried to use {self.name} but chose a non-adjacent tile")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a non-adjacent tile")
             return False
 
         if game_state["tiles"][tile_index_from].slots_for_disciples[slot_index_from] is None:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no disciple to swap from {game_state['tiles'][tile_index_from].name}")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to swap from {game_state['tiles'][tile_index_from].name}")
             return False
 
         if game_state["tiles"][tile_index_to].slots_for_disciples[slot_index_to] is None:
-            await send_clients_log_message(f"Tried to use {self.name} but chose a slot with no disciple to swap to {game_state['tiles'][tile_index_to].name}")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to swap to {game_state['tiles'][tile_index_to].name}")
             return False
 
         slot_data_from = game_state["tiles"][tile_index_from].slots_for_disciples[slot_index_from]
         slot_data_to = game_state["tiles"][tile_index_to].slots_for_disciples[slot_index_to]
 
-        await send_clients_log_message(f"Using {self.name}")
+        await send_clients_log_message(f"Using **{self.name}**")
 
         # Swap disciples
         game_state["tiles"][tile_index_from].slots_for_disciples[slot_index_from] = slot_data_to

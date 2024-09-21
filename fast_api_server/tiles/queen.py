@@ -55,4 +55,4 @@ class Queen(Tile):
 
         if points_earned > 0:
             game_state["points"][other_player] += points_earned
-            await send_clients_log_message(f"{other_player} earned {points_earned} points from {self.name}")
+            await send_clients_log_message(f"{other_player} earned {points_earned} points from **{self.name}**")

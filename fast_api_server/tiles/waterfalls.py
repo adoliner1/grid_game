@@ -43,4 +43,4 @@ class Waterfalls(Tile):
                 points_per_tile = 2 if player_influence >= self.influence_tiers[1]['influence_to_reach_tier'] else 1
                 points_awarded = tiles_present_at * points_per_tile
                 game_state["points"][player] += points_awarded
-                await send_clients_log_message(f"{player} gains {points_awarded} points from {self.name} for being present at {tiles_present_at} tiles with {player_influence} influence")
+                await send_clients_log_message(f"{player} gains {points_awarded} points from **{self.name}** for being present at {tiles_present_at} tiles with {player_influence} influence")

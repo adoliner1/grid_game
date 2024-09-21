@@ -47,9 +47,9 @@ class Forge(Tile):
         if player_influence >= self.influence_tiers[1]['influence_to_reach_tier'] and ruler == color and tile_burned_at.infuence_per_player[color] >= 2:
             power_gained = 2
             game_state["power"][color] += power_gained
-            await send_clients_log_message(f"{color} gains {power_gained} power from {self.name} due to their {disciple} being burned on {tile_burned_at.name}")
+            await send_clients_log_message(f"{color} gains {power_gained} power from **{self.name}** due to their {disciple} being burned on {tile_burned_at.name}")
 
         elif player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and tile_burned_at.infuence_per_player[color] >= 2:
             power_gained = 1
             game_state["power"][color] += power_gained
-            await send_clients_log_message(f"{color} gains {power_gained} power from {self.name} due to their {disciple} being burned on {tile_burned_at.name}")
+            await send_clients_log_message(f"{color} gains {power_gained} power from **{self.name}** due to their {disciple} being burned on {tile_burned_at.name}")
