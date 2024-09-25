@@ -29,8 +29,6 @@ const GameLog = ({ logs }) => {
             switch(lowerPart) {
                 case 'power':
                 case 'influence':
-                case 'point':
-                case 'points':
                 case 'follower':
                 case 'followers':
                 case 'acolyte':
@@ -46,22 +44,38 @@ const GameLog = ({ logs }) => {
                         height: 14,
                         className: `${lowerPart.replace(/s$/, '')}-icon`
                     });
+                case 'points':
+                    return createIcon({
+                        type: 'points',
+                        tooltipText: lowerPart.charAt(0).toUpperCase() + lowerPart.slice(1).replace(/s$/, ''),
+                        width: 14,
+                        height: 14,
+                        className: `${lowerPart.replace(/s$/, '')}-icon`
+                    });
                 default:
-                    return part.split(/(\s+)/).map((subPart, subIndex) => {
-                        if (subPart.trim() === '') {
-                            // Preserve spaces by replacing them with non-breaking spaces
-                            return <span key={`space-${index}-${subIndex}`}>{'\u00A0'.repeat(subPart.length)}</span>;
+                    // Split the part into segments that should be processed together
+                    const segments = part.split(/(\*\*.*?\*\*|__.*?__|\[\[.*?\]\]|\(\(.*?\)\)|\+\+.*?\+\+|\s+)/g);
+                    return segments.map((segment, segmentIndex) => {
+                        if (segment.trim() === '') {
+                            // Preserve spaces
+                            return <span key={`space-${index}-${segmentIndex}`}>{'\u00A0'.repeat(segment.length)}</span>;
+                        } else if (/^(\*\*.*\*\*|__.*__|\[\[.*\]\]|\(\(.*\)\)|\+\+.*\+\+)$/.test(segment)) {
+                            // Apply markup for special segments
+                            return <span key={`markup-${index}-${segmentIndex}`} dangerouslySetInnerHTML={{
+                                __html: segment
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                    .replace(/__(.*?)__/g, '<i>$1</i>')
+                                    .replace(/\^\^(.*?)\^\^/g, '<span style="color: #ff8700">$1</span>')
+                                    .replace(/\[\[(.*?)\]\]/g, '<span style="color: #9f00ff">$1</span>')
+                                    .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a">$1</span>')
+                                    .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000">$1</span>')
+                            }} />;
+                        } else {
+                            // Apply word-specific replacements
+                            return <span key={`text-${index}-${segmentIndex}`} dangerouslySetInnerHTML={{
+                                __html: segment.replace(/\b(red|blue)\b/gi, (match) => match.charAt(0).toUpperCase() + match.slice(1).toLowerCase())
+                            }} />;
                         }
-                        return <span key={`text-${index}-${subIndex}`} dangerouslySetInnerHTML={{
-                            __html: subPart
-                                .replace(/\b(red|blue)\b/gi, (match) => match.charAt(0).toUpperCase() + match.slice(1).toLowerCase())
-                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                .replace(/__(.*?)__/g, '<i>$1</i>')
-                                .replace(/\^\^(.*?)\^\^/g, '<span style="color: #ff8700">$1</span>')
-                                .replace(/\[\[(.*?)\]\]/g, '<span style="color: #9f00ff">$1</span>')
-                                .replace(/\(\((.*?)\)\)/g, '<span style="color: #007a9a">$1</span>')
-                                .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000">$1</span>')
-                        }} />;
                     });
             }
         });
@@ -71,8 +85,8 @@ const GameLog = ({ logs }) => {
         const formatted = parseCustomMarkup(line);
         return (
             <p key={index}>
-                {formatted.map((part, partIndex) => 
-                    React.isValidElement(part) 
+                {formatted.flat().map((part, partIndex) =>
+                    React.isValidElement(part)
                         ? React.cloneElement(part, { key: partIndex })
                         : part
                 )}

@@ -6,17 +6,17 @@ class Nitrogen(Tile):
     def __init__(self):
         super().__init__(
             name="Nitrogen",
-            type="Giver/Power-Creator",
+            type="Giver/Generator",
             minimum_influence_to_rule=3,
-            description="At the __end of a round__, for each sage you have here, [[receive]] an acolyte and a follower here",
+            description="At the __end of each round__, for each sage you have here, [[receive]] an acolyte and a follower here",
             number_of_slots=11,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 0,
-                    "must_be_ruler": False,                    
+                    "influence_to_reach_tier": 6,
+                    "must_be_ruler": True,                    
                     "description": "**Action:** ^^Burn^^ a follower, acolyte, and sage here for +5 power",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,
+                    "has_a_cooldown": True,
                     "leader_must_be_present": False,                      
                     "data_needed_for_use": [],
                 },            
@@ -31,7 +31,7 @@ class Nitrogen(Tile):
         acolyte_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "acolyte" and slot["color"] == whose_turn_is_it)
         sage_count = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "sage" and slot["color"] == whose_turn_is_it)
         
-        if follower_count >= 1 and acolyte_count >= 1 and sage_count >= 1:
+        if follower_count >= 1 and acolyte_count >= 1 and sage_count >= 1 and not self.influence_tiers[0]["is_on_cooldown"]:
             useable_tiers.append(0)
 
         return useable_tiers
@@ -64,6 +64,10 @@ class Nitrogen(Tile):
             await send_clients_log_message(f"Not enough disciples to burn a set on **{self.name}**")
             return False
         
+        if self.influence_tiers[0]["is_on_cooldown"]:
+            await send_clients_log_message(f"**{self.name}** Cooling down")
+            return False
+        
         await send_clients_log_message(f"**{self.name}** is used")
         nitrogen_tile_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         disciples_burned = {'follower': 0, 'acolyte': 0, 'sage': 0}
@@ -80,4 +84,5 @@ class Nitrogen(Tile):
         game_state["power"][player] += power_to_gain
         await send_clients_log_message(f"{player} gains {power_to_gain} power from burning a set on **{self.name}**")
 
+        self.influence_tiers[0]['is_on_cooldown'] = True
         return True

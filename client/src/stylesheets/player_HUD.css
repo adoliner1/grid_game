@@ -1,6 +1,6 @@
 /* player_HUD.css */
 .player-info {
-    border: 2px solid;
+    border: 2px dotted;
     border-radius: 5px;
     padding: 0px;
     margin-bottom: 5px;
@@ -8,6 +8,11 @@
     flex-direction: column;
     align-items: center;
 }
+
+.player-info.player-is-this-color {
+    border-style: solid;
+}
+
 .player-red {
     border-color: red;
 }
@@ -20,12 +25,26 @@
 .player-blue {
     border-color: blue;
 }
+
+@keyframes pulse-red {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: #f3b3bd; }
+}
+
+@keyframes pulse-blue {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: #a9d6f7; }
+}
+
 .player-active.player-red {
-    background-color: #ffebee;
+    animation: pulse-red 3s ease-in-out infinite;
 }
+
 .player-active.player-blue {
-    background-color: #e3f2fd;
+    animation: pulse-blue 3s ease-in-out infinite;
 }
+
+
 .points-presence-power-peak-influence-row {
     display: flex;
     justify-content: space-evenly;
@@ -66,9 +85,11 @@
     justify-content: center;
     align-items: center;
     flex: 1;
+    padding: 0px;
 }
 
 .cost-cell svg {
     width: 15px;
     height: 15px;
+    padding: 0px;
 }

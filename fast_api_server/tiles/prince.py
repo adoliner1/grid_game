@@ -9,7 +9,7 @@ class Prince(Tile):
             type="Scorer",
             minimum_influence_to_rule=3,
             number_of_slots=6,
-            description="At the __end of a round__, for each same-disciple pair you have here, +1 points",
+            description="At the __end of each round__, for each same-disciple pair you have here, +2 points",
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 5,
@@ -35,15 +35,12 @@ class Prince(Tile):
                     disciple_count[slot["disciple"]] += 1
             
             pairs = sum(count // 2 for count in disciple_count.values())
-            
-            base_points = pairs
-            additional_points = 0
-            
             if color == ruler and self.influence_per_player[color] >= self.influence_tiers[0]['influence_to_reach_tier']:
-                additional_points = pairs * 3
+                points_to_gain = pairs*3
+            else:
+                points_to_gain = pairs*2
             
-            total_points = base_points + additional_points
-            game_state["points"][color] += total_points
+            game_state["points"][color] += points_to_gain
             
-            if total_points > 0:
-                await send_clients_log_message(f"{color} player earned {total_points} points ({base_points} base + {additional_points} additional) from {pairs} pairs of disciples on **{self.name}**")
+            if points_to_gain > 0:
+                await send_clients_log_message(f"{color} earned {points_to_gain} points for {pairs} pairs of disciples on **{self.name}**")

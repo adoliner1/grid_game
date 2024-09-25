@@ -13,7 +13,7 @@ class Wormhole(Tile):
                 {
                     "influence_to_reach_tier": 4,
                     "must_be_ruler": True,
-                    "description": "**Action:** Swap the position of two tiles",
+                    "description": "**Action:** Swap any two tiles",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,                    
                     "leader_must_be_present": False, 

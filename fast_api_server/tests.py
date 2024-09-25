@@ -1,8 +1,8 @@
 import pytest
 from tiles.tile import Tile
-from tiles.algebra import Algebra
+from tiles.stone_shrine import Algebra
 from tiles.boron import Boron
-from tiles.pluto import Pluto
+from tiles.altar_of_hades import Pluto
 from tiles.sword import Sword
 from tiles.prince import Prince
 from tiles.caves import Caves

@@ -2,14 +2,14 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Evolution(Tile):
+class WheelOfSouls(Tile):
     def __init__(self):
         super().__init__(
-            name="Evolution",
+            name="Wheel of Souls",
             type="Giver",
             minimum_influence_to_rule=3,
-            description=f"At the __end of a round__, ^^burn^^ each disciple here and [[receive]] the next most influential disciple. sages yield followers",
-            number_of_slots=7,
+            description=f"At the __end of each round__, ^^burn^^ each disciple here and [[receive]] the next most influential disciple. sages becomes followers. When they do, the owner [[receives]] another follower here",
+            number_of_slots=10,
         )
 
     def determine_ruler(self, game_state):
@@ -33,3 +33,7 @@ class Evolution(Tile):
                     new_disciple = "follower"
                 
                 await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, self, new_disciple)
+
+                if new_disciple == "follower":
+                    await send_clients_log_message(f"A sage became a follower on **{self.name}**")
+                    await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, self, new_disciple)

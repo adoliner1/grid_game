@@ -65,5 +65,4 @@ class SolarArray(Tile):
         if points_gained > 0:
             game_state["points"][ruler] += points_gained
             await send_clients_log_message(f"{ruler} gains {points_gained} points from **{self.name}**")
-        self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

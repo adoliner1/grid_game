@@ -7,13 +7,13 @@ class Road(Tile):
         super().__init__(
             name="Road",
             type="Mover",
-            minimum_influence_to_rule=5,
+            minimum_influence_to_rule=4,
             number_of_slots=7,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": False,
-                    "description": "**Action:** Choose a disciple at an adjacent tile. Move it anywhere",
+                    "description": "**Action:** Choose any disciple at an adjacent tile. Move it anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,     
                     "leader_must_be_present": False,                
@@ -22,7 +22,7 @@ class Road(Tile):
                 {
                     "influence_to_reach_tier": 8,
                     "must_be_ruler": True,
-                    "description": "**Action:** Same as above but choose a disciple anywhere",
+                    "description": "**Action:** Move any disciple anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False, 

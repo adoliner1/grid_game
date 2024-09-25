@@ -12,13 +12,11 @@ import round_bonuses
 from tiles.tile import Tile
 
 class GameEngine:
-
     def __init__(self):
         self.game_state = self.create_new_game_state()
         self.send_clients_log_message = None
         self.send_clients_game_state = None
         self.send_available_actions = None
-        #self.listeners = {"on_place": {}, "start_of_round": {}, "end_of_round": {}, "on_produce": {}}
         self.game_has_ended = False
         self.game_action_container_stack: List[game_action_container.GameActionContainer] = []
         self.game_action_container_stack.append(self.create_initial_decision_game_action_container())
@@ -122,8 +120,13 @@ class GameEngine:
             await self.send_clients_log_message(f"{player_color} tried to take action but it's not their action to take")
             return
 
-        if data['client_action'] == "do_not_react":    
-            if not self.game_action_container_stack[-1].is_a_reaction:
+        if data['client_action'] == "do_not_react":
+            if self.game_action_container_stack[-1].game_action == 'move_leader':
+                await self.send_clients_log_message(f"{player_color} chooses not to use the rest of their movement")
+                self.game_action_container_stack.pop()
+                self.game_action_container_stack.pop().event.set()
+
+            elif not self.game_action_container_stack[-1].is_a_reaction:
                 await self.send_clients_log_message(f"{player_color} chose not to react but it's not a reaction on top of the stack")
             else:
                 await self.send_clients_log_message(f"{player_color} chooses not to react")
@@ -138,11 +141,19 @@ class GameEngine:
                 return
 
         if data['client_action'] == "reset_current_action":
-            #the initial decision container and the container to choose reactions to resolve cannot be reset
-            if (len(self.game_action_container_stack) < 2 or
-            self.game_action_container_stack[-1].game_action == 'choose_a_reaction_to_resolve' or
-            self.game_action_container_stack[-1].game_action == 'initial_follower_placement' or
-            self.game_action_container_stack[-1].game_action == 'initial_leader_placement'):
+            cant_reset_conditions = [
+                len(self.game_action_container_stack) < 2,
+                self.game_action_container_stack[-1].game_action in [
+                    'choose_a_reaction_to_resolve',
+                    'initial_follower_placement',
+                    'initial_leader_placement'
+                ],
+                self.game_action_container_stack[-1].game_action == 'move_leader' and 
+                self.game_action_container_stack[-1].movements_made > 0
+            ]
+
+            # Check if any condition preventing reset is true
+            if any(cant_reset_conditions):
                 await self.send_clients_log_message(f"Can't cancel this action")
                 return
             #the action is resettable, we just pop it off and resend the available actions
@@ -218,6 +229,16 @@ class GameEngine:
                 self.game_action_container_stack.pop()
                 await self.get_and_send_available_actions()
                 return
+            
+            #after an action is successfully executed, we need to pop off the old initial decision container
+            #the exception is if we're in the middle of a move_leader action and there are more moves they can make
+            else:
+                if action_to_execute.game_action != 'move_leader':
+                    self.game_action_container_stack.pop().event.set()
+                else:
+                    if not action_to_execute.movements_made < self.game_state['leader_movement'][action_to_execute.whose_action]:
+                        self.game_action_container_stack.pop().event.set()
+                        
             if action_to_execute.is_a_reaction:
                 #the reaction just got popped and executed, the container that was under it should be the reactions to resolve container
                 reactions_to_resolve_container = self.game_action_container_stack[-1]
@@ -226,8 +247,6 @@ class GameEngine:
                 #reset the required data field
                 reactions_to_resolve_container.required_data_for_action['tier_to_react_with'] = {}
                 action_to_execute.event.set()
-            else:
-                self.game_action_container_stack.pop().event.set() #this is the old initial decision container. pop it off (we'll make a new one in the main loop).
 
         else:
             await self.get_and_send_available_actions()
@@ -243,46 +262,61 @@ class GameEngine:
             case 'pass':
                 if not await self.player_passes(game_action_container.whose_action):
                     return False
-            case 'move':
-                if not await self.player_takes_move_action(game_action_container):
+            case 'move_leader':
+                if not await self.player_takes_move_leader_action(game_action_container):
                     return False
+                
+                #if more moves can be done we need to do what we normally do, but not pop off the container yet
+                if game_action_container.movements_made < self.game_state['leader_movement'][game_action_container.whose_action]:
+                    game_action_container.required_data_for_action['tile_index_to_move_leader_to'] = None
+                    game_utilities.determine_influence_levels(self.game_state)
+                    game_utilities.update_presence(self.game_state)
+                    game_utilities.determine_rulers(self.game_state)
+                    game_utilities.calculate_exiling_ranges(self.game_state)
+                    game_utilities.calculate_recruiting_ranges(self.game_state)
+                    await self.send_clients_game_state(self.game_state)
+                    await self.get_and_send_available_actions()
+                    return True
+
             case 'exile':
                 if not await self.player_takes_exile_action(game_action_container):
                     return False
             case 'recruit':
                 if not await self.player_takes_recruit_action(game_action_container):
-                    return False                                
+                    return False
 
         game_utilities.determine_influence_levels(self.game_state)
         game_utilities.update_presence(self.game_state)
         game_utilities.determine_rulers(self.game_state)
         game_utilities.calculate_exiling_ranges(self.game_state)
         game_utilities.calculate_recruiting_ranges(self.game_state)
-        #if we fail before here... we need to reset some data in required data i think
         self.game_action_container_stack.pop()
         await self.send_clients_game_state(self.game_state)
         return True
 
-    async def player_takes_move_action(self, game_action_container):
+    async def player_takes_move_leader_action(self, game_action_container):
         mover = game_action_container.whose_action
-        tile_index_to_move_to = game_action_container.required_data_for_action['tile_index_to_move_to']
+        tile_index_to_move_leader_to = game_action_container.required_data_for_action['tile_index_to_move_leader_to']
         tile_index_of_players_leader = game_utilities.get_tile_index_of_leader(self.game_state, mover)
         tile_indices_adjacent_to_leader = game_utilities.get_adjacent_tile_indices(tile_index_of_players_leader)
         tile_of_players_leader = self.game_state['tiles'][tile_index_of_players_leader]
-        tile_to_move_to = self.game_state['tiles'][tile_index_to_move_to]
-        if not tile_index_to_move_to in tile_indices_adjacent_to_leader:
-            await self.send_clients_log_message(f"Chose a non-adjacent tile to move to")           
+        tile_to_move_leader_to = self.game_state['tiles'][tile_index_to_move_leader_to]
+        if not tile_index_to_move_leader_to in tile_indices_adjacent_to_leader:
+            await self.send_clients_log_message(f"Chose a non-adjacent tile to move leader to")           
             return False
         
-        if self.game_state['power'][mover] < 1:
-            await self.send_clients_log_message("Don't have enough power to move")
-            return False
+        #if it's the first move, we make sure they have enough power and then reduce the power
+        if game_action_container.movements_made == 0:
+            if self.game_state['power'][mover] < 1:
+                await self.send_clients_log_message("Don't have enough power to move leader")
+                return False
 
-        self.game_state['power'][mover] -= 1
+            self.game_state['power'][mover] -= 1
 
-        await self.send_clients_log_message(f"{mover} leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_to.name}**")
+        await self.send_clients_log_message(f"{mover}_leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**")
+        game_action_container.movements_made += 1 
         tile_of_players_leader.leaders_here[mover] = False
-        tile_to_move_to.leaders_here[mover] = True
+        tile_to_move_leader_to.leaders_here[mover] = True
         return True
     
     async def player_takes_recruit_action(self, game_action_container):
@@ -346,14 +380,14 @@ class GameEngine:
         return True
     def create_new_game_action_container_from_initial_decision(self, data):
         match data['client_action']:
-            case 'move':
+            case 'move_leader':
                 return game_action_container.GameActionContainer(
                     event=asyncio.Event(),
-                    game_action="move",
+                    game_action="move_leader",
                     required_data_for_action={
-                        "tile_index_to_move_to": None
+                        "tile_index_to_move_leader_to": None
                     },
-                    whose_action=self.game_state['whose_turn_is_it']
+                    whose_action = self.game_state['whose_turn_is_it'],
                 )
             case 'exile':
                 return game_action_container.GameActionContainer(
@@ -461,7 +495,7 @@ class GameEngine:
             "costs_to_recruit": {"red": game_constants.starting_cost_to_recruit, "blue": game_constants.starting_cost_to_recruit},
             "costs_to_exile": {"red": game_constants.starting_cost_to_exile, "blue": game_constants.starting_cost_to_exile},
             "power_given_at_start_of_round": game_constants.power_given_at_start_of_round,
-            "movement": {"red": game_constants.starting_movement, "blue": game_constants.starting_movement},
+            "leader_movement": {"red": game_constants.starting_leader_movement['red'], "blue": game_constants.starting_leader_movement['blue']},
             "tiles": [tile() for tile in chosen_tiles],
             "whose_turn_is_it": "red",
             "first_player": "red",

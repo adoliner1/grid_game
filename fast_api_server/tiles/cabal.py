@@ -8,10 +8,10 @@ class Cabal(Tile):
             name="Cabal",
             type="Exile-Enhancer",
             minimum_influence_to_rule=4,
-            number_of_slots=7,
+            number_of_slots=4,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 7,
+                    "influence_to_reach_tier": 4,
                     "must_be_ruler": True,
                     "description": "Increase your exiling range by 1",
                     "is_on_cooldown": False,

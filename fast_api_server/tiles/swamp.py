@@ -9,7 +9,7 @@ class Swamp(Tile):
             type="",
             minimum_influence_to_rule=1,
             description = f"",
-            number_of_slots=3,         
+            number_of_slots=1,         
         )
 
     def determine_ruler(self, game_state):

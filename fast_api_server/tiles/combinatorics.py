@@ -6,10 +6,10 @@ class Combinatorics(Tile):
     def __init__(self):
         super().__init__(
             name="Combinatorics",
-            type="Producer/Scorer",
+            type="Generator",
             minimum_influence_to_rule=3,
-            description="At the __end of a round__, for each unique, same-disciple pair you have here, +1 power\nIf you have all three possible pairs, +4 power per pair instead",
-            number_of_slots=9,
+            description="At the __end of each round__, for each unique, same-disciple pair you have here, +1 power\nIf you have all three possible pairs, +6 power per pair instead",
+            number_of_slots=8,
         )
 
     def determine_ruler(self, game_state):
@@ -33,8 +33,7 @@ class Combinatorics(Tile):
             #if it's 3, they have all 3 possible pairs
             if power_gained == 3:
                 await send_clients_log_message(f"{color} has all three possible pairs at **{self.name}**")
-                #4 power per pair instead
-                power_gained = 12
+                power_gained = 18
 
             if power_gained > 0:
                 game_state["power"][color] += power_gained

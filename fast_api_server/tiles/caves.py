@@ -7,13 +7,13 @@ class Caves(Tile):
         super().__init__(
             name="Caves",
             type="Giver",
-            number_of_slots=5,
+            number_of_slots=4,
             minimum_influence_to_rule=5,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "After you ((recruit)) at an adjacent tile, if you have less than 5 influence there, [[receive]] a follower there",
+                    "description": "After you ((recruit)) at an adjacent tile, if you have less than 7 influence there, [[receive]] a follower there",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
@@ -21,15 +21,15 @@ class Caves(Tile):
                 {
                     "influence_to_reach_tier": 4,
                     "must_be_ruler": False,                    
-                    "description": "Same as above but less than 7 influence",
+                    "description": "Same as above but less than 9 influence",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
                 },
                 {
-                    "influence_to_reach_tier": 6,
+                    "influence_to_reach_tier": 7,
                     "must_be_ruler": True,                    
-                    "description": "Same as above but less than 9 influence",
+                    "description": "Same as above but less than 13 influence",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_a_cooldown": False,                    
@@ -59,11 +59,11 @@ class Caves(Tile):
 
         recruiter_receives_follower = False
 
-        if recruiter_influence_here >= self.influence_tiers[0]['influence_to_reach_tier'] and recruiter_influence_at_tile_recruited_at <= 5:
+        if recruiter_influence_here >= self.influence_tiers[0]['influence_to_reach_tier'] and recruiter_influence_at_tile_recruited_at <= 7:
             recruiter_receives_follower = True
-        elif recruiter_influence_here >= self.influence_tiers[1]['influence_to_reach_tier'] and recruiter_influence_at_tile_recruited_at <= 7:
+        elif recruiter_influence_here >= self.influence_tiers[1]['influence_to_reach_tier'] and recruiter_influence_at_tile_recruited_at <= 9:
             recruiter_receives_follower = True
-        elif recruiter_influence_here >= self.influence_tiers[2]['influence_to_reach_tier'] and recruiter == ruler and recruiter_influence_at_tile_recruited_at <= 9:
+        elif recruiter_influence_here >= self.influence_tiers[2]['influence_to_reach_tier'] and recruiter == ruler and recruiter_influence_at_tile_recruited_at <= 13:
             recruiter_receives_follower = True
     
         if recruiter_receives_follower:
@@ -73,4 +73,4 @@ class Caves(Tile):
                 recruiter, tile_recruited_at, 'follower'
             )
         
-        await send_clients_log_message(f"{recruiter} receives a {recruiter}_follower at {tile_recruited_at.name} from **{self.name}**")
+            await send_clients_log_message(f"{recruiter} receives a {recruiter}_follower at **{tile_recruited_at.name}** from **{self.name}**")

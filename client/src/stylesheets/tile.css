@@ -1,6 +1,6 @@
 /* Individual tile styles */
 .tile {
-    border: 1px solid #000000;
+    border: 2px solid #000000;
     border-radius: 10px;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -119,3 +119,11 @@
     color: black;
   }
   
+
+  .ruler-tile-red {
+    border-color: red
+  }
+
+  .ruler-tile-blue {
+    border-color: blue
+  }

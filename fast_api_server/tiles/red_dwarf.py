@@ -7,12 +7,12 @@ class RedDwarf(Tile):
         super().__init__(
             name="Red Dwarf",
             type="Tile-Mover",
-            minimum_influence_to_rule=2,
+            minimum_influence_to_rule=1,
             number_of_slots=3,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 1,
-                    "must_be_ruler": False,                    
+                    "must_be_ruler": True,                    
                     "description": "**Action:** ^^Burn^^ one of your disciples here to swap the position of 2 tiles",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,            
@@ -28,8 +28,9 @@ class RedDwarf(Tile):
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
+        ruler = self.determine_ruler(game_state)
         
-        if self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and any(slot for slot in self.slots_for_disciples if slot and slot["color"] == whose_turn_is_it):
+        if ruler == whose_turn_is_it and self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and any(slot for slot in self.slots_for_disciples if slot and slot["color"] == whose_turn_is_it):
             useable_tiers.append(0)
 
         return useable_tiers
@@ -72,6 +73,10 @@ class RedDwarf(Tile):
         if self.slots_for_disciples[slot_to_burn_from]["color"] != player:
             await send_clients_log_message(f"Cannot burn another player's disciple on **{self.name}**")
             return False
+        
+        if self.determine_ruler(game_state) != player:
+            await send_clients_log_message(f"Must be ruler to use **{self.name}**")
+            return False            
         
         red_dwarf_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, red_dwarf_index, slot_to_burn_from)

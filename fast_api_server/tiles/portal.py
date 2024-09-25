@@ -2,22 +2,22 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Blackhole(Tile):
+class Portal(Tile):
     def __init__(self):
         super().__init__(
-            name="Blackhole",
-            type="Tile-Mover",
+            name="Portal",
+            type="Leader-Mover",
             minimum_influence_to_rule=3,
-            number_of_slots=3,
+            number_of_slots=2,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "**Action:** Pay 1 power to swap the position of two tiles",
+                    "description": "**Action:** Pay 1 power to choose a tile. Your leader teleports there",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": True,                   
-                    "data_needed_for_use": ["tile1", "tile2"]
+                    "data_needed_for_use": ["tile_to_move_leader_to"]
                 },
             ]
         )
@@ -38,15 +38,7 @@ class Blackhole(Tile):
         return useable_tiers
 
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
-        current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
-        if current_piece_of_data_to_fill == "tile1":
-            available_actions["select_a_tile"] = list(range(len(game_state["tiles"])))
-        elif current_piece_of_data_to_fill == "tile2":
-            available_tiles = list(range(len(game_state["tiles"])))
-            tile1_index = game_action_container.required_data_for_action["tile1"]
-            if tile1_index is not None:
-                available_tiles.remove(tile1_index)
-            available_actions["select_a_tile"] = available_tiles
+        available_actions["select_a_tile"] = game_constants.all_tile_indices
 
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
@@ -73,20 +65,15 @@ class Blackhole(Tile):
             await send_clients_log_message(f"Not enough power to use **{self.name}**")
             return False              
 
-        tile1_index = game_action_container.required_data_for_action['tile1']
-        tile2_index = game_action_container.required_data_for_action['tile2']
-       
-        if tile1_index is None or tile2_index is None:
-            await send_clients_log_message(f"Invalid tiles selected for using **{self.name}**")
-            return False
-       
-        if tile1_index == tile2_index:
-            await send_clients_log_message(f"Cannot select the same tile twice for **{self.name}**")
-            return False
+        index_of_tile_to_move_leader_to = game_action_container.required_data_for_action['tile_to_move_leader_to']
+        tile_to_move_leader_to = game_state['tiles'][index_of_tile_to_move_leader_to]
+        if index_of_tile_to_move_leader_to is None or index_of_tile_to_move_leader_to > 8:
+            await send_clients_log_message(f"Invalid tile selected for using **{self.name}**")
+            return False    
 
-        await send_clients_log_message(f"Used **{self.name}** to swap **{game_state['tiles'][tile1_index].name}** and **{game_state['tiles'][tile2_index].name}**. They lose a power")
-        # Swap the tiles
-        game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
+        await send_clients_log_message(f"{user}_leader took **{self.name}** to **{tile_to_move_leader_to.name}**. They lose a power")
+        self.leaders_here[user] = False
+        tile_to_move_leader_to.leaders_here[user] = True
         game_state['power'][user] -= 1       
         self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

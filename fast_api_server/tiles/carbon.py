@@ -6,8 +6,8 @@ class Carbon(Tile):
     def __init__(self):
         super().__init__(
             name="Carbon",
-            type="Giver/Scorer",
-            description="At the __end of a round__, for each follower you have here, [[receive]] another follower here",
+            type="Giver",
+            description="At the __end of each round__, for each follower you have here, [[receive]] another follower here",
             number_of_slots=9,
             minimum_influence_to_rule=3,            
             influence_tiers=[

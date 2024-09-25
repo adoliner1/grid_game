@@ -10,6 +10,9 @@ class GameActionContainer:
         self.tiers_to_resolve=tiers_to_resolve
         self.data_from_event=data_from_event
 
+        if game_action == "move_leader":
+            self.movements_made = 0
+
     def get_next_piece_of_data_to_fill(self):
         for piece_of_data_to_fill, value in self.required_data_for_action.items():
             if value is None or value == {}:

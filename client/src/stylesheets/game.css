@@ -95,8 +95,6 @@ svg.selectable:active {
   fill: black;
 }
 
-/* Button styles */
-/* Button styles */
 .btn-enabled, .btn-disabled {
   padding: 6px 12px;
   margin: 3px;
@@ -104,7 +102,6 @@ svg.selectable:active {
   border-radius: 4px;
   font-size: 0.9em;
   display: inline-block;
-  min-width: 80px;
   text-align: center;
   transition: background-color 0.3s, color 0.3s;
 }
@@ -128,7 +125,6 @@ svg.selectable:active {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 5px;
 }
 
 /* Current round highlight */
@@ -189,7 +185,7 @@ svg.selectable:active {
   border: 1px solid #ddd;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 5px;
-  margin-bottom: 1px;
+  margin-bottom: 5px;
 }
 
 .influence-icon {

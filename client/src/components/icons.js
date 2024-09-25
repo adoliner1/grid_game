@@ -82,6 +82,7 @@ const createIcon = ({ type, tooltipText, color, width = 24, height = 24, classNa
     case 'crown':
     case 'influence':
     case 'points':
+    case 'point':
     case 'power':
     case 'leader':
     case 'sage':

@@ -19,7 +19,7 @@ const App = () => {
 };
 
 export default App;
-//*/
+*/
 
 //dev
 import React from 'react';

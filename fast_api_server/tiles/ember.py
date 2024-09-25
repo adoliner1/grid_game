@@ -9,8 +9,8 @@ class Ember(Tile):
             type="Scorer",
             minimum_influence_to_rule=3,
             influence_tiers=[],
-            description=f"You may not ((recruit)) here\nWhen a disciple is ^^burned^^, the owner [[receives]] a copy of it here\n\nAt the __end of a round__, if Ember is full, remove all the disciples. +6 points to whichever player had more",
-            number_of_slots=11,
+            description=f"You may not ((recruit)) here\nWhen a disciple is ^^burned^^, the owner [[receives]] a copy of it here\n\nAt the __end of each round__, if Ember is full, remove all the disciples. +6 points to whichever player had more",
+            number_of_slots=9,
             disciples_which_can_be_recruited_to_this=[]
         )
 

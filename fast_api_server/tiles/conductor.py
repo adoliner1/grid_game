@@ -10,21 +10,21 @@ class Conductor(Tile):
             name="Conductor",
             type="Mover",
             number_of_slots=5,
-            minimum_influence_to_rule=5,
+            minimum_influence_to_rule=3,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "**Reaction:** After you [[receive]] a disciple, you may move it to a tile adjacent to Conductor",
+                    "description": "**Reaction:** After you [[receive]] a disciple, move     it to a tile adjacent to Conductor",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,        
                     "leader_must_be_present": False,             
                     "data_needed_for_use": ['tile_to_move_disciple_to']
                 },
                 {
-                    "influence_to_reach_tier": 5,
+                    "influence_to_reach_tier": 5,   
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** Same as above but you may move it anywhere",
+                    "description": "**Reaction:** After you [[receive]] a disciple, move it anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,       
                     "leader_must_be_present": False,              

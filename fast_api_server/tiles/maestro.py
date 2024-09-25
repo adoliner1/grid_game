@@ -9,7 +9,7 @@ class Maestro(Tile):
         super().__init__(
             name="Maestro",
             type="Mover",
-            minimum_influence_to_rule=5,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
             influence_tiers=[
                 {
@@ -24,7 +24,7 @@ class Maestro(Tile):
                 {
                     "influence_to_reach_tier": 6,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** Same as above (this tier has no cooldown though)",
+                    "description": "**Reaction:** After you [[receive]] a disciple, you may move it to a tile adjacent to the tile you [[received]] it at",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,   
                     "leader_must_be_present": False,                   

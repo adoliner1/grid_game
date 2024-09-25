@@ -28,8 +28,8 @@ const Tile = ({
         type: 'leader',
         tooltipText: `${color.charAt(0).toUpperCase() + color.slice(1)} Leader`,
         color: color,
-        width: 20,
-        height: 24
+        width: 25,
+        height: 25
     });
 
     const crownIcon = createIcon({
@@ -142,7 +142,7 @@ const Tile = ({
     }
 
     return (
-        <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'}`} onClick={tileClickHandler}>
+          <div className={`${isSelectable() ? 'tile selectable-tile' : 'tile'} ${ruler ? `ruler-tile-${ruler}` : ''}`} onClick={tileClickHandler}>
             <div className="tile-content">
                 <div className="tile-header">
                     <div className={`ruler-crown-in-header ${ruler ? `ruler-crown-${ruler}` : ''}`}>

@@ -6,7 +6,7 @@ class Wolf(Tile):
     def __init__(self):
         super().__init__(
             name="Circle of the Wolf",
-            type="Power-Creator/Giver",
+            type="Generator/Giver",
             number_of_slots=5,
             minimum_influence_to_rule=3,
             influence_tiers=[

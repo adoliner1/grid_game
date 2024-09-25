@@ -14,12 +14,12 @@ class Captain(Tile):
                 {
                     "influence_to_reach_tier": 4,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** After you [[receive]] a disciple at a tile, you may ^^burn^^ any disciple at a tile adjacent to that tile",
+                    "description": "**Reaction:** After you [[receive]] a disciple, you may ^^burn^^ any disciple adjacent to the tile you received it",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False, 
                     "data_needed_for_use": ['slot_and_tile_to_burn_disciple'],
-                },                
+                },        
             ],            
             number_of_slots=5,
         )

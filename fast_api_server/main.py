@@ -293,7 +293,6 @@ async def send_available_actions_to_client(available_actions, current_piece_of_d
             })
 #--------------DEV---------------------
 
-
 async def send_message(game_id: int, message: str):
     for connection in connections_to_games:
         if connection["game_id"] == game_id:

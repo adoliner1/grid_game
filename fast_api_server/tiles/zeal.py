@@ -7,11 +7,11 @@ class Zeal(Tile):
         super().__init__(
             name="Zeal",
             type="Recruitment-Enhancer",
-            minimum_influence_to_rule=4,
-            number_of_slots=7,
+            minimum_influence_to_rule=3,
+            number_of_slots=5,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 7,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,
                     "description": "Increase your recruitment range by 1",
                     "is_on_cooldown": False,

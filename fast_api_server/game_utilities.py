@@ -189,7 +189,10 @@ def get_available_client_actions(game_state, game_action_container, player_color
         tile_in_use = game_state["tiles"][index_of_tile_in_use]
         tile_in_use.set_available_actions_for_use(game_state, index_of_tier_in_use, game_action_container, available_client_actions)
 
-    elif game_action_container.game_action == 'move':
+    elif game_action_container.game_action == 'move_leader':
+        #after the first move, players can choose to stop their movement
+        if game_action_container.movements_made > 0:
+            available_client_actions["do_not_react"] = None
         available_client_actions["select_a_tile"] = get_adjacent_tile_indices(get_tile_index_of_leader(game_state, game_action_container.whose_action))
 
     elif game_action_container.game_action == 'recruit':
@@ -212,8 +215,8 @@ def get_available_client_actions(game_state, game_action_container, player_color
     else:
         available_client_actions['pass'] = []
 
-        if game_state['power'][game_action_container.whose_action] >= 0:
-            available_client_actions['move'] = []
+        if game_state['power'][game_action_container.whose_action] > 0:
+            available_client_actions['move_leader'] = []
         if game_state['power'][game_action_container.whose_action] > 1:    
             available_client_actions['recruit'] = []
         if game_state['power'][game_action_container.whose_action] > 2:    

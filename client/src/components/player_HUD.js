@@ -99,6 +99,7 @@ const PlayerHUD = ({
 }) => {
   const class_for_player_color = player_color === 'red' ? 'player-red' : 'player-blue';
   const active_player_class = whose_turn_is_it === player_color ? 'player-active' : '';
+  const class_to_show_border_by_client_color = player_color === clients_color ? 'player-is-this-color' : ''; 
 
   const pointsIcon = createIcon({ type: 'points', tooltipText: 'Points', width: 18, height: 18 });
   const presenceIcon = createIcon({ type: 'presence', tooltipText: 'Presence', width: 18, height: 18 });
@@ -106,7 +107,7 @@ const PlayerHUD = ({
   const powerIcon = createIcon({ type: 'power', tooltipText: 'Power', width: 18, height: 18 });
 
   return (
-    <div className={`player-info ${class_for_player_color} ${active_player_class} ${has_passed ? 'player-has-passed' : ''}`}>
+    <div className={`player-info ${class_for_player_color} ${class_to_show_border_by_client_color} ${active_player_class} ${has_passed ? 'player-has-passed' : ''}`}>
       <div className='points-presence-power-peak-influence-row'>
         <div className="icon-value-pair">
           {pointsIcon} : 

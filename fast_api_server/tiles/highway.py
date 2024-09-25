@@ -22,7 +22,7 @@ class Highway(Tile):
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** Same as above but don't burn a disciple",
+                    "description": "**Action:** Pay one power to move a disciple on a tile to another tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,          
                     "leader_must_be_present": False,           
@@ -102,10 +102,10 @@ class Highway(Tile):
         index_of_tile_to_move_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['tile_index']
         slot_index_to_move_disciple_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['slot_index']
         index_of_tile_to_move_disciple_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['tile_index']
+        slot_index_to_move_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['slot_index']
 
         if tier_index == 0:
             slot_index_to_burn_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple_from']['slot_index']
-            slot_index_to_move_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['slot_index']
 
             if self.slots_for_disciples[slot_index_to_burn_disciple_from]["color"] != game_action_container.whose_action:
                 await send_clients_log_message(f"Tried to use **{self.name}** but chose a disciple owned by opponent to burn")

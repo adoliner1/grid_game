@@ -16,7 +16,7 @@ class Sword(Tile):
                     "description": "**Action:** Pay one power to ^^burn^^ any disciple at an adjacent tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
-                    "leader_must_be_present": False,                  
+                    "leader_must_be_present": True,                  
                     "data_needed_for_use": ["slot_and_tile_to_burn_disciple_at"]
                 },
             ]
@@ -30,7 +30,7 @@ class Sword(Tile):
         whose_turn_is_it = game_state["whose_turn_is_it"]
         ruler = self.determine_ruler(game_state)
 
-        if (ruler == whose_turn_is_it and not self.influence_tiers[0]["is_on_cooldown"] and game_state['power'][whose_turn_is_it] > 0):
+        if (ruler == whose_turn_is_it and not self.influence_tiers[0]["is_on_cooldown"] and game_state['power'][whose_turn_is_it] > 0 and self.leaders_here[ruler]):
             useable_tiers.append(0)
         
         return useable_tiers
@@ -51,7 +51,11 @@ class Sword(Tile):
         
         if user != ruler:
             await send_clients_log_message(f"Only the ruler can use **{self.name}**")
-            return False            
+            return False
+
+        if not self.leaders_here[ruler]:
+            await send_clients_log_message(f"Need **{self.name}** to be at Sword to use it")
+            return False                   
 
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
             await send_clients_log_message(f"**{self.name}** is on cooldown")

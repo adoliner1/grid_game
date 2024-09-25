@@ -6,14 +6,14 @@ class Locus(Tile):
     def __init__(self):
         super().__init__(
             name="Locus",
-            type="Power-Creator",
+            type="Generator",
             minimum_influence_to_rule=3,
             number_of_slots=5,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** Gain power equal to the number of tiles adjacent to Locus which you rule",
+                    "description": "**Action:** Gain 2 power for each adjacent tile you rule",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                  
@@ -51,13 +51,14 @@ class Locus(Tile):
 
         index_of_locus = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         adjacent_tiles_ruled = 0
+        power_gained = 0
         for tile_index in game_utilities.get_adjacent_tile_indices(index_of_locus):
             if game_state['tiles'][tile_index].determine_ruler(game_state) == user:
                 adjacent_tiles_ruled += 1
-            if adjacent_tiles_ruled:
-                game_state['power'][user] += adjacent_tiles_ruled
 
-        await send_clients_log_message(f"{user} uses **{self.name}** and gains {adjacent_tiles_ruled} power") 
+        power_gained = adjacent_tiles_ruled*2
+        game_state['power'][user] += power_gained
+        await send_clients_log_message(f"{user} uses **{self.name}** and gains {power_gained} power") 
        
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True

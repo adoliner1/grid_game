@@ -7,9 +7,9 @@ import RoundBonusesTable from './round_bonuses_table';
 import createIcon from './icons';
 
 const DiscipleInfluenceSection = () => {
-    const disciple_types = ['follower', 'acolyte', 'sage'];
-    const discipleInfluence = { 'follower': 1, 'acolyte': 2, 'sage': 3 };
-    const influenceIcon = createIcon({ type: 'influence', tooltipText: 'Influence per Disciple', width: 18, height: 18 });
+    const disciple_types = ['follower', 'acolyte', 'sage', 'leader'];
+    const discipleInfluence = { 'follower': 1, 'acolyte': 2, 'sage': 3, 'leader': 3};
+    const influenceIcon = createIcon({ type: 'influence', tooltipText: 'Influence Values', width: 18, height: 18 });
     
     return (
       <div className="disciple-influence-section">
@@ -103,9 +103,9 @@ const Game = () => {
     };
 
     const handleMoveButtonClick = () => {
-        if (availableActions.hasOwnProperty('move')) {
+        if (availableActions.hasOwnProperty('move_leader')) {
             playSound(clickSound);
-            request.current.client_action = 'move';
+            request.current.client_action = 'move_leader';
             sendRequest();
         }
     };
@@ -187,7 +187,7 @@ const Game = () => {
                 game_id: game_id
             }));
         };
-        /*/
+        */
 
         //DEV
         socket.current.onopen = () => {
@@ -236,6 +236,25 @@ const Game = () => {
             if (event.key === 'Escape') {
                 request.current.client_action = "reset_current_action";
                 sendRequest();
+            } else {
+                const key = event.key.toLowerCase();
+                switch (key) {
+                    case 'p':
+                        if (availableActions.hasOwnProperty('pass')) handlePassButtonClick();
+                        break;
+                    case 'd':
+                        if (availableActions.hasOwnProperty('do_not_react')) handleChooseNotToReactClick();
+                        break;
+                    case 'm':
+                        if (availableActions.hasOwnProperty('move_leader')) handleMoveButtonClick();
+                        break;
+                    case 'r':
+                        if (availableActions.hasOwnProperty('recruit')) handleRecruitButtonClick();
+                        break;
+                    case 'e':
+                        if (availableActions.hasOwnProperty('exile')) handleExileButtonClick();
+                        break;
+                }
             }
         };
     
@@ -243,7 +262,7 @@ const Game = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, []);
+    }, [availableActions]);
 
     useEffect(() => {
         if (userHasInteracted.current && 
@@ -258,10 +277,26 @@ const Game = () => {
         return <div>Loading...</div>;
     }
 
+    const ButtonWithHotkey = ({ onClick, disabled, className, hotkey, children }) => {
+        const buttonText = children.split('');
+        let hotkeyUsed = false;
+    
+        return (
+            <button onClick={onClick} disabled={disabled} className={className}>
+                {buttonText.map((char, index) => {
+                    if (!hotkeyUsed && char.toLowerCase() === hotkey.toLowerCase()) {
+                        hotkeyUsed = true;
+                        return <u key={index}>{char}</u>;
+                    }
+                    return char;
+                })}
+            </button>
+        );
+    };
+
     return (
         <div className="game-container">
           <div className="info_section">
-            <div className={clientColor.current === 'red' ? 'red-text' : 'blue-text'}> You are {clientColor.current} </div>
             <RoundBonusesTable gameState={gameState} />
             <DiscipleInfluenceSection/>
             <PlayerHUD   
@@ -297,21 +332,46 @@ const Game = () => {
               onDiscipleClick={handleDiscipleInHUDClick}
             />
             <div className="action-buttons">
-                <button onClick={handlePassButtonClick} disabled={!availableActions.hasOwnProperty('pass')} className={availableActions.hasOwnProperty('pass') ? 'btn-enabled' : 'btn-disabled'}>
+                <ButtonWithHotkey 
+                    onClick={handlePassButtonClick} 
+                    disabled={!availableActions.hasOwnProperty('pass')} 
+                    className={availableActions.hasOwnProperty('pass') ? 'btn-enabled' : 'btn-disabled'}
+                    hotkey="P"
+                >
                     Pass
-                </button>
-                <button onClick={handleChooseNotToReactClick} disabled={!availableActions.hasOwnProperty('do_not_react')} className={availableActions.hasOwnProperty('do_not_react') ? 'btn-enabled' : 'btn-disabled'}>
-                    Don't Use Reaction
-                </button>
-                <button onClick={handleMoveButtonClick} disabled={!availableActions.hasOwnProperty('move')} className={availableActions.hasOwnProperty('move') ? 'btn-enabled' : 'btn-disabled'}>
+                </ButtonWithHotkey>
+                <ButtonWithHotkey 
+                    onClick={handleChooseNotToReactClick} 
+                    disabled={!availableActions.hasOwnProperty('do_not_react')} 
+                    className={availableActions.hasOwnProperty('do_not_react') ? 'btn-enabled' : 'btn-disabled'}
+                    hotkey="D"
+                >
+                    Don't Use
+                </ButtonWithHotkey>
+                <ButtonWithHotkey 
+                    onClick={handleMoveButtonClick} 
+                    disabled={!availableActions.hasOwnProperty('move_leader')} 
+                    className={availableActions.hasOwnProperty('move_leader') ? 'btn-enabled' : 'btn-disabled'}
+                    hotkey="M"
+                >
                     Move Leader
-                </button>
-                <button onClick={handleRecruitButtonClick} disabled={!availableActions.hasOwnProperty('recruit')} className={availableActions.hasOwnProperty('recruit') ? 'btn-enabled' : 'btn-disabled'}>
+                </ButtonWithHotkey>
+                <ButtonWithHotkey 
+                    onClick={handleRecruitButtonClick} 
+                    disabled={!availableActions.hasOwnProperty('recruit')} 
+                    className={availableActions.hasOwnProperty('recruit') ? 'btn-enabled' : 'btn-disabled'}
+                    hotkey="R"
+                >
                     Recruit
-                </button>
-                <button onClick={handleExileButtonClick} disabled={!availableActions.hasOwnProperty('exile')} className={availableActions.hasOwnProperty('exile') ? 'btn-enabled' : 'btn-disabled'}>
+                </ButtonWithHotkey>
+                <ButtonWithHotkey 
+                    onClick={handleExileButtonClick} 
+                    disabled={!availableActions.hasOwnProperty('exile')} 
+                    className={availableActions.hasOwnProperty('exile') ? 'btn-enabled' : 'btn-disabled'}
+                    hotkey="E"
+                >
                     Exile
-                </button>                                     
+                </ButtonWithHotkey>                                     
             </div>
             <GameLog logs={logs} />
           </div>
