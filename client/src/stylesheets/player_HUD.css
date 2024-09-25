@@ -13,6 +13,10 @@
     border-style: solid;
 }
 
+.expected-income {
+    margin-left: 1px
+}
+
 .player-red {
     border-color: red;
 }

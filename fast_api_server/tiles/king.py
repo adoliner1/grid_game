@@ -25,6 +25,20 @@ class King(Tile):
     def determine_ruler(self, game_state):
         return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
+    def modify_expected_incomes(self, game_state):
+        if game_state['round'] != 5:
+            return
+        
+        game_utilities.determine_rulers(game_state)
+        if self.ruler:
+            tiles_ruled = 0
+            for tile in game_state['tiles']:
+                if tile.ruler == self.ruler:
+                    tiles_ruled += 1
+
+            points_to_gain = 5*tiles_ruled
+            game_state['expected_points_incomes'][self.ruler] += points_to_gain
+
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_utilities.determine_rulers(game_state)
         if self.ruler:
@@ -33,8 +47,6 @@ class King(Tile):
                 if tile.ruler == self.ruler:
                     tiles_ruled += 1
 
-        points_to_gain = 5*tiles_ruled
-
-        if points_to_gain:
+            points_to_gain = 5*tiles_ruled
             game_state['points'][self.ruler] += points_to_gain
             await send_clients_log_message(f"{self.ruler} rules {self.name} and {tiles_ruled} tiles. They gain {points_to_gain} points")

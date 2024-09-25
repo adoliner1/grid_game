@@ -28,6 +28,8 @@ class GameEngine:
         self.send_available_actions = send_clients_available_actions
 
     async def start_game(self):
+        self.game_state['power']['red'] = 3
+        self.game_state['power']['blue'] = 4
         await self.perform_initial_placements()
         await self.start_round()
         await self.run_game_loop()
@@ -274,6 +276,7 @@ class GameEngine:
                     game_utilities.determine_rulers(self.game_state)
                     game_utilities.calculate_exiling_ranges(self.game_state)
                     game_utilities.calculate_recruiting_ranges(self.game_state)
+                    game_utilities.calculate_expected_incomes(self.game_state)
                     await self.send_clients_game_state(self.game_state)
                     await self.get_and_send_available_actions()
                     return True
@@ -290,6 +293,7 @@ class GameEngine:
         game_utilities.determine_rulers(self.game_state)
         game_utilities.calculate_exiling_ranges(self.game_state)
         game_utilities.calculate_recruiting_ranges(self.game_state)
+        game_utilities.calculate_expected_incomes(self.game_state)
         self.game_action_container_stack.pop()
         await self.send_clients_game_state(self.game_state)
         return True
@@ -492,9 +496,11 @@ class GameEngine:
             "power": {"red": 0, "blue": 0},
             "recruiting_range": {"red": 0, "blue": 0},
             "exiling_range": {"red": 0, "blue": 0},
+            "expected_power_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
+            "expected_points_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
             "costs_to_recruit": {"red": game_constants.starting_cost_to_recruit, "blue": game_constants.starting_cost_to_recruit},
             "costs_to_exile": {"red": game_constants.starting_cost_to_exile, "blue": game_constants.starting_cost_to_exile},
-            "power_given_at_start_of_round": game_constants.power_given_at_start_of_round,
+            "power_given_at_start_of_round": game_constants.power_given_at_end_of_round,
             "leader_movement": {"red": game_constants.starting_leader_movement['red'], "blue": game_constants.starting_leader_movement['blue']},
             "tiles": [tile() for tile in chosen_tiles],
             "whose_turn_is_it": "red",
@@ -541,21 +547,10 @@ class GameEngine:
                 tier['is_on_cooldown'] = False
         
         for _ , listener_function in self.game_state["listeners"]["start_of_round"].values():
-            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
-        
-        #base power-income
-        power_to_give = game_constants.power_given_at_start_of_round[round]
-        await self.send_clients_log_message(f"Giving {power_to_give} power to each player for the start of the round")        
-        
-        for player in game_constants.player_colors:
-            self.game_state['power'][player] += power_to_give
-        
-        #base power-income
-        if round == 0:
-            await self.send_clients_log_message(f"Blue gets 1 extra power for the first round for being second player")
-            self.game_state['power']['blue'] += 1          
-        
-        game_utilities.determine_rulers(self.game_state)
+            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)      
+            game_utilities.determine_rulers(self.game_state)
+    
+        game_utilities.calculate_expected_incomes(self.game_state)
 
     async def player_passes(self, player_color):
         if self.game_state["whose_turn_is_it"] != player_color:
@@ -584,6 +579,13 @@ class GameEngine:
             await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
 
         game_utilities.determine_rulers(self.game_state)
+
+        #base power-income
+        power_to_give = game_constants.power_given_at_end_of_round[self.game_state["round"]]
+        await self.send_clients_log_message(f"Giving {power_to_give} power to each player (base-income)")        
+        
+        for player in game_constants.player_colors:
+            self.game_state['power'][player] += power_to_give
 
         #not normally to do this here
         await self.send_clients_game_state(self.game_state)

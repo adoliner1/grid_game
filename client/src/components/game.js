@@ -307,6 +307,8 @@ const Game = () => {
               points={gameState.points.red}
               presence={gameState.presence.red}
               power={gameState.power.red}
+              expected_power_income={gameState.expected_power_incomes.red}
+              expected_points_income={gameState.expected_points_incomes.red}
               peak_influence={gameState.peak_influence.red}
               available_actions={availableActions}
               costs_to_exile={gameState.costs_to_exile.red}
@@ -323,6 +325,8 @@ const Game = () => {
               points={gameState.points.blue}
               presence={gameState.presence.blue}
               power={gameState.power.blue}
+              expected_power_income={gameState.expected_power_incomes.blue}
+              expected_points_income={gameState.expected_points_incomes.blue}
               peak_influence={gameState.peak_influence.blue}
               available_actions={availableActions}
               costs_to_exile={gameState.costs_to_exile.blue}

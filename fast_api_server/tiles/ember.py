@@ -35,7 +35,18 @@ class Ember(Tile):
             self, 
             burned_disciple
         )
-        
+    def modify_expected_incomes(self, game_state):
+        if all(slot is not None for slot in self.slots_for_disciples):
+            red_count = sum(1 for slot in self.slots_for_disciples if slot["color"] == "red")
+            blue_count = sum(1 for slot in self.slots_for_disciples if slot["color"] == "blue")
+            
+            if red_count > blue_count:
+                winner = "red"
+            elif blue_count > red_count:
+                winner = "blue"
+
+            game_state["expected_points_incomes"][winner] += 6
+
     async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         if all(slot is not None for slot in self.slots_for_disciples):
             red_count = sum(1 for slot in self.slots_for_disciples if slot["color"] == "red")

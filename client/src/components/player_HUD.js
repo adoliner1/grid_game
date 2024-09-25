@@ -89,6 +89,8 @@ const PlayerHUD = ({
   points,
   presence,
   power,
+  expected_power_income,
+  expected_points_income,
   peak_influence,
   available_actions,
   onDiscipleClick,
@@ -108,24 +110,34 @@ const PlayerHUD = ({
 
   return (
     <div className={`player-info ${class_for_player_color} ${class_to_show_border_by_client_color} ${active_player_class} ${has_passed ? 'player-has-passed' : ''}`}>
-      <div className='points-presence-power-peak-influence-row'>
-        <div className="icon-value-pair">
-          {pointsIcon} : 
-          <span>{points}</span>
-        </div>
-        <div className="icon-value-pair">
-          {presenceIcon} : 
-          <span>{presence}</span>
-        </div>
-        <div className="icon-value-pair">
-          {peakInfluenceIcon} : 
-          <span>{peak_influence}</span>
-        </div>
-        <div className="icon-value-pair">
-          {powerIcon} : 
-          <span>{power}</span>
-        </div>
+    <div className='points-presence-power-peak-influence-row'>
+      <div className="icon-value-pair">
+        {pointsIcon} :
+        <span>
+          {points}
+          {expected_points_income > 0 && (
+            <span className="expected-income">  (+{expected_points_income})</span>
+          )}
+        </span>
       </div>
+      <div className="icon-value-pair">
+        {presenceIcon} :
+        <span>{presence}</span>
+      </div>
+      <div className="icon-value-pair">
+        {peakInfluenceIcon} :
+        <span>{peak_influence}</span>
+      </div>
+      <div className="icon-value-pair">
+        {powerIcon} :
+        <span>
+          {power}
+          {expected_power_income > 0 && (
+            <span className="expected-income">  (+{expected_power_income})</span>
+          )}
+        </span>
+      </div>
+    </div>
       <CostGrid
         costs_to_recruit={costs_to_recruit}
         costs_to_exile={costs_to_exile}

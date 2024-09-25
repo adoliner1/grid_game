@@ -255,6 +255,24 @@ def get_tiles_within_exiling_range(game_state, player_color):
     
     return tiles_in_range
 
+def calculate_expected_incomes(game_state):
+    round = game_state['round']
+    if round < 5:
+        game_state['expected_power_incomes']['red'] = game_constants.power_given_at_end_of_round[round]
+        game_state['expected_power_incomes']['blue'] = game_constants.power_given_at_end_of_round[round]
+    else:
+        game_state['expected_power_incomes']['red'] = 0
+        game_state['expected_power_incomes']['blue'] = 0
+
+    game_state['expected_points_incomes']['red'] = 0
+    game_state['expected_points_incomes']['blue'] = 0
+    
+    game_state['income_bonuses'][round].modify_expected_incomes(game_state)
+    game_state['scorer_bonuses'][round].modify_expected_incomes(game_state)
+
+    for tile in game_state['tiles']:
+        tile.modify_expected_incomes(game_state)
+
 def calculate_recruiting_ranges(game_state):
     game_state['recruiting_range']['red'] = game_constants.initial_recruiting_ranges['red']
     game_state['recruiting_range']['blue'] = game_constants.initial_recruiting_ranges['blue']

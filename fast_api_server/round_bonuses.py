@@ -17,6 +17,9 @@ class RoundBonus:
     def serialize(self):
         return self.description
 
+    def modify_expected_incomes(self, game_state):
+        pass  # Base method, to be overridden by subclasses
+
 class PointsPerRow(RoundBonus):
     def __init__(self):
         super().__init__(
@@ -25,6 +28,18 @@ class PointsPerRow(RoundBonus):
             listener_type="end_of_round",
             bonus_type="scorer"
         )
+
+    def modify_expected_incomes(self, game_state):
+        red_complete_rows = game_utilities.determine_how_many_full_rows_player_rules(game_state, "red")
+        blue_complete_rows = game_utilities.determine_how_many_full_rows_player_rules(game_state, "blue")
+
+        if red_complete_rows > 0:
+            points_to_gain = 10*red_complete_rows
+            game_state["expected_points_incomes"]["red"] += points_to_gain
+
+        if blue_complete_rows > 0:
+            points_to_gain = 10*blue_complete_rows
+            game_state["expected_points_incomes"]["blue"] += points_to_gain
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         red_complete_rows = game_utilities.determine_how_many_full_rows_player_rules(game_state, "red")
@@ -49,6 +64,18 @@ class PointsPerColumn(RoundBonus):
             bonus_type="scorer"
         )
 
+    def modify_expected_incomes(self, game_state):
+        red_complete_columns = game_utilities.determine_how_many_full_columns_player_rules(game_state, "red")
+        blue_complete_columns = game_utilities.determine_how_many_full_columns_player_rules(game_state, "blue")
+
+        if red_complete_columns > 0:
+            points_to_gain = 10 * red_complete_columns
+            game_state["expected_points_incomes"]["red"] += points_to_gain
+
+        if blue_complete_columns > 0:
+            points_to_gain = 10 * blue_complete_columns
+            game_state["expected_points_incomes"]["blue"] += points_to_gain
+
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         red_complete_columns = game_utilities.determine_how_many_full_columns_player_rules(game_state, "red")
         blue_complete_columns = game_utilities.determine_how_many_full_columns_player_rules(game_state, "blue")
@@ -71,6 +98,13 @@ class PointsPerTileRuled(RoundBonus):
             listener_type="end_of_round",
             bonus_type="scorer"
         )
+
+    def modify_expected_incomes(self, game_state):
+        red_tiles_ruled = sum(1 for tile in game_state["tiles"] if tile.ruler == "red")
+        blue_tiles_ruled = sum(1 for tile in game_state["tiles"] if tile.ruler == "blue")
+
+        game_state["expected_points_incomes"]["red"] += 2 * red_tiles_ruled
+        game_state["expected_points_incomes"]["blue"] += 2 * blue_tiles_ruled
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         red_tiles_ruled = sum(1 for tile in game_state["tiles"] if tile.ruler == "red")
@@ -95,6 +129,13 @@ class PowerPerPresence(RoundBonus):
             bonus_type="income"
         )
 
+    def modify_expected_incomes(self, game_state):
+        game_utilities.update_presence(game_state)
+        for player in ["red", "blue"]:
+            presence = game_state["presence"][player]
+            power_to_gain = presence // 2
+            game_state["expected_power_incomes"][player] += power_to_gain
+
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         game_utilities.update_presence(game_state)
         first_player = game_state['first_player']
@@ -115,6 +156,13 @@ class PowerPerPeakInfluence(RoundBonus):
             bonus_type="income"
         )
 
+    def modify_expected_incomes(self, game_state):
+        game_utilities.determine_influence_levels(game_state)
+        for player in ["red", "blue"]:
+            peak_influence = game_state["peak_influence"][player]
+            power_to_gain = peak_influence // 2
+            game_state["expected_power_incomes"][player] += power_to_gain
+
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         game_utilities.determine_influence_levels(game_state)
         first_player = game_state['first_player']
@@ -134,6 +182,13 @@ class PowerForLongestChain(RoundBonus):
             listener_type="end_of_round",
             bonus_type="income"
         )
+
+    def modify_expected_incomes(self, game_state):
+        longest_chains = game_utilities.find_longest_chain_of_ruled_tiles(game_state['tiles'])
+        for player in ["red", "blue"]:
+            size_of_longest_chain = longest_chains[player]
+            power_to_gain = size_of_longest_chain * 2
+            game_state["expected_power_incomes"][player] += power_to_gain
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         first_player = game_state['first_player']
@@ -157,6 +212,12 @@ class PointsForLongestChain(RoundBonus):
             bonus_type="scorer"
         )
 
+    def modify_expected_incomes(self, game_state):
+        longest_chains = game_utilities.find_longest_chain_of_ruled_tiles(game_state['tiles'])
+        for player in ["red", "blue"]:
+            points_to_award = longest_chains[player] * 3
+            game_state["expected_points_incomes"][player] += points_to_award
+
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
@@ -176,6 +237,13 @@ class PointsPerPresence(RoundBonus):
             listener_type="end_of_round",
             bonus_type="scorer"
         )
+
+    def modify_expected_incomes(self, game_state):
+        game_utilities.update_presence(game_state)
+        for player in ["red", "blue"]:
+            presence = game_state["presence"][player]
+            points_to_award = presence
+            game_state["expected_points_incomes"][player] += points_to_award
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         game_utilities.update_presence(game_state)
@@ -198,6 +266,13 @@ class PointsPerPeakInfluence(RoundBonus):
             bonus_type="scorer"
         )
 
+    def modify_expected_incomes(self, game_state):
+        game_utilities.determine_influence_levels(game_state)
+        for player in ["red", "blue"]:
+            peak_influence = game_state["peak_influence"][player]
+            points_to_award = peak_influence
+            game_state["expected_points_incomes"][player] += points_to_award
+
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         game_utilities.determine_influence_levels(game_state)
         first_player = game_state['first_player']
@@ -219,6 +294,12 @@ class PowerForCorner(RoundBonus):
             bonus_type="income"
         )
 
+    def modify_expected_incomes(self, game_state):
+        for player in ["red", "blue"]:
+            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
+            if tile_index_of_leader in game_constants.corner_tiles:
+                game_state["expected_power_incomes"][player] += 3
+
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
@@ -239,6 +320,13 @@ class PowerPerRow(RoundBonus):
             bonus_type="income"
         )
 
+    def modify_expected_incomes(self, game_state):
+        red_complete_rows = game_utilities.determine_how_many_full_rows_player_rules(game_state, "red")
+        blue_complete_rows = game_utilities.determine_how_many_full_rows_player_rules(game_state, "blue")
+
+        game_state["expected_power_incomes"]["red"] += 5 * red_complete_rows
+        game_state["expected_power_incomes"]["blue"] += 5 * blue_complete_rows
+
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         red_complete_rows = game_utilities.determine_how_many_full_rows_player_rules(game_state, "red")
         blue_complete_rows = game_utilities.determine_how_many_full_rows_player_rules(game_state, "blue")
@@ -257,6 +345,13 @@ class PowerPerColumn(RoundBonus):
             listener_type="end_of_round",
             bonus_type="income"
         )
+
+    def modify_expected_incomes(self, game_state):
+        red_complete_columns = game_utilities.determine_how_many_full_columns_player_rules(game_state, "red")
+        blue_complete_columns = game_utilities.determine_how_many_full_columns_player_rules(game_state, "blue")
+
+        game_state["expected_power_incomes"]["red"] += 5 * red_complete_columns
+        game_state["expected_power_incomes"]["blue"] += 5 * blue_complete_columns
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         red_complete_columns = game_utilities.determine_how_many_full_columns_player_rules(game_state, "red")
@@ -277,6 +372,13 @@ class PowerPerTileRuled(RoundBonus):
             bonus_type="income"
         )
 
+    def modify_expected_incomes(self, game_state):
+        red_tiles_ruled = sum(1 for tile in game_state["tiles"] if tile.ruler == "red")
+        blue_tiles_ruled = sum(1 for tile in game_state["tiles"] if tile.ruler == "blue")
+
+        game_state["expected_power_incomes"]["red"] += red_tiles_ruled
+        game_state["expected_power_incomes"]["blue"] += blue_tiles_ruled
+
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         red_tiles_ruled = sum(1 for tile in game_state["tiles"] if tile.ruler == "red")
         blue_tiles_ruled = sum(1 for tile in game_state["tiles"] if tile.ruler == "blue")
@@ -295,6 +397,12 @@ class PointsForCorner(RoundBonus):
             listener_type="end_of_round",
             bonus_type="scorer"
         )
+
+    def modify_expected_incomes(self, game_state):
+        for player in ["red", "blue"]:
+            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
+            if tile_index_of_leader in game_constants.corner_tiles:
+                game_state["expected_points_incomes"][player] += 5
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         first_player = game_state['first_player']

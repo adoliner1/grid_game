@@ -79,6 +79,9 @@ class Tile:
     def modify_recruiting_ranges(self, game_state):
         pass
 
+    def modify_expected_incomes(self, game_state):
+        pass
+
     def modify_recruiting_costs(self, game_state):
         pass
 

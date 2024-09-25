@@ -14,7 +14,7 @@ class RealmOfTheJester(Tile):
                 {
                     "influence_to_reach_tier": 1,
                     "must_be_ruler": True,                    
-                    "description": "At the __start of a round__, -3 points",
+                    "description": "At the __end of each round__, -3 points",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
                     "has_a_cooldown": False,
@@ -28,6 +28,12 @@ class RealmOfTheJester(Tile):
     def setup_listener(self, game_state):
         game_state["listeners"]["on_recruit"][self.name] = self.on_recruit_effect
 
+    def modify_expected_incomes(self, game_state):
+        ruler = self.determine_ruler(game_state)
+        if ruler:
+            points_to_lose = 3
+            game_state['expected_points_incomes'][ruler] -= points_to_lose            
+
     async def on_recruit_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         recruiter = data.get('recruiter')
         tile_index = data.get('index_of_tile_recruited_at')
@@ -38,9 +44,8 @@ class RealmOfTheJester(Tile):
             game_state['power'][recruiter] += power_gained
             await send_clients_log_message(f"{recruiter} gets {power_gained} from recruiting at **{self.name}**")
 
-    async def start_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
+    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
-
         if ruler:
             points_to_lose = 3
             game_state['points'][ruler] -= points_to_lose
