@@ -2,14 +2,14 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Ember(Tile):
+class HallsOfHades(Tile):
     def __init__(self):
         super().__init__(
-            name="Ember",
+            name="Halls of Hades",
             type="Scorer",
             minimum_influence_to_rule=3,
             influence_tiers=[],
-            description=f"You may not ((recruit)) here\nWhen a disciple is ^^burned^^, the owner [[receives]] a copy of it here\n\nAt the __end of each round__, if Ember is full, remove all the disciples. +6 points to whichever player had more",
+            description=f"You may not ((recruit)) here\n\nWhen a disciple is ^^burned^^, the owner [[receives]] a copy of it here\n\nAt the __end of each round__, if the Halls of Hades is full, remove all the disciples. +6 points to whichever player had more",
             number_of_slots=9,
             disciples_which_can_be_recruited_to_this=[]
         )

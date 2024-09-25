@@ -74,16 +74,20 @@ const RoundBonusesTable = ({ gameState }) => {
     <table className="round-bonuses-table">
       <thead>
         <tr>
-          <th>Base Power Income</th>
-          <th>End of Round Income</th>
-          <th>End of Round Scoring </th>
+          <th>End of Round Power Income</th>
+          <th>End of Round Bonus Power </th>
+          <th>End of Round Bonus Points </th>
         </tr>
       </thead>
       <tbody>
         {[...Array(totalRounds)].map((_, index) => (
           <tr key={index} className={index === gameState.round ? 'current-round' : ''}>
-            <td>{gameState.power_given_at_start_of_round[index]}</td>
-            <td>{parseBonus(gameState.income_bonuses[index])}</td>
+            <td>
+              {index < totalRounds - 1 ? gameState.power_given_at_start_of_round[index] : ''}
+            </td>
+            <td>
+              {index < totalRounds - 1 ? parseBonus(gameState.income_bonuses[index]) : ''}
+            </td>
             <td>{parseBonus(gameState.scorer_bonuses[index])}</td>
           </tr>
         ))}

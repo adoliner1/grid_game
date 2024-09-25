@@ -28,14 +28,15 @@ class GameEngine:
         self.send_available_actions = send_clients_available_actions
 
     async def start_game(self):
-        self.game_state['power']['red'] = 3
-        self.game_state['power']['blue'] = 4
+        self.game_state['power']['red'] = game_constants.first_player_starting_power
+        self.game_state['power']['blue'] = game_constants.second_player_starting_power
+        await self.send_clients_log_message(f"Starting a new game. Red starts with {game_constants.first_player_starting_power} power. Blue starts with {game_constants.second_player_starting_power} power")
         await self.perform_initial_placements()
         await self.start_round()
         await self.run_game_loop()
 
     async def perform_initial_placements(self):
-        await self.send_clients_log_message(f"Starting a new game. Players must make their initial follower recruitments and then place their leaders")  
+        await self.send_clients_log_message(f"Players must make their initial follower recruitments and then place their leaders")
         await self.send_clients_game_state(self.game_state)
 
         #set up listeners outside of start round here here in case an initial recruitment triggers one
@@ -570,7 +571,7 @@ class GameEngine:
         return True
 
     async def end_round(self):
-        await self.send_clients_log_message(f"both players have passed, ending round")
+        await self.send_clients_log_message(f"Both players have passed, ending round")
         self.round_just_ended = True
         for tile in self.game_state["tiles"]:
             await tile.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
@@ -581,11 +582,12 @@ class GameEngine:
         game_utilities.determine_rulers(self.game_state)
 
         #base power-income
-        power_to_give = game_constants.power_given_at_end_of_round[self.game_state["round"]]
-        await self.send_clients_log_message(f"Giving {power_to_give} power to each player (base-income)")        
-        
-        for player in game_constants.player_colors:
-            self.game_state['power'][player] += power_to_give
+        if self.game_state["round"] < 5:
+            power_to_give = game_constants.power_given_at_end_of_round[self.game_state["round"]]
+            await self.send_clients_log_message(f"Giving {power_to_give} power to each player (base-income)")        
+            
+            for player in game_constants.player_colors:
+                self.game_state['power'][player] += power_to_give
 
         #not normally to do this here
         await self.send_clients_game_state(self.game_state)

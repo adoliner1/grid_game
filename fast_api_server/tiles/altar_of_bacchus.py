@@ -13,7 +13,7 @@ class AltarOfBacchus(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** Move one of your disciples from any other tile here. If you did, +4 power\nAfter moving the disciple, if Altar of Bacchus is full and you're still the ruler, +5 points",
+                    "description": "**Action:** Move one of your disciples from any other tile here. If you did, +4 power. If Altar of Bacchus is full and you're still the ruler, +5 points",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": True,                  
