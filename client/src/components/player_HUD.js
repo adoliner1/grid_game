@@ -12,7 +12,7 @@ const ArrowIcon = ({ rotation }) => (
   </svg>
 )
 
-const CostGrid = ({ costs_to_recruit, costs_to_exile, player_color, available_actions, clients_color, onDiscipleClick, recruiting_range, exiling_range }) => {
+const CostGrid = ({ recruiting_costs, exiling_costs, player_color, available_actions, clients_color, onDiscipleClick, recruiting_range, exiling_range }) => {
   const disciple_types = ['follower', 'acolyte', 'sage'];
   const DiscipleComponents = { follower: Follower, acolyte: Acolyte, sage: Sage };
   const rangeIcon = createIcon({ type: 'range', tooltipText: 'Range', width: 18, height: 18 });
@@ -58,7 +58,7 @@ const CostGrid = ({ costs_to_recruit, costs_to_exile, player_color, available_ac
         </div>
         {disciple_types.map(disciple => (
           <div key={`recruit-${disciple}`} className="cost-cell">
-            <span><b>{costs_to_recruit[disciple]}</b></span>
+            <span><b>{recruiting_costs[disciple]}</b></span>
           </div>
         ))}
       </div>
@@ -73,7 +73,7 @@ const CostGrid = ({ costs_to_recruit, costs_to_exile, player_color, available_ac
         </div>
         {disciple_types.map(disciple => (
           <div key={`exile-${disciple}`} className="cost-cell">
-            <span><b>{costs_to_exile[disciple]}</b></span>
+            <span><b>{exiling_costs[disciple]}</b></span>
           </div>
         ))}
       </div>
@@ -94,8 +94,8 @@ const PlayerHUD = ({
   peak_influence,
   available_actions,
   onDiscipleClick,
-  costs_to_exile,
-  costs_to_recruit,
+  exiling_costs,
+  recruiting_costs,
   recruiting_range,
   exiling_range,
 }) => {
@@ -139,8 +139,8 @@ const PlayerHUD = ({
       </div>
     </div>
       <CostGrid
-        costs_to_recruit={costs_to_recruit}
-        costs_to_exile={costs_to_exile}
+        recruiting_costs={recruiting_costs}
+        exiling_costs={exiling_costs}
         recruiting_range={recruiting_range}
         exiling_range={exiling_range}
         player_color={player_color}

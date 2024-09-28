@@ -48,7 +48,7 @@ class PrincesEntourage(Tile):
 
     async def on_exile_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
             
-            index_of_tile_exiled_at = data.get('index_of_tile_exiled_at')
+            index_of_tile_exiled_at = data.get('index_of_tile_exiled_from')
             tile_exiled_at = game_state['tiles'][index_of_tile_exiled_at]
             exilier_color = data.get('exiler')
             disciple = data.get('disciple')

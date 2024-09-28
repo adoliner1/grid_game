@@ -179,11 +179,11 @@ const Game = () => {
         }
 
         //PROD
-        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
+        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
         //DEV
-        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         
-        //PROD
+        /*PROD
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
             socket.current.send(JSON.stringify({
@@ -192,9 +192,9 @@ const Game = () => {
                 game_id: game_id
             }));
         };
-        //
+        */
 
-        /*DEV
+        //DEV
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
         };
@@ -328,8 +328,8 @@ const Game = () => {
               expected_points_income={gameState.expected_points_incomes.red}
               peak_influence={gameState.peak_influence.red}
               available_actions={availableActions}
-              costs_to_exile={gameState.costs_to_exile.red}
-              costs_to_recruit={gameState.costs_to_recruit.red}
+              exiling_costs={gameState.exiling_costs.red}
+              recruiting_costs={gameState.recruiting_costs.red}
               recruiting_range={gameState.recruiting_range.red}
               exiling_range={gameState.exiling_range.red}
               onDiscipleClick={handleDiscipleInHUDClick}
@@ -346,8 +346,8 @@ const Game = () => {
               expected_points_income={gameState.expected_points_incomes.blue}
               peak_influence={gameState.peak_influence.blue}
               available_actions={availableActions}
-              costs_to_exile={gameState.costs_to_exile.blue}
-              costs_to_recruit={gameState.costs_to_recruit.blue}
+              exiling_costs={gameState.exiling_costs.blue}
+              recruiting_costs={gameState.recruiting_costs.blue}
               recruiting_range={gameState.recruiting_range.blue}
               exiling_range={gameState.exiling_range.blue}
               onDiscipleClick={handleDiscipleInHUDClick}

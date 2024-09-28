@@ -19,7 +19,7 @@ class TeleportingCabinet(Tile):
                     "leader_must_be_present": False,        
                     "data_needed_for_use": ["disciple_to_swap", "other_disciple_to_swap"]
                 },
-            ]
+            ],
         )
 
     def determine_ruler(self, game_state):
@@ -28,9 +28,10 @@ class TeleportingCabinet(Tile):
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
-        
+        ruler = self.determine_ruler(game_state)    
+
         if (self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]["influence_to_reach_tier"] and 
-            not self.influence_tiers[0]["is_on_cooldown"]):
+            not self.influence_tiers[0]["is_on_cooldown"] and ruler == whose_turn_is_it):
             useable_tiers.append(0)
         
         return useable_tiers
@@ -46,11 +47,13 @@ class TeleportingCabinet(Tile):
                     adjacent_slots_with_a_disciple[index] = slots_with_disciples
             available_actions["select_a_slot_on_a_tile"] = adjacent_slots_with_a_disciple
         elif current_piece_of_data_to_fill == "other_disciple_to_swap":
+            slot_index_of_first_disciple = game_action_container.required_data_for_action['disciple_to_swap']['slot_index']
+            tile_index_of_first_disciple = game_action_container.required_data_for_action['disciple_to_swap']['tile_index']
             slots_with_a_disciple = {}
-            for index, tile in enumerate(game_state["tiles"]):
-                slots_with_disciples = [i for i, slot in enumerate(tile.slots_for_disciples) if slot]
+            for tile_index, tile in enumerate(game_state["tiles"]):
+                slots_with_disciples = [slot_index for slot_index, slot in enumerate(tile.slots_for_disciples) if slot and not (slot_index == slot_index_of_first_disciple and tile_index == tile_index_of_first_disciple)]
                 if slots_with_disciples:
-                    slots_with_a_disciple[index] = slots_with_disciples
+                    slots_with_a_disciple[tile_index] = slots_with_disciples
             available_actions["select_a_slot_on_a_tile"] = slots_with_a_disciple
 
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
@@ -60,6 +63,10 @@ class TeleportingCabinet(Tile):
         if self.influence_per_player[user] < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
             await send_clients_log_message(f"Not enough influence to use **{self.name}**")
             return False
+        
+        if not self.determine_ruler(game_state) == user:
+            await send_clients_log_message(f"Must be ruler to use **{self.name}**")
+            return False  
 
         if self.influence_tiers[tier_index]["is_on_cooldown"]:
             await send_clients_log_message(f"**{self.name}** is on cooldown")

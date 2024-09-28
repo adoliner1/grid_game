@@ -2,7 +2,7 @@ import game_utilities
 import game_constants
 
 class Tile:
-    def __init__(self, name, type, number_of_slots, influence_tiers=[], minimum_influence_to_rule=0, description=None, data_needed_for_use=[], is_on_cooldown=False, disciples_which_can_be_recruited_to_this=["follower", "acolyte", "sage"]):
+    def __init__(self, name, type, number_of_slots, influence_tiers=[], minimum_influence_to_rule=0, description=None, data_needed_for_use=[], is_on_cooldown=False, disciples_which_can_be_recruited_to_this=["follower", "acolyte", "sage"], TILE_PRIORITY=0):
         self.name = name
         self.type = type
         self.description = description
@@ -15,6 +15,7 @@ class Tile:
         self.influence_per_player = {"red": 0, "blue": 0}
         self.disciples_which_can_be_recruited_to_this=disciples_which_can_be_recruited_to_this
         self.leaders_here = {"red": False, "blue": False}
+        self.TILE_PRIORITY = TILE_PRIORITY
 
     def determine_ruler(self, game_state, minimum_influence_needed_to_rule=0):
         self.determine_influence()

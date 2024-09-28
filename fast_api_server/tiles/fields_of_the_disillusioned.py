@@ -2,29 +2,31 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class SecretSanctum(Tile):
+class FieldsOfTheDisillusioned(Tile):
     def __init__(self):
         super().__init__(
-            name="Secret Sanctum",
+            name="Fields of the Disillusioned",
             type="Exile-Enhancer",
-            minimum_influence_to_rule=4,
+            minimum_influence_to_rule=6,
             number_of_slots=4,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 4,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": True,
-                    "description": "Increase your exiling range by 1",
+                    "description": "Reduce your exiling costs by 1",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,                    
                     "leader_must_be_present": False, 
                 },
-            ]
+            ],
         )
 
     def determine_ruler(self, game_state):
         return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
-    def modify_exiling_ranges(self, game_state):
+    def modify_exiling_costs(self, game_state):
         ruler = self.determine_ruler(game_state)
-        if ruler and self.influence_per_player[ruler] >= self.influence_tiers[0]['influence_to_reach_tier']:
-            game_state['exiling_range'][ruler] += 1
+        for player in game_constants.player_colors:
+            if ruler == player and self.influence_per_player[player] >= self.influence_tiers[0]['influence_to_reach_tier']:
+                for disciple in game_state['exiling_costs'][ruler]:
+                    game_state['exiling_costs'][ruler][disciple] -= 1

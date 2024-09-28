@@ -6,9 +6,7 @@ async def recruit_disciple_on_tile(game_state, game_action_container_stack, send
     tile_to_recruit_on = game_state["tiles"][tile_index]
     old_disciple =  tile_to_recruit_on.slots_for_disciples[slot_index]
     tile_to_recruit_on.slots_for_disciples[slot_index] = {'disciple': disciple, 'color': color}
-    determine_influence_levels(game_state)
-    update_presence(game_state)
-    determine_rulers(game_state)
+    update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
     await send_clients_log_message(f"{color} recruited a {color}_{disciple} at **{tile_to_recruit_on.name}**")
     if old_disciple:
@@ -28,13 +26,10 @@ async def exile_disciple_on_tile(game_state, game_action_container_stack, send_c
     tile_to_exile_from = game_state["tiles"][tile_index]
     old_disciple =  tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from]
     tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from] = None
-
-    determine_influence_levels(game_state)
-    update_presence(game_state)
-    determine_rulers(game_state)
+    update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
 
-    await send_clients_log_message(f"{color_of_player_exiling} exiled a {old_disciple['color']}_{old_disciple['disciple']} from **{tile_to_exile_from.name}** for {game_state['costs_to_exile'][color_of_player_exiling][old_disciple['disciple']]} power")
+    await send_clients_log_message(f"{color_of_player_exiling} exiled a {old_disciple['color']}_{old_disciple['disciple']} from **{tile_to_exile_from.name}** for {game_state['exiling_costs'][color_of_player_exiling][old_disciple['disciple']]} power")
 
     await call_listener_functions_for_event_type(game_state,
                                                   game_action_container_stack,
@@ -44,14 +39,12 @@ async def exile_disciple_on_tile(game_state, game_action_container_stack, send_c
                                                           "on_exile",
                                                             exiler=color_of_player_exiling,
                                                               disciple=old_disciple,
-                                                                index_of_tile_exiled_at=tile_index,
+                                                                index_of_tile_exiled_from=tile_index,
                                                                   slot_index_exiled_at=slot_index_to_exile_from)
 
 async def place_leader_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, color):
     game_state['tiles'][tile_index].leaders_here[color] = True
-    determine_influence_levels(game_state)
-    update_presence(game_state)
-    determine_rulers(game_state)
+    update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
     await send_clients_log_message(f"{color}_leader starts on **{game_state['tiles'][tile_index].name}**")
 
@@ -64,9 +57,7 @@ async def player_receives_a_disciple_on_tile(game_state, game_action_container_s
     next_empty_slot = tile.slots_for_disciples.index(None)
     tile.slots_for_disciples[next_empty_slot] = {"disciple": disciple_type, "color": player_color}
     await send_clients_log_message(f"{player_color} receives a {player_color}_{disciple_type} on **{tile.name}**")
-    determine_influence_levels(game_state)
-    update_presence(game_state)
-    determine_rulers(game_state)
+    update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
 
     await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_receive", receiver=player_color, disciple=disciple_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
@@ -84,9 +75,7 @@ async def move_disciple_between_tiles(game_state, game_action_container_stack, s
     game_state["tiles"][to_tile_index].slots_for_disciples[to_slot_index] = disciple_to_move
 
     await send_clients_log_message(f"moved a {disciple_to_move['color']}_{disciple_to_move['disciple']} from **{game_state['tiles'][from_tile_index].name}** to **{game_state['tiles'][to_tile_index].name}**")
-    determine_influence_levels(game_state)
-    update_presence(game_state)
-    determine_rulers(game_state)
+    update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
     await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_move", disciple=disciple_to_move["disciple"], from_tile_index=from_tile_index, to_tile_index=to_tile_index)
 
@@ -98,9 +87,7 @@ async def burn_disciple_at_tile_at_index(game_state, game_action_container_stack
     color = tile.slots_for_disciples[slot_index]["color"]
     tile.slots_for_disciples[slot_index] = None
     await send_clients_log_message(f"burning a {color}_{disciple} at **{tile.name}**")
-    determine_influence_levels(game_state)
-    update_presence(game_state)
-    determine_rulers(game_state)
+    update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
 
     await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_burn", burner=game_action_container_stack[-1].whose_action, disciple=disciple, color=color, index_of_tile_burned_at=tile_index)
@@ -127,9 +114,7 @@ async def call_listener_functions_for_event_type(game_state, game_action_contain
 
     for _, listener_function in game_state["listeners"][event_type].items():
         await listener_function(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data)
-        determine_influence_levels(game_state)
-        update_presence(game_state)
-        determine_rulers(game_state)
+        update_all_game_state_values(game_state)
         await send_clients_game_state(game_state)
 
     first_player = game_state['first_player']
@@ -155,6 +140,17 @@ async def call_listener_functions_for_event_type(game_state, game_action_contain
             if not reactions_by_player[second_player].tiers_to_resolve[tile_index]:
                 del reactions_by_player[second_player].tiers_to_resolve[tile_index]
 #sync
+
+def update_all_game_state_values(game_state):
+    determine_influence_levels(game_state)
+    update_presence(game_state)
+    determine_rulers(game_state)
+    calculate_exiling_ranges(game_state)
+    calculate_recruiting_ranges(game_state)
+    calculate_expected_incomes(game_state)
+    calculate_recruiting_costs(game_state)
+    calculate_exiling_costs(game_state)
+
 def get_tile_index_of_leader(game_state, color):
     for tile_index, tile in enumerate(game_state['tiles']):
         if tile.leaders_here[color]:
@@ -257,9 +253,6 @@ def calculate_exiling_ranges(game_state):
     for tile in game_state['tiles']:
         tile.modify_exiling_ranges(game_state)
 
-def calculate_exiling_costs(game_state):
-    pass
-
 def get_tiles_within_exiling_range(game_state, player_color):
     calculate_exiling_ranges(game_state)
     exiling_range = game_state['exiling_range'][player_color]
@@ -302,8 +295,30 @@ def calculate_recruiting_ranges(game_state):
     for tile in game_state['tiles']:
         tile.modify_recruiting_ranges(game_state)
 
+def calculate_exiling_costs(game_state):
+    for disciple in game_constants.disciples:
+        game_state['exiling_costs']['red'][disciple] = game_constants.initial_exiling_costs[disciple]
+        game_state['exiling_costs']['blue'][disciple] = game_constants.initial_exiling_costs[disciple]
+
+    for tile in game_state['tiles']:
+        tile.modify_exiling_costs(game_state)
+
+    for disciple in game_constants.disciples:
+        game_state['exiling_costs']['red'][disciple] = max(1, game_state['exiling_costs']['red'][disciple])
+        game_state['exiling_costs']['blue'][disciple] = max(1, game_state['exiling_costs']['blue'][disciple])
+
 def calculate_recruiting_costs(game_state):
-    pass
+    for disciple in game_constants.disciples:
+        game_state['recruiting_costs']['red'][disciple] = game_constants.initial_recruiting_costs[disciple]
+        game_state['recruiting_costs']['blue'][disciple] = game_constants.initial_recruiting_costs[disciple]
+
+    for tile in game_state['tiles']:
+        tile.modify_recruiting_costs(game_state)
+
+    for disciple in game_constants.disciples:
+        game_state['recruiting_costs']['red'][disciple] = max(1, game_state['recruiting_costs']['red'][disciple])
+        game_state['recruiting_costs']['blue'][disciple] = max(1, game_state['recruiting_costs']['blue'][disciple])
+    
 
 def get_tiles_within_recruiting_range(game_state, disciple_to_recruit, player_color):
     calculate_recruiting_ranges(game_state)
@@ -328,7 +343,7 @@ def get_disciples_that_can_be_recruited(game_state, player_color):
     calculate_recruiting_costs(game_state)
     disciples_that_can_be_recruited = []
     for disciple in game_constants.disciples:
-        if game_state['costs_to_recruit'][player_color][disciple] <= game_state['power'][player_color]:
+        if game_state['recruiting_costs'][player_color][disciple] <= game_state['power'][player_color]:
             disciples_that_can_be_recruited.append(disciple)
     return disciples_that_can_be_recruited
 
@@ -488,7 +503,7 @@ def get_tile_slots_that_can_be_exiled(game_state, color, tile_indices):
         slots_for_tile = []
         tile = game_state['tiles'][tile_index]
         for slot_index, slot in enumerate(tile.slots_for_disciples):
-            if slot is not None and game_state['costs_to_exile'][color][slot['disciple']] <= game_state['power'][color]:
+            if slot is not None and game_state['exiling_costs'][color][slot['disciple']] <= game_state['power'][color]:
                 slots_for_tile.append(slot_index)
         if slots_for_tile:
             tile_slots_that_can_be_exiled[tile_index] = slots_for_tile

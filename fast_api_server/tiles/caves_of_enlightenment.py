@@ -6,7 +6,7 @@ class CavesOfEnlightenment(Tile):
     def __init__(self):
         super().__init__(
             name="Caves of Enlightenment",
-            type="Giver",
+            type="Giver/Recruitment-Enhancer",
             number_of_slots=4,
             minimum_influence_to_rule=5,
             influence_tiers=[
@@ -55,7 +55,7 @@ class CavesOfEnlightenment(Tile):
         is_adjacent = game_utilities.determine_if_directly_adjacent(index_of_caves, index_of_tile_recruited_at)
 
         if not is_adjacent:
-            return      
+            return
 
         recruiter_receives_follower = False
 

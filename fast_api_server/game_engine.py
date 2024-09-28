@@ -272,12 +272,7 @@ class GameEngine:
                 #if more moves can be done we need to do what we normally do, but not pop off the container yet
                 if game_action_container.movements_made < self.game_state['leader_movement'][game_action_container.whose_action]:
                     game_action_container.required_data_for_action['tile_to_move_leader_to'] = None
-                    game_utilities.determine_influence_levels(self.game_state)
-                    game_utilities.update_presence(self.game_state)
-                    game_utilities.determine_rulers(self.game_state)
-                    game_utilities.calculate_exiling_ranges(self.game_state)
-                    game_utilities.calculate_recruiting_ranges(self.game_state)
-                    game_utilities.calculate_expected_incomes(self.game_state)
+                    game_utilities.update_all_game_state_values(self.game_state)
                     await self.send_clients_game_state(self.game_state)
                     await self.get_and_send_available_actions()
                     return True
@@ -289,12 +284,7 @@ class GameEngine:
                 if not await self.player_takes_recruit_action(game_action_container):
                     return False
 
-        game_utilities.determine_influence_levels(self.game_state)
-        game_utilities.update_presence(self.game_state)
-        game_utilities.determine_rulers(self.game_state)
-        game_utilities.calculate_exiling_ranges(self.game_state)
-        game_utilities.calculate_recruiting_ranges(self.game_state)
-        game_utilities.calculate_expected_incomes(self.game_state)
+        game_utilities.update_all_game_state_values(self.game_state)
         self.game_action_container_stack.pop()
         await self.send_clients_game_state(self.game_state)
         return True
@@ -348,12 +338,12 @@ class GameEngine:
             await self.send_clients_log_message("Cannot recruit on this slot, it's not empty or contains one of your weaker disciples")
             return False
         
-        if self.game_state['costs_to_recruit'][color_of_player_recruiting][disciple_type] > self.game_state['power'][color_of_player_recruiting]:
+        if self.game_state['recruiting_costs'][color_of_player_recruiting][disciple_type] > self.game_state['power'][color_of_player_recruiting]:
             await self.send_clients_log_message("Don't have enough power to recruit this")
             return False
         
 
-        self.game_state['power'][color_of_player_recruiting] -= self.game_state['costs_to_recruit'][color_of_player_recruiting][disciple_type]
+        self.game_state['power'][color_of_player_recruiting] -= self.game_state['recruiting_costs'][color_of_player_recruiting][disciple_type]
         await game_utilities.recruit_disciple_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index, slot_index, disciple_type, color_of_player_recruiting)
         game_utilities.determine_rulers(self.game_state)
         return True
@@ -375,11 +365,11 @@ class GameEngine:
             await self.send_clients_log_message("Nothing to exile here")
             return False
         
-        if self.game_state['costs_to_exile'][color_of_player_exiling][slot_to_exile_from['disciple']] > self.game_state['power'][color_of_player_exiling]:
+        if self.game_state['exiling_costs'][color_of_player_exiling][slot_to_exile_from['disciple']] > self.game_state['power'][color_of_player_exiling]:
             await self.send_clients_log_message("Not enough power to exile")
             return False            
 
-        self.game_state['power'][color_of_player_exiling] -= self.game_state['costs_to_exile'][color_of_player_exiling][slot_to_exile_from['disciple']]
+        self.game_state['power'][color_of_player_exiling] -= self.game_state['exiling_costs'][color_of_player_exiling][slot_to_exile_from['disciple']]
         await game_utilities.exile_disciple_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index_to_exile_from, slot_index_to_exile_from, color_of_player_exiling)
         return True
     
@@ -481,8 +471,26 @@ class GameEngine:
        
         return scorer_bonuses, income_bonuses
 
+    def choose_tiles(self):
+        all_tiles = self.import_all_tiles_from_folder('tiles')
+        # Instantiate tiles here
+        all_tile_instances = [tile() for tile in all_tiles]
+        
+        priority_1_tiles = [tile for tile in all_tile_instances if tile.TILE_PRIORITY == 1]
+        priority_0_tiles = [tile for tile in all_tile_instances if tile.TILE_PRIORITY == 0]
+    
+        chosen_tiles = priority_1_tiles.copy()
+    
+        if len(chosen_tiles) > 9:
+            return random.sample(chosen_tiles, 9)
+    
+        remaining_slots = 9 - len(chosen_tiles)
+        chosen_tiles.extend(random.sample(priority_0_tiles, remaining_slots))
+    
+        return chosen_tiles
+
     def create_new_game_state(self):
-        chosen_tiles = random.sample(self.import_all_tiles_from_folder('tiles'), 9)
+        chosen_tiles = self.choose_tiles()
         scorer_bonuses, income_bonuses = self.get_all_round_bonuses()  
     
         chosen_scorer_bonuses = random.sample(scorer_bonuses, game_constants.number_of_scoring_bonuses)
@@ -499,11 +507,11 @@ class GameEngine:
             "exiling_range": {"red": 0, "blue": 0},
             "expected_power_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
             "expected_points_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
-            "costs_to_recruit": {"red": game_constants.starting_cost_to_recruit, "blue": game_constants.starting_cost_to_recruit},
-            "costs_to_exile": {"red": game_constants.starting_cost_to_exile, "blue": game_constants.starting_cost_to_exile},
+            "recruiting_costs": {"red": game_constants.initial_recruiting_costs.copy(), "blue": game_constants.initial_recruiting_costs.copy()},
+            "exiling_costs": {"red": game_constants.initial_exiling_costs.copy(), "blue": game_constants.initial_exiling_costs.copy()},
             "power_given_at_start_of_round": game_constants.power_given_at_end_of_round,
             "leader_movement": {"red": game_constants.starting_leader_movement['red'], "blue": game_constants.starting_leader_movement['blue']},
-            "tiles": [tile() for tile in chosen_tiles],
+            "tiles": chosen_tiles,
             "whose_turn_is_it": "red",
             "first_player": "red",
             "scorer_bonuses": [bonus() for bonus in chosen_scorer_bonuses],
