@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Locus(Tile):
+class Nexus(Tile):
     def __init__(self):
         super().__init__(
-            name="Locus",
+            name="Nexus",
             type="Generator",
             minimum_influence_to_rule=3,
             number_of_slots=5,

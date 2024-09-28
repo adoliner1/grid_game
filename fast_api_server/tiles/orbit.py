@@ -17,7 +17,7 @@ class Orbit(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,    
                     "leader_must_be_present": False,                  
-                    "data_needed_for_use": ["tile_to_shift_row"]
+                    "data_needed_for_use": ["tile_in_the_row_you_want_to_rotate"]
                 },
             ]      
         )
@@ -53,13 +53,13 @@ class Orbit(Tile):
             await send_clients_log_message(f"**{self.name}** is on cooldown")
             return False
 
-        tile_to_shift_row = game_action_container.required_data_for_action['tile_to_shift_row']
-        if tile_to_shift_row is None:
+        tile_in_the_row_you_want_to_rotate = game_action_container.required_data_for_action['tile_in_the_row_you_want_to_rotate']
+        if tile_in_the_row_you_want_to_rotate is None:
             await send_clients_log_message(f"Invalid tile selected for using **{self.name}**")
             return False
 
         # Determine the row from the tile index
-        row_to_shift = tile_to_shift_row // 3
+        row_to_shift = tile_in_the_row_you_want_to_rotate // 3
         # Shift the row of tiles
         row_start_index = row_to_shift * 3
         row_end_index = row_start_index + 3

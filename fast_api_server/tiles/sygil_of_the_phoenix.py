@@ -4,10 +4,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Phoenix(Tile):
+class SygilOfThePhoenix(Tile):
     def __init__(self):
         super().__init__(
-            name="Phoenix",
+            name="Sygil of the Phoenix",
             type="Giver",
             minimum_influence_to_rule=5,
             number_of_slots=5,

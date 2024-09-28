@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Caves(Tile):
+class CavesOfEnlightenment(Tile):
     def __init__(self):
         super().__init__(
-            name="Caves",
+            name="Caves of Enlightenment",
             type="Giver",
             number_of_slots=4,
             minimum_influence_to_rule=5,

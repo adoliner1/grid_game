@@ -23,6 +23,29 @@ async def recruit_disciple_on_tile(game_state, game_action_container_stack, send
                                                               disciple=disciple,
                                                                 index_of_tile_recruited_at=tile_index,
                                                                   slot_index_recruited_at=slot_index)
+    
+async def exile_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index_to_exile_from, color_of_player_exiling):
+    tile_to_exile_from = game_state["tiles"][tile_index]
+    old_disciple =  tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from]
+    tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from] = None
+
+    determine_influence_levels(game_state)
+    update_presence(game_state)
+    determine_rulers(game_state)
+    await send_clients_game_state(game_state)
+
+    await send_clients_log_message(f"{color_of_player_exiling} exiled a {old_disciple['color']}_{old_disciple['disciple']} from **{tile_to_exile_from.name}** for {game_state['costs_to_exile'][color_of_player_exiling][old_disciple['disciple']]} power")
+
+    await call_listener_functions_for_event_type(game_state,
+                                                  game_action_container_stack,
+                                                    send_clients_log_message,
+                                                      get_and_send_available_actions,
+                                                        send_clients_game_state,
+                                                          "on_exile",
+                                                            exiler=color_of_player_exiling,
+                                                              disciple=old_disciple,
+                                                                index_of_tile_exiled_at=tile_index,
+                                                                  slot_index_exiled_at=slot_index_to_exile_from)
 
 async def place_leader_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, color):
     game_state['tiles'][tile_index].leaders_here[color] = True

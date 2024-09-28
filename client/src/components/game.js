@@ -42,6 +42,11 @@ const Game = () => {
         setLogs((prevLogs) => [...prevLogs, message]);
     };
 
+    const chooseAOrAn = (word) => {
+        const vowels = ['a', 'e', 'i', 'o', 'u'];
+        return vowels.includes(word[0].toLowerCase()) ? 'Choose an' : 'Choose a';
+      };
+
     const loadAudio = (audioRef, src) => {
         const audio = new Audio(src);
         audio.addEventListener('error', () => {
@@ -174,11 +179,11 @@ const Game = () => {
         }
 
         //PROD
-        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
+        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
         //DEV
-        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         
-        /*PROD
+        //PROD
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
             socket.current.send(JSON.stringify({
@@ -187,9 +192,9 @@ const Game = () => {
                 game_id: game_id
             }));
         };
-        */
+        //
 
-        //DEV
+        /*DEV
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
         };
@@ -297,6 +302,18 @@ const Game = () => {
     return (
         <div className="game-container">
           <div className="info_section">
+            <div className={`directive ${clientColor.current === 'red' ? 'directive-red' : clientColor.current === 'blue' ? 'directive-blue' : ''}`}>
+                {Object.keys(availableActions).length > 0 && currentPieceOfDataToFill ? (
+                    <>
+                    {currentPieceOfDataToFill === 'confirm_choice' 
+                        ? 'Confirm or choose not to react'
+                        : `${chooseAOrAn(currentPieceOfDataToFill.split('_')[0])} ${currentPieceOfDataToFill.replace(/_/g, ' ')}.`
+                    }
+                    </>
+                ) : (
+                    "Waiting on opponent."
+                )}
+            </div>  
             <RoundBonusesTable gameState={gameState} />
             <DiscipleInfluenceSection/>
             <PlayerHUD   

@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Ash(Tile):
+class SygilOfAsh(Tile):
     def __init__(self):
         super().__init__(
-            name="Ash",
+            name="Sygil of Ash",
             type="Scorer",
             number_of_slots=5,
             minimum_influence_to_rule=3,

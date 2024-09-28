@@ -17,7 +17,7 @@ class TeleportingCabinet(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,             
                     "leader_must_be_present": False,        
-                    "data_needed_for_use": ["slot_and_tile_to_swap_disciple_from", "slot_and_tile_to_swap_disciple_to"]
+                    "data_needed_for_use": ["disciple_to_swap", "other_disciple_to_swap"]
                 },
             ]
         )
@@ -37,7 +37,7 @@ class TeleportingCabinet(Tile):
 
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
-        if current_piece_of_data_to_fill == "slot_and_tile_to_swap_disciple_from":
+        if current_piece_of_data_to_fill == "disciple_to_swap":
             adjacent_slots_with_a_disciple = {}
             indices_of_adjacent_tiles = game_utilities.get_adjacent_tile_indices(game_action_container.required_data_for_action["index_of_tile_in_use"])
             for index in indices_of_adjacent_tiles:
@@ -45,7 +45,7 @@ class TeleportingCabinet(Tile):
                 if slots_with_disciples:
                     adjacent_slots_with_a_disciple[index] = slots_with_disciples
             available_actions["select_a_slot_on_a_tile"] = adjacent_slots_with_a_disciple
-        elif current_piece_of_data_to_fill == "slot_and_tile_to_swap_disciple_to":
+        elif current_piece_of_data_to_fill == "other_disciple_to_swap":
             slots_with_a_disciple = {}
             for index, tile in enumerate(game_state["tiles"]):
                 slots_with_disciples = [i for i, slot in enumerate(tile.slots_for_disciples) if slot]
@@ -66,10 +66,10 @@ class TeleportingCabinet(Tile):
             return False
 
         index_of_cabinet = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        slot_index_from = game_action_container.required_data_for_action['slot_and_tile_to_swap_disciple_from']['slot_index']
-        tile_index_from = game_action_container.required_data_for_action['slot_and_tile_to_swap_disciple_from']['tile_index']
-        slot_index_to = game_action_container.required_data_for_action['slot_and_tile_to_swap_disciple_to']['slot_index']
-        tile_index_to = game_action_container.required_data_for_action['slot_and_tile_to_swap_disciple_to']['tile_index']
+        slot_index_from = game_action_container.required_data_for_action['disciple_to_swap']['slot_index']
+        tile_index_from = game_action_container.required_data_for_action['disciple_to_swap']['tile_index']
+        slot_index_to = game_action_container.required_data_for_action['other_disciple_to_swap']['slot_index']
+        tile_index_to = game_action_container.required_data_for_action['other_disciple_to_swap']['tile_index']
 
         if not game_utilities.determine_if_directly_adjacent(index_of_cabinet, tile_index_from):
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a non-adjacent tile")

@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Road(Tile):
+class HolyWinds(Tile):
     def __init__(self):
         super().__init__(
-            name="Road",
+            name="Holy Winds",
             type="Mover",
             minimum_influence_to_rule=4,
             number_of_slots=7,
@@ -17,7 +17,7 @@ class Road(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,     
                     "leader_must_be_present": False,                
-                    "data_needed_for_use": ["slot_and_tile_to_move_disciple_from", "slot_and_tile_to_move_disciple_to"]
+                    "data_needed_for_use": ["disciple_to_move", "slot_to_move_disciple_to"]
                 },
                 {
                     "influence_to_reach_tier": 8,
@@ -26,7 +26,7 @@ class Road(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False, 
-                    "data_needed_for_use": ["slot_and_tile_to_move_disciple_from", "slot_and_tile_to_move_disciple_to"]
+                    "data_needed_for_use": ["disciple_to_move", "slot_to_move_disciple_to"]
                 },
             ]
         )
@@ -47,12 +47,12 @@ class Road(Tile):
 
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
-        if current_piece_of_data_to_fill == "slot_and_tile_to_move_disciple_from":
+        if current_piece_of_data_to_fill == "disciple_to_move":
             slots_with_a_disciple = {}
             index_of_road = game_utilities.find_index_of_tile_by_name(game_state, self.name)
             user = game_action_container.whose_action
 
-            if tier_index == 2:
+            if tier_index == 1:
                 for index, tile in enumerate(game_state["tiles"]):
                     slots_with_disciples = [i for i, slot in enumerate(tile.slots_for_disciples) if slot]
                     if slots_with_disciples:
@@ -65,7 +65,7 @@ class Road(Tile):
                         slots_with_a_disciple[index] = slots_with_disciples
 
             available_actions["select_a_slot_on_a_tile"] = slots_with_a_disciple
-        elif current_piece_of_data_to_fill == "slot_and_tile_to_move_disciple_to":
+        elif current_piece_of_data_to_fill == "slot_to_move_disciple_to":
             slots_without_a_disciple_per_tile = {}
             for index, tile in enumerate(game_state["tiles"]):
                 slots_without_disciples = [i for i, slot in enumerate(tile.slots_for_disciples) if not slot]
@@ -87,10 +87,10 @@ class Road(Tile):
             return False
 
         index_of_road = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        slot_index_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['slot_index']
-        tile_index_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['tile_index']
-        slot_index_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['slot_index']
-        tile_index_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['tile_index']
+        slot_index_from = game_action_container.required_data_for_action['disciple_to_move']['slot_index']
+        tile_index_from = game_action_container.required_data_for_action['disciple_to_move']['tile_index']
+        slot_index_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['slot_index']
+        tile_index_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['tile_index']
 
         if tier_index == 0 and not game_utilities.determine_if_directly_adjacent(index_of_road, tile_index_from):
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a non-adjacent tile")

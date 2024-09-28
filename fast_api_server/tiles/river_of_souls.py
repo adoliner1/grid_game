@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Highway(Tile):
+class RiverOfSouls(Tile):
     def __init__(self):
         super().__init__(
-            name="Highway",
+            name="River of Souls",
             type="Mover",
             minimum_influence_to_rule=3,
             number_of_slots=5,
@@ -17,7 +17,7 @@ class Highway(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,       
                     "leader_must_be_present": False,              
-                    "data_needed_for_use": ["slot_and_tile_to_burn_disciple_from", "slot_and_tile_to_move_disciple_from", "slot_and_tile_to_move_disciple_to"]
+                    "data_needed_for_use": ["disciple_to_burn", "disciple_to_move", "slot_to_move_disciple_to"]
                 },
                 {
                     "influence_to_reach_tier": 5,
@@ -26,7 +26,7 @@ class Highway(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,          
                     "leader_must_be_present": False,           
-                    "data_needed_for_use": ["slot_and_tile_to_move_disciple_from", "slot_and_tile_to_move_disciple_to"]
+                    "data_needed_for_use": ["disciple_to_move", "slot_to_move_disciple_to"]
                 },
             ]
         )
@@ -57,26 +57,34 @@ class Highway(Tile):
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
         current_piece_of_data_to_fill_in_current_action = game_action_container.get_next_piece_of_data_to_fill()     
 
-        if current_piece_of_data_to_fill_in_current_action == "slot_and_tile_to_burn_disciple_from":
+        if current_piece_of_data_to_fill_in_current_action == "disciple_to_burn":
             slots_that_can_be_burned_from = game_utilities.get_slots_with_a_disciple_of_player_color_at_tile_index(game_state, game_action_container.whose_action, game_action_container.required_data_for_action["index_of_tile_in_use"])
             available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_that_can_be_burned_from}
-        elif current_piece_of_data_to_fill_in_current_action == "slot_and_tile_to_move_disciple_from":
+        elif current_piece_of_data_to_fill_in_current_action == "disciple_to_move":
             slots_with_a_disciple = {}
             for index, tile in enumerate(game_state["tiles"]):
                 slots_with_disciples = []
                 for slot_index, slot in enumerate(tile.slots_for_disciples):
-                    if slot:
-                        slots_with_disciples.append(slot_index)
+                    if tier_index == 0:
+                        if slot and not (tile.name == self.name and game_action_container.required_data_for_action['disciple_to_burn']['slot_index'] == slot_index):
+                            slots_with_disciples.append(slot_index)
+                    if tier_index == 1:    
+                        if slot:
+                            slots_with_disciples.append(slot_index)
                 if slots_with_disciples:
                     slots_with_a_disciple[index] = slots_with_disciples
             available_actions["select_a_slot_on_a_tile"] = slots_with_a_disciple
-        elif current_piece_of_data_to_fill_in_current_action == "slot_and_tile_to_move_disciple_to":
+        elif current_piece_of_data_to_fill_in_current_action == "slot_to_move_disciple_to":
             slots_without_a_disciple = {}
             for index, tile in enumerate(game_state["tiles"]):
                 slots_without_disciples = []
                 for slot_index, slot in enumerate(tile.slots_for_disciples):
-                    if not slot:
-                        slots_without_disciples.append(slot_index)
+                    if tier_index == 0:
+                        if not slot or tile.name == self.name and game_action_container.required_data_for_action['disciple_to_burn']['slot_index'] == slot_index:
+                            slots_without_disciples.append(slot_index)
+                    else:
+                        if not slot:
+                            slots_without_disciples.append(slot_index)
                 if slots_without_disciples:
                     slots_without_a_disciple[index] = slots_without_disciples
             available_actions["select_a_slot_on_a_tile"] = slots_without_a_disciple
@@ -99,13 +107,13 @@ class Highway(Tile):
             return False            
 
         index_of_highway = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        index_of_tile_to_move_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['tile_index']
-        slot_index_to_move_disciple_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['slot_index']
-        index_of_tile_to_move_disciple_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['tile_index']
-        slot_index_to_move_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['slot_index']
+        index_of_tile_to_move_disciple_from = game_action_container.required_data_for_action['disciple_to_move']['tile_index']
+        slot_index_to_move_disciple_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['slot_index']
+        index_of_tile_to_move_disciple_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['tile_index']
+        slot_index_to_move_disciple_from = game_action_container.required_data_for_action['disciple_to_move']['slot_index']
 
         if tier_index == 0:
-            slot_index_to_burn_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple_from']['slot_index']
+            slot_index_to_burn_disciple_from = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
 
             if self.slots_for_disciples[slot_index_to_burn_disciple_from]["color"] != game_action_container.whose_action:
                 await send_clients_log_message(f"Tried to use **{self.name}** but chose a disciple owned by opponent to burn")
@@ -122,7 +130,7 @@ class Highway(Tile):
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to move from {game_state['tiles'][index_of_tile_to_move_disciple_from].name}")
             return False
 
-        if game_state["tiles"][index_of_tile_to_move_disciple_to].slots_for_disciples[slot_index_to_move_disciple_to] is not None:
+        if game_state["tiles"][index_of_tile_to_move_disciple_to].slots_for_disciples[slot_index_to_move_disciple_to] is not None and not (slot_index_to_burn_disciple_from == slot_index_to_move_disciple_to and index_of_highway == index_of_tile_to_move_disciple_to):
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot that is not empty to move to at {game_state['tiles'][index_of_tile_to_move_disciple_to].name}")
             return False
 

@@ -47,12 +47,12 @@ class GameEngine:
             player = 'red' if number_of_initial_followers_placed % 2 == 0 else 'blue'
             self.game_state['whose_turn_is_it'] = player
             await self.send_clients_game_state(self.game_state)
-            await self.send_clients_log_message(f"{player} must recruit a {player}_follower (they can choose any tile because it's the start of the game)")            
+            await self.send_clients_log_message(f"{player} must recruit a {player}_follower at no cost. They can choose any tile because it's the start of the game.")            
             action = game_action_container.GameActionContainer(
                 event=asyncio.Event(),
                 game_action="initial_follower_placement",
                 required_data_for_action={
-                    'tile_slot_to_place_on': {}
+                    'tile_to_recruit_initial_follower': {}
                 },
                 whose_action=player
             )
@@ -70,7 +70,7 @@ class GameEngine:
                 event=asyncio.Event(),
                 game_action="initial_leader_placement",
                 required_data_for_action={
-                    'tile_index_to_place_on': {}
+                    'tile_to_place_your_leader_on': {}
                 },
                 whose_action=player
             )
@@ -172,8 +172,8 @@ class GameEngine:
                                                 self.send_clients_log_message,
                                                   self.get_and_send_available_actions,
                                                     self.send_clients_game_state, 
-                                                     data['tile_slot_to_place_on']['tile_index'],
-                                                       data['tile_slot_to_place_on']['slot_index'],
+                                                     data['tile_to_recruit_initial_follower']['tile_index'],
+                                                       data['tile_to_recruit_initial_follower']['slot_index'],
                                                          'follower',
                                                            player_color)
             
@@ -187,7 +187,7 @@ class GameEngine:
                                                 self.send_clients_log_message,
                                                   self.get_and_send_available_actions,
                                                     self.send_clients_game_state, 
-                                                     data['tile_index_to_place_on'],
+                                                     data['tile_to_place_your_leader_on'],
                                                         player_color)
             
             self.game_action_container_stack.pop().event.set()
@@ -271,7 +271,7 @@ class GameEngine:
                 
                 #if more moves can be done we need to do what we normally do, but not pop off the container yet
                 if game_action_container.movements_made < self.game_state['leader_movement'][game_action_container.whose_action]:
-                    game_action_container.required_data_for_action['tile_index_to_move_leader_to'] = None
+                    game_action_container.required_data_for_action['tile_to_move_leader_to'] = None
                     game_utilities.determine_influence_levels(self.game_state)
                     game_utilities.update_presence(self.game_state)
                     game_utilities.determine_rulers(self.game_state)
@@ -301,7 +301,7 @@ class GameEngine:
 
     async def player_takes_move_leader_action(self, game_action_container):
         mover = game_action_container.whose_action
-        tile_index_to_move_leader_to = game_action_container.required_data_for_action['tile_index_to_move_leader_to']
+        tile_index_to_move_leader_to = game_action_container.required_data_for_action['tile_to_move_leader_to']
         tile_index_of_players_leader = game_utilities.get_tile_index_of_leader(self.game_state, mover)
         tile_indices_adjacent_to_leader = game_utilities.get_adjacent_tile_indices(tile_index_of_players_leader)
         tile_of_players_leader = self.game_state['tiles'][tile_index_of_players_leader]
@@ -325,8 +325,8 @@ class GameEngine:
         return True
     
     async def player_takes_recruit_action(self, game_action_container):
-        tile_index = game_action_container.required_data_for_action["tile_slot_to_recruit_on"]["tile_index"]
-        slot_index = game_action_container.required_data_for_action["tile_slot_to_recruit_on"]["slot_index"]
+        tile_index = game_action_container.required_data_for_action["tile_to_recruit_on"]["tile_index"]
+        slot_index = game_action_container.required_data_for_action["tile_to_recruit_on"]["slot_index"]
         disciple_type = game_action_container.required_data_for_action["disciple_type_to_recruit"]
         color_of_player_recruiting = game_action_container.whose_action
         tile = self.game_state["tiles"][tile_index]
@@ -359,8 +359,8 @@ class GameEngine:
         return True
      
     async def player_takes_exile_action(self, game_action_container):
-        tile_index_to_exile_from = game_action_container.required_data_for_action["tile_slot_to_exile_from"]["tile_index"]
-        slot_index_to_exile_from = game_action_container.required_data_for_action["tile_slot_to_exile_from"]["slot_index"]
+        tile_index_to_exile_from = game_action_container.required_data_for_action["tile_to_exile_from"]["tile_index"]
+        slot_index_to_exile_from = game_action_container.required_data_for_action["tile_to_exile_from"]["slot_index"]
         tile_to_exile_from = self.game_state['tiles'][tile_index_to_exile_from]
         slot_to_exile_from = tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from]
         exiled_color = tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from]['color']
@@ -380,9 +380,9 @@ class GameEngine:
             return False            
 
         self.game_state['power'][color_of_player_exiling] -= self.game_state['costs_to_exile'][color_of_player_exiling][slot_to_exile_from['disciple']]
-        tile_to_exile_from.slots_for_disciples[slot_index_to_exile_from] = None
-        await self.send_clients_log_message(f"{color_of_player_exiling} exiled a {exiled_color}_{exiled_disciple} from **{tile_to_exile_from.name}** for {self.game_state['costs_to_exile'][color_of_player_exiling][exiled_disciple]} power")
+        await game_utilities.exile_disciple_on_tile(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index_to_exile_from, slot_index_to_exile_from, color_of_player_exiling)
         return True
+    
     def create_new_game_action_container_from_initial_decision(self, data):
         match data['client_action']:
             case 'move_leader':
@@ -390,7 +390,7 @@ class GameEngine:
                     event=asyncio.Event(),
                     game_action="move_leader",
                     required_data_for_action={
-                        "tile_index_to_move_leader_to": None
+                        "tile_to_move_leader_to": None
                     },
                     whose_action = self.game_state['whose_turn_is_it'],
                 )
@@ -399,7 +399,7 @@ class GameEngine:
                     event=asyncio.Event(),
                     game_action="exile",
                     required_data_for_action={
-                        "tile_slot_to_exile_from": {},
+                        "tile_to_exile_from": {},
                     },
                     whose_action=self.game_state['whose_turn_is_it']
                 )
@@ -409,7 +409,7 @@ class GameEngine:
                     game_action="recruit",
                     required_data_for_action={
                         "disciple_type_to_recruit": None,
-                        "tile_slot_to_recruit_on": {}
+                        "tile_to_recruit_on": {}
                     },
                     whose_action=self.game_state['whose_turn_is_it']
                 )
@@ -423,8 +423,8 @@ class GameEngine:
                 )
 
             case 'select_a_tier':
-                tile_index = data['initial_data_passed_along_with_choice']['tile_index']
-                tier_index = data['initial_data_passed_along_with_choice']['tier_index']
+                tile_index = data['initial_action_or_pass']['tile_index']
+                tier_index = data['initial_action_or_pass']['tier_index']
                 required_data = OrderedDict({"index_of_tile_in_use": tile_index, "index_of_tier_in_use": tier_index})
                 tile_in_use = self.game_state["tiles"][tile_index]
                 tier_in_use = tile_in_use.influence_tiers[tier_index]
@@ -510,7 +510,7 @@ class GameEngine:
             "income_bonuses": [bonus() for bonus in chosen_income_bonuses],
             "listeners": {
                 "on_recruit": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {},
-                "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}
+                "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}, "on_exile": {}
             },
         }
         
@@ -524,7 +524,7 @@ class GameEngine:
         return game_action_container.GameActionContainer(
                 event=asyncio.Event(),
                 game_action="initial_decision",
-                required_data_for_action={"initial_data_passed_along_with_choice": None},
+                required_data_for_action={"initial_action_or_pass": None},
                 whose_action="red",
             )
 
@@ -611,6 +611,8 @@ class GameEngine:
         return False
 
     async def end_game(self):
+
+        #NO REASON WE NEED TO LOOP TWICE HERE AND HAVE BOTH THESE ?
         for tile in self.game_state["tiles"]:
             await tile.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
 

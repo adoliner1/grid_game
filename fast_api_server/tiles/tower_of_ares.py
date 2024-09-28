@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Spear(Tile):
+class TowerOfAres(Tile):
     def __init__(self):
         super().__init__(
-            name="Spear",
+            name="Tower of Ares",
             type="Attacker",
             minimum_influence_to_rule=3,
             number_of_slots=5,
@@ -17,7 +17,7 @@ class Spear(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                
-                    "data_needed_for_use": ["slot_to_burn_disciple_from", "slot_and_tile_to_burn_disciple_at"]
+                    "data_needed_for_use": ["disciple_to_burn_on_Spear", "disciple_to_burn"]
                 },
             ]
         )
@@ -42,10 +42,10 @@ class Spear(Tile):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
         user = game_action_container.whose_action
 
-        if current_piece_of_data_to_fill == "slot_to_burn_disciple_from":
+        if current_piece_of_data_to_fill == "disciple_to_burn_on_Spear":
             slots_that_can_be_burned_from = game_utilities.get_slots_with_a_disciple_of_player_color_at_tile_index(game_state, user, game_action_container.required_data_for_action["index_of_tile_in_use"])
             available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_that_can_be_burned_from}
-        elif current_piece_of_data_to_fill == "slot_and_tile_to_burn_disciple_at":
+        elif current_piece_of_data_to_fill == "disciple_to_burn":
             slots_with_a_burnable_disciple = {}
             for index, tile in enumerate(game_state["tiles"]):
                 if game_utilities.has_presence(tile, user):
@@ -74,9 +74,9 @@ class Spear(Tile):
             return False
 
         index_of_spear = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        slot_index_to_burn_disciple_from_here = game_action_container.required_data_for_action['slot_to_burn_disciple_from']['slot_index']
-        slot_index_to_burn_disciple_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple_at']['slot_index']
-        index_of_tile_to_burn_disciple_at = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple_at']['tile_index']
+        slot_index_to_burn_disciple_from_here = game_action_container.required_data_for_action['disciple_to_burn_on_Spear']['slot_index']
+        slot_index_to_burn_disciple_at = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
+        index_of_tile_to_burn_disciple_at = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
 
         if not game_utilities.has_presence(game_state["tiles"][index_of_tile_to_burn_disciple_at], user):
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a tile where they're not present")

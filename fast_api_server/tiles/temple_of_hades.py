@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Carbon(Tile):
+class TempleOfHades(Tile):
     def __init__(self):
         super().__init__(
-            name="Carbon",
+            name="Temple of Hades",
             type="Giver",
             description="At the __end of each round__, for each follower you have here, [[receive]] another follower here",
             number_of_slots=9,

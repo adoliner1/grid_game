@@ -4,10 +4,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Captain(Tile):
+class TacticiansStone(Tile):
     def __init__(self):
         super().__init__(
-            name="Captain",
+            name="Tactician's Stone",
             type="Attacker",
             minimum_influence_to_rule=3,
             influence_tiers=[
@@ -18,7 +18,7 @@ class Captain(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False, 
-                    "data_needed_for_use": ['slot_and_tile_to_burn_disciple'],
+                    "data_needed_for_use": ['disciple_to_burn'],
                 },        
             ],            
             number_of_slots=5,
@@ -55,8 +55,8 @@ class Captain(Tile):
             await send_clients_log_message(f"Tier {tier_index} of **{self.name}** is on cooldown")
             return False
 
-        slot_index_to_burn_disciple = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple']['slot_index']
-        index_of_tile_to_burn_disciple = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple']['tile_index']
+        slot_index_to_burn_disciple = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
+        index_of_tile_to_burn_disciple = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
         index_of_tile_received_at = game_action_container.required_data_for_action['index_of_tile_received_at']
 
         if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_burn_disciple, index_of_tile_received_at):
@@ -85,7 +85,7 @@ class Captain(Tile):
             event=asyncio.Event(),
             game_action="use_a_tier",
             required_data_for_action={
-                "slot_and_tile_to_burn_disciple": {},
+                "disciple_to_burn": {},
                 "index_of_tile_in_use": game_utilities.find_index_of_tile_by_name(game_state, self.name),
                 "index_of_tier_in_use": tier_index,
                 "index_of_tile_received_at": index_of_tile_received_at

@@ -17,7 +17,7 @@ class AltarOfHades(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": True,                  
-                    "data_needed_for_use": ['slot_and_tile_to_burn_disciple_from'],
+                    "data_needed_for_use": ['disciple_to_burn'],
                 },
             ]
         )
@@ -53,8 +53,8 @@ class AltarOfHades(Tile):
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
-        index_of_tile_to_burn_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple_from']['tile_index']
-        slot_index_to_burn_disciple_from = game_action_container.required_data_for_action['slot_and_tile_to_burn_disciple_from']['slot_index']
+        index_of_tile_to_burn_disciple_from = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
+        slot_index_to_burn_disciple_from = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
        
         if self.influence_tiers[tier_index]['is_on_cooldown']:
             await send_clients_log_message(f"**{self.name}** tier {tier_index} is on cooldown")

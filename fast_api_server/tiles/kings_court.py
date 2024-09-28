@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class King(Tile):
+class KingsCourt(Tile):
     def __init__(self):
         super().__init__(
-            name="King",
+            name="King's Court",
             type="Scorer",
             minimum_influence_to_rule= 6,
             influence_tiers=[

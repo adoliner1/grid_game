@@ -2,7 +2,7 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Wolf(Tile):
+class CircleOfTheWolf(Tile):
     def __init__(self):
         super().__init__(
             name="Circle of the Wolf",
@@ -15,7 +15,7 @@ class Wolf(Tile):
                     "must_be_ruler": True,                    
                     "description": "**Action:** [[Receive]] an acolyte at an adjacent tile. Your opponent gets +2 power",
                     "is_on_cooldown": False,
-                    "data_needed_for_use": ["tile_to_receive_disciples_at"],
+                    "data_needed_for_use": ["tile_to_receive_acolyte_at"],
                     "has_a_cooldown": True,             
                     "leader_must_be_present": False,        
                 },                
@@ -52,7 +52,7 @@ class Wolf(Tile):
             await send_clients_log_message(f"**{self.name}** is on cooldown and cannot be used this round")
             return False
 
-        index_of_tile_to_receive_disciples_on = game_action_container.required_data_for_action['tile_to_receive_disciples_at']
+        index_of_tile_to_receive_disciples_on = game_action_container.required_data_for_action['tile_to_receive_acolyte_at']
         tile_to_receive_disciples_on = game_state['tiles'][index_of_tile_to_receive_disciples_on]
        
         if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_disciples_on, game_utilities.find_index_of_tile_by_name(game_state, self.name)):

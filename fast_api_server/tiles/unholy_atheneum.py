@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Nitrogen(Tile):
+class UnholyAtheneum(Tile):
     def __init__(self):
         super().__init__(
-            name="Nitrogen",
+            name="Unholy Atheneum",
             type="Giver/Generator",
             minimum_influence_to_rule=3,
             description="At the __end of each round__, for each sage you have here, [[receive]] an acolyte and a follower here",

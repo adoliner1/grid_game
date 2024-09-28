@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Turbine(Tile):
+class HolyCouncil(Tile):
     def __init__(self):
         super().__init__(
-            name="Turbine",
+            name="Holy Council",
             type="Generator",
             minimum_influence_to_rule=3,
             number_of_slots=3,

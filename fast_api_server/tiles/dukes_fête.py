@@ -2,10 +2,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Duke(Tile):
+class DukesFête(Tile):
     def __init__(self):
         super().__init__(
-            name="Duke",
+            name="Duke's Fête",
             type="Scorer",
             minimum_influence_to_rule=3,
             influence_tiers=[],

@@ -16,7 +16,7 @@ class CircleOfTheCricket(Tile):
                     "description": "**Action:** [[Receive]] a follower at an adjacent tile. Your opponent gets +1 power",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
-                    "data_needed_for_use": ["tile_to_receive_disciples_at"],
+                    "data_needed_for_use": ["tile_to_receive_follower"],
                     "has_a_cooldown": True,                    
                 },                
             ],      
@@ -54,7 +54,7 @@ class CircleOfTheCricket(Tile):
             await send_clients_log_message(f"**{self.name}** is on cooldown and cannot be used this round")
             return False
 
-        index_of_tile_to_receive_disciples_on = game_action_container.required_data_for_action['tile_to_receive_disciples_at']
+        index_of_tile_to_receive_disciples_on = game_action_container.required_data_for_action['tile_to_receive_follower']
         tile_to_receive_disciples_on = game_state['tiles'][index_of_tile_to_receive_disciples_on]
         
         if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_receive_disciples_on, game_utilities.find_index_of_tile_by_name(game_state, self.name)):

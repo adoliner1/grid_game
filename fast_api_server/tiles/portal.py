@@ -13,7 +13,7 @@ class Portal(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "**Action:** Pay 1 power to choose a tile. Your leader teleports there",
+                    "description": "**Action:** Teleport to any tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": True,                   
@@ -32,7 +32,7 @@ class Portal(Tile):
        
         if (self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and
             not self.influence_tiers[0]["is_on_cooldown"] and
-            whose_turn_is_it == ruler) and self.leaders_here[ruler] and game_state['power'][whose_turn_is_it] > 0:
+            whose_turn_is_it == ruler) and self.leaders_here[ruler]:
                 useable_tiers.append(0)
        
         return useable_tiers
@@ -59,11 +59,7 @@ class Portal(Tile):
         
         if not self.leaders_here[user]:
             await send_clients_log_message(f"Leader isn't present")
-            return False
-        
-        if not game_state['power'][user] > 0:
-            await send_clients_log_message(f"Not enough power to use **{self.name}**")
-            return False              
+            return False           
 
         index_of_tile_to_move_leader_to = game_action_container.required_data_for_action['tile_to_move_leader_to']
         tile_to_move_leader_to = game_state['tiles'][index_of_tile_to_move_leader_to]
@@ -71,9 +67,8 @@ class Portal(Tile):
             await send_clients_log_message(f"Invalid tile selected for using **{self.name}**")
             return False    
 
-        await send_clients_log_message(f"{user}_leader took **{self.name}** to **{tile_to_move_leader_to.name}**. They lose a power")
+        await send_clients_log_message(f"{user}_leader took **{self.name}** to **{tile_to_move_leader_to.name}**. ")
         self.leaders_here[user] = False
         tile_to_move_leader_to.leaders_here[user] = True
-        game_state['power'][user] -= 1       
         self.influence_tiers[tier_index]["is_on_cooldown"] = True
         return True

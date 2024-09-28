@@ -4,10 +4,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Conductor(Tile):
+class TacticiansRiver(Tile):
     def __init__(self):
         super().__init__(
-            name="Conductor",
+            name="Tactician's River",
             type="Mover",
             number_of_slots=5,
             minimum_influence_to_rule=3,
@@ -15,7 +15,7 @@ class Conductor(Tile):
                 {
                     "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "**Reaction:** After you [[receive]] a disciple, move     it to a tile adjacent to Conductor",
+                    "description": "**Reaction:** After you [[receive]] a disciple, move it to a tile adjacent to Tactician's River",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,        
                     "leader_must_be_present": False,             

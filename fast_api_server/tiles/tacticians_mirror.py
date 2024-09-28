@@ -4,10 +4,10 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Maestro(Tile):
+class TacticiansMirror(Tile):
     def __init__(self):
         super().__init__(
-            name="Maestro",
+            name="Tactician's Mirror",
             type="Mover",
             minimum_influence_to_rule=3,
             number_of_slots=5,
@@ -19,7 +19,7 @@ class Maestro(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,  
                     "leader_must_be_present": False,                    
-                    "data_needed_for_use": ['slot_and_tile_to_move_disciple_to']
+                    "data_needed_for_use": ['slot_to_move_disciple_to']
                 },
                 {
                     "influence_to_reach_tier": 6,
@@ -28,7 +28,7 @@ class Maestro(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,   
                     "leader_must_be_present": False,                   
-                    "data_needed_for_use": ['slot_and_tile_to_move_disciple_to']
+                    "data_needed_for_use": ['slot_to_move_disciple_to']
                 },
             ]
         )
@@ -68,8 +68,8 @@ class Maestro(Tile):
 
         slot_index_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['slot_index']
         tile_index_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['tile_index']
-        slot_index_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['slot_index']
-        tile_index_to = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_to']['tile_index']
+        slot_index_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['slot_index']
+        tile_index_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['tile_index']
 
         if not game_utilities.determine_if_directly_adjacent(tile_index_from, tile_index_to):
             await send_clients_log_message(f"Tried to react with **{self.name}** but destination tile isn't adjacent to the tile where the disciple was received")
@@ -104,7 +104,7 @@ class Maestro(Tile):
             game_action="use_a_tier",
             required_data_for_action={
                 "slot_and_tile_to_move_disciple_from": {"slot_index": index_of_slot_received_at, "tile_index": index_of_tile_received_at},
-                "slot_and_tile_to_move_disciple_to": {},
+                "slot_to_move_disciple_to": {},
                 "index_of_tile_in_use": game_utilities.find_index_of_tile_by_name(game_state, self.name),
                 "index_of_tier_in_use": tier_index
             },

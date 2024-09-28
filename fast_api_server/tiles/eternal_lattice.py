@@ -2,13 +2,13 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class Combinatorics(Tile):
+class EternalLattice(Tile):
     def __init__(self):
         super().__init__(
-            name="Combinatorics",
+            name="Eternal Lattice",
             type="Generator",
             minimum_influence_to_rule=3,
-            description="At the __end of each round__, for each unique, same-disciple pair you have here, +1 power\nIf you have all three possible pairs, +6 power per pair instead",
+            description="At the __end of each round__, for each unique pair you have here, +1 power\nIf you have all three possible pairs, +6 power per pair instead",
             number_of_slots=8,
         )
 
