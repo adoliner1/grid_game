@@ -239,7 +239,7 @@ class GameEngine:
                 if action_to_execute.game_action != 'move_leader':
                     self.game_action_container_stack.pop().event.set()
                 else:
-                    if not action_to_execute.movements_made < self.game_state['leader_movement'][action_to_execute.whose_action]:
+                    if not action_to_execute.movements_made < action_to_execute.maxium_number_of_moves:
                         self.game_action_container_stack.pop().event.set()
                         
             if action_to_execute.is_a_reaction:
@@ -270,7 +270,7 @@ class GameEngine:
                     return False
                 
                 #if more moves can be done we need to do what we normally do, but not pop off the container yet
-                if game_action_container.movements_made < self.game_state['leader_movement'][game_action_container.whose_action]:
+                if game_action_container.movements_made < game_action_container.maxium_number_of_moves:
                     game_action_container.required_data_for_action['tile_to_move_leader_to'] = None
                     game_utilities.update_all_game_state_values(self.game_state)
                     await self.send_clients_game_state(self.game_state)
@@ -383,6 +383,7 @@ class GameEngine:
                         "tile_to_move_leader_to": None
                     },
                     whose_action = self.game_state['whose_turn_is_it'],
+                    maxium_number_of_moves = self.game_state["leader_movement"][self.game_state['whose_turn_is_it']]
                 )
             case 'exile':
                 return game_action_container.GameActionContainer(

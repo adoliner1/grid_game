@@ -7,11 +7,11 @@ class SoulForge(Tile):
         super().__init__(
             name="Soul Forge",
             type="Generator",
-            number_of_slots=5,
+            number_of_slots=3,
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 5,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
                     "description": "After one of your disciples is ^^burned^^, +1 power",
                     "is_on_cooldown": False,

@@ -86,7 +86,7 @@ class Tile:
     def modify_recruiting_costs(self, game_state):
         pass
 
-    def modify_movement_ranges(self, game_state):
+    def modify_leader_movements(self, game_state):
         pass
 
     def modify_exiling_ranges(self, game_state):

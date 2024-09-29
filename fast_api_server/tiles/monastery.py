@@ -6,7 +6,7 @@ class Monastery(Tile):
     def __init__(self):
         super().__init__(
             name="Monastery",
-            type="Giver/Mover",
+            type="Giver/Disciple Mover",
             description = "At the __end of each round__, for each acolyte you have here, [[receive]] a follower here.",
             number_of_slots=4,
             minimum_influence_to_rule=4,            

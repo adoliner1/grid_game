@@ -146,6 +146,7 @@ def update_all_game_state_values(game_state):
     update_presence(game_state)
     determine_rulers(game_state)
     calculate_exiling_ranges(game_state)
+    calculate_leader_movements(game_state)
     calculate_recruiting_ranges(game_state)
     calculate_expected_incomes(game_state)
     calculate_recruiting_costs(game_state)
@@ -236,8 +237,11 @@ def get_available_client_actions(game_state, game_action_container, player_color
 
         if game_state['power'][game_action_container.whose_action] > 0:
             available_client_actions['move_leader'] = []
+        #minimum cost to recruit
         if game_state['power'][game_action_container.whose_action] > 1:    
             available_client_actions['recruit'] = []
+
+        #minimum cost to recruit
         if game_state['power'][game_action_container.whose_action] > 2:    
             available_client_actions['exile'] = []
 
@@ -252,6 +256,12 @@ def calculate_exiling_ranges(game_state):
     game_state['exiling_range']['blue'] = game_constants.initial_exiling_ranges['blue']
     for tile in game_state['tiles']:
         tile.modify_exiling_ranges(game_state)
+
+def calculate_leader_movements(game_state):
+    game_state['leader_movement']['red'] = game_constants.starting_leader_movement['red']
+    game_state['leader_movement']['blue'] = game_constants.starting_leader_movement['blue']
+    for tile in game_state['tiles']:
+        tile.modify_leader_movements(game_state)
 
 def get_tiles_within_exiling_range(game_state, player_color):
     calculate_exiling_ranges(game_state)

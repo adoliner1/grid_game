@@ -8,26 +8,26 @@ class TacticiansMirror(Tile):
     def __init__(self):
         super().__init__(
             name="Tactician's Mirror",
-            type="Mover",
+            type="Disciple Mover",
             minimum_influence_to_rule=3,
             number_of_slots=5,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 2,
-                    "must_be_ruler": False,                    
+                    "must_be_ruler": False,
                     "description": "**Reaction:** After you [[receive]] a disciple, you may move it to a tile adjacent to the tile you [[received]] it at",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,  
-                    "leader_must_be_present": False,                    
+                    "leader_must_be_present": False,
                     "data_needed_for_use": ['slot_to_move_disciple_to']
                 },
                 {
                     "influence_to_reach_tier": 6,
-                    "must_be_ruler": True,                    
+                    "must_be_ruler": True,
                     "description": "**Reaction:** After you [[receive]] a disciple, you may move it to a tile adjacent to the tile you [[received]] it at",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,   
-                    "leader_must_be_present": False,                   
+                    "leader_must_be_present": False,
                     "data_needed_for_use": ['slot_to_move_disciple_to']
                 },
             ]

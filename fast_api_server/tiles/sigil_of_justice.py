@@ -2,18 +2,18 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class SigilOfTheCruel(Tile):
+class SigilOfJustice(Tile):
     def __init__(self):
         super().__init__(
-            name="Sigil of the Cruel",
-            type="Generator/Exile-Enhancer",
+            name="Sigil of Justice",
+            type="Scorer",
             number_of_slots=4,
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "After you exile, +1 power",
+                    "description": "When one of your disciples is exiled, +3 points",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
                     "has_cooldown": False,
@@ -37,7 +37,7 @@ class SigilOfTheCruel(Tile):
         ruler = self.determine_ruler(game_state)
         player_influence = self.influence_per_player[exiler]
 
-        if player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and exiler == ruler:
-            power_gained = 1
-            game_state["power"][exiler] += power_gained
-            await send_clients_log_message(f"{exiler} gains {power_gained} power from **{self.name}** due to exiling a {exiled_disciple['color']}_{exiled_disciple['disciple']} from **{tile_exiled_from.name}**")
+        if player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and exiler == ruler and exiled_disciple['color'] == ruler:
+            points_gained = 3
+            game_state["points"][ruler] += points_gained
+            await send_clients_log_message(f"{exiler} gains {points_gained} points from **{self.name}** due to their {exiled_disciple['color']}_{exiled_disciple['disciple']} being exiled from **{tile_exiled_from.name}**")

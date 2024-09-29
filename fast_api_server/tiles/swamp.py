@@ -6,10 +6,10 @@ class Swamp(Tile):
     def __init__(self):
         super().__init__(
             name="Swamp",
-            type="",
+            type="Swamp",
             minimum_influence_to_rule=1,
             description = f"",
-            number_of_slots=1,         
+            number_of_slots=2,         
         )
 
     def determine_ruler(self, game_state):

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 class GameActionContainer:
-    def __init__(self, event, game_action, required_data_for_action, whose_action, data_from_event=None, tiers_to_resolve=None, is_a_reaction=False):
+    def __init__(self, event, game_action, required_data_for_action, whose_action, maxium_number_of_moves=None, data_from_event=None, tiers_to_resolve=None, is_a_reaction=False):
         self.event = event
         self.game_action = game_action
         self.required_data_for_action = required_data_for_action
@@ -12,6 +12,7 @@ class GameActionContainer:
 
         if game_action == "move_leader":
             self.movements_made = 0
+            self.maxium_number_of_moves = maxium_number_of_moves
 
     def get_next_piece_of_data_to_fill(self):
         for piece_of_data_to_fill, value in self.required_data_for_action.items():

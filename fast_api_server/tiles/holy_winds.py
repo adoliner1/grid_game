@@ -6,7 +6,7 @@ class HolyWinds(Tile):
     def __init__(self):
         super().__init__(
             name="Holy Winds",
-            type="Mover",
+            type="Disciple Mover",
             minimum_influence_to_rule=4,
             number_of_slots=7,
             influence_tiers=[

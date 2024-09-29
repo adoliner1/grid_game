@@ -331,6 +331,7 @@ const Game = () => {
               exiling_costs={gameState.exiling_costs.red}
               recruiting_costs={gameState.recruiting_costs.red}
               recruiting_range={gameState.recruiting_range.red}
+              leader_movement={gameState.leader_movement.red}
               exiling_range={gameState.exiling_range.red}
               onDiscipleClick={handleDiscipleInHUDClick}
             />
@@ -349,6 +350,7 @@ const Game = () => {
               exiling_costs={gameState.exiling_costs.blue}
               recruiting_costs={gameState.recruiting_costs.blue}
               recruiting_range={gameState.recruiting_range.blue}
+              leader_movement={gameState.leader_movement.blue}
               exiling_range={gameState.exiling_range.blue}
               onDiscipleClick={handleDiscipleInHUDClick}
             />

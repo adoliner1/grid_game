@@ -13,10 +13,10 @@ class AltarOfBacchus(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** Move one of your disciples from any other tile here. If you did, +4 power. If Altar of Bacchus is full and you're still the ruler, +5 points",
+                    "description": "**Action:** Move one of your disciples from any other tile here. If you did, +3 power. If Altar of Bacchus is full and you're still the ruler, +5 points",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
-                    "leader_must_be_present": True,                  
+                    "leader_must_be_present": True,
                     "data_needed_for_use": ['disciple_to_move'],
                 },
             ]
@@ -87,7 +87,7 @@ class AltarOfBacchus(Tile):
         next_empty_slot_on_bacchus = self.slots_for_disciples.index(None)
         await game_utilities.move_disciple_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_move_disciple_from, slot_index_to_move_disciple_from, index_of_altar_of_bacchus, next_empty_slot_on_bacchus)
         
-        power_gained = 4
+        power_gained = 3
         game_state['power'][user] += power_gained
         await send_clients_log_message(f"{user} gains {power_gained} power from **{self.name}**")
         self.influence_tiers[tier_index]['is_on_cooldown'] = True

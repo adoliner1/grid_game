@@ -206,10 +206,6 @@ svg.selectable:active {
   margin-bottom: 5px;
 }
 
-.influence-icon {
-  margin-right: 10px;
-}
-
 .disciple-influence {
   display: flex;
   align-items: center;

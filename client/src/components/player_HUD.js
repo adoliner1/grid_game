@@ -12,7 +12,7 @@ const ArrowIcon = ({ rotation }) => (
   </svg>
 )
 
-const CostGrid = ({ recruiting_costs, exiling_costs, player_color, available_actions, clients_color, onDiscipleClick, recruiting_range, exiling_range }) => {
+const CostGrid = ({ recruiting_costs, exiling_costs, player_color, available_actions, clients_color, onDiscipleClick, recruiting_range, leader_movement, exiling_range }) => {
   const disciple_types = ['follower', 'acolyte', 'sage'];
   const DiscipleComponents = { follower: Follower, acolyte: Acolyte, sage: Sage };
   const rangeIcon = createIcon({ type: 'range', tooltipText: 'Range', width: 18, height: 18 });
@@ -97,6 +97,7 @@ const PlayerHUD = ({
   exiling_costs,
   recruiting_costs,
   recruiting_range,
+  leader_movement,
   exiling_range,
 }) => {
   const class_for_player_color = player_color === 'red' ? 'player-red' : 'player-blue';
@@ -105,12 +106,13 @@ const PlayerHUD = ({
 
   const pointsIcon = createIcon({ type: 'points', tooltipText: 'Points', width: 18, height: 18 });
   const presenceIcon = createIcon({ type: 'presence', tooltipText: 'Presence', width: 18, height: 18 });
+  const leaderMovementIcon = createIcon({ type: 'leader_movement', tooltipText: 'Leader Movement', width: 18, height: 18 });
   const peakInfluenceIcon = createIcon({ type: 'peakInfluence', tooltipText: 'Peak Influence', width: 18, height: 18 });
   const powerIcon = createIcon({ type: 'power', tooltipText: 'Power', width: 18, height: 18 });
 
   return (
     <div className={`player-info ${class_for_player_color} ${class_to_show_border_by_client_color} ${active_player_class} ${has_passed ? 'player-has-passed' : ''}`}>
-    <div className='points-presence-power-peak-influence-row'>
+    <div className='points-presence-leader_movement-power-peak-influence-row'>
       <div className="icon-value-pair">
         {pointsIcon} :
         <span>
@@ -127,6 +129,10 @@ const PlayerHUD = ({
       <div className="icon-value-pair">
         {peakInfluenceIcon} :
         <span>{peak_influence}</span>
+      </div>
+      <div className="icon-value-pair">
+        {leaderMovementIcon} :
+        <span>{leader_movement}</span>
       </div>
       <div className="icon-value-pair">
         {powerIcon} :
