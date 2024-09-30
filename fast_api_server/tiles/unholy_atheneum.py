@@ -8,7 +8,7 @@ class UnholyAtheneum(Tile):
             name="Unholy Atheneum",
             type="Giver/Generator",
             description="At the __end of each round__, for each sage you have here, [[receive]] an acolyte then a follower here",
-            number_of_slots=12,
+            number_of_slots=10,
             minimum_influence_to_rule=7,
             influence_tiers=[
                 {
