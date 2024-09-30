@@ -14,14 +14,14 @@ class TacticiansStone(Tile):
                 {
                     "influence_to_reach_tier": 4,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** After you [[receive]] a disciple, you may ^^burn^^ any disciple adjacent to the tile you received it",
+                    "description": "**Reaction:** After you [[receive]] a disciple, you may ^^burn^^ any disciple at or adjacent to the tile you received it",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False, 
                     "data_needed_for_use": ['disciple_to_burn'],
                 },        
             ],            
-            number_of_slots=5,
+            number_of_slots=3,
         )
 
     def determine_ruler(self, game_state):
@@ -32,6 +32,12 @@ class TacticiansStone(Tile):
         slots_with_a_burnable_disciple = {}
         index_of_tile_received_at = game_action_container.required_data_for_action.get('index_of_tile_received_at')
         if index_of_tile_received_at is not None:
+            # Include the tile where the disciple was received
+            slots_with_disciples = [i for i, slot in enumerate(game_state["tiles"][index_of_tile_received_at].slots_for_disciples) if slot]
+            if slots_with_disciples:
+                slots_with_a_burnable_disciple[index_of_tile_received_at] = slots_with_disciples
+            
+            # Include adjacent tiles
             for tile_index in game_utilities.get_adjacent_tile_indices(index_of_tile_received_at):
                 slots_with_disciples = [i for i, slot in enumerate(game_state["tiles"][tile_index].slots_for_disciples) if slot]
                 if slots_with_disciples:
@@ -59,8 +65,9 @@ class TacticiansStone(Tile):
         index_of_tile_to_burn_disciple = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
         index_of_tile_received_at = game_action_container.required_data_for_action['index_of_tile_received_at']
 
-        if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_burn_disciple, index_of_tile_received_at):
-            await send_clients_log_message(f"Tried to react with **{self.name}** but chose a non-adjacent tile to burn at")
+        if not (index_of_tile_to_burn_disciple == index_of_tile_received_at or 
+                game_utilities.determine_if_directly_adjacent(index_of_tile_to_burn_disciple, index_of_tile_received_at)):
+            await send_clients_log_message(f"Tried to react with **{self.name}** but chose a tile that is not the received at tile or adjacent to it")
             return False            
 
         if game_state["tiles"][index_of_tile_to_burn_disciple].slots_for_disciples[slot_index_to_burn_disciple] is None:
@@ -68,9 +75,10 @@ class TacticiansStone(Tile):
             return False
 
         await send_clients_log_message(f"Reacting with tier {tier_index} of **{self.name}**")
+
+        self.influence_tiers[tier_index]["is_on_cooldown"] = True    
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_disciple, slot_index_to_burn_disciple)
-        
-        self.influence_tiers[tier_index]["is_on_cooldown"] = True
+
         return True
     
     def setup_listener(self, game_state):

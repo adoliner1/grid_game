@@ -12,11 +12,11 @@ class PyramidOfTheSun(Tile):
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 1,
-                    "must_be_ruler": True,                    
+                    "must_be_ruler": True,
                     "description": "**Action:** ^^Burn^^ one of your disciples here to swap the position of 2 tiles",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,            
-                    "leader_must_be_present": False,         
+                    "has_a_cooldown": False,
+                    "leader_must_be_present": False,
                     "data_needed_for_use": ["disciple_to_burn", "tile_to_swap", "other_tile_to_swap"]
                 },
             ]

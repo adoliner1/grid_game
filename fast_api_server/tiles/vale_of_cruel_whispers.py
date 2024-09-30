@@ -14,7 +14,7 @@ class ValeOfCruelWhispers(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** After you exile, you may ^^burn^^ any disciple adjacent to the tile where the exiled disciple was",
+                    "description": "**Reaction:** After you exile, you may ^^burn^^ any disciple at or adjacent to the tile where the exiled disciple was",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False, 
@@ -32,6 +32,12 @@ class ValeOfCruelWhispers(Tile):
         slots_with_a_burnable_disciple = {}
         index_of_tile_exiled_from = game_action_container.required_data_for_action.get('index_of_tile_exiled_from')
         if index_of_tile_exiled_from is not None:
+            # Include the tile where the disciple was exiled from
+            slots_with_disciples = [i for i, slot in enumerate(game_state["tiles"][index_of_tile_exiled_from].slots_for_disciples) if slot]
+            if slots_with_disciples:
+                slots_with_a_burnable_disciple[index_of_tile_exiled_from] = slots_with_disciples
+            
+            # Include adjacent tiles
             for tile_index in game_utilities.get_adjacent_tile_indices(index_of_tile_exiled_from):
                 slots_with_disciples = [i for i, slot in enumerate(game_state["tiles"][tile_index].slots_for_disciples) if slot]
                 if slots_with_disciples:
@@ -59,8 +65,9 @@ class ValeOfCruelWhispers(Tile):
         index_of_tile_to_burn_disciple = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
         index_of_tile_exiled_from = game_action_container.required_data_for_action['index_of_tile_exiled_from']
 
-        if not game_utilities.determine_if_directly_adjacent(index_of_tile_to_burn_disciple, index_of_tile_exiled_from):
-            await send_clients_log_message(f"Tried to react with **{self.name}** but chose a non-adjacent tile to burn at")
+        if not (index_of_tile_to_burn_disciple == index_of_tile_exiled_from or 
+                game_utilities.determine_if_directly_adjacent(index_of_tile_to_burn_disciple, index_of_tile_exiled_from)):
+            await send_clients_log_message(f"Tried to react with **{self.name}** but chose a tile that is not the exiled from tile or adjacent to it")
             return False            
 
         if game_state["tiles"][index_of_tile_to_burn_disciple].slots_for_disciples[slot_index_to_burn_disciple] is None:

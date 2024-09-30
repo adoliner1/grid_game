@@ -14,7 +14,7 @@ class TempleOfHades(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** ^^Burn^^ 3 of your followers here to [[receive]] a sage here",
+                    "description": "**Action:** ^^Burn^^ 3 of your followers here (one at a time) to [[receive]] a sage here",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
                     "leader_must_be_present": False, 

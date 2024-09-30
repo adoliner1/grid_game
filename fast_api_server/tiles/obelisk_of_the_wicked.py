@@ -6,7 +6,7 @@ class ObeliskOfTheWicked(Tile):
     def __init__(self):
         super().__init__(
             name="Obelisk of the Wicked",
-            type="Giver/Exile-Enhancer",
+            type="Giver",
             number_of_slots=3,
             minimum_influence_to_rule=3,
             influence_tiers=[

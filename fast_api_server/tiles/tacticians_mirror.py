@@ -24,7 +24,7 @@ class TacticiansMirror(Tile):
                 {
                     "influence_to_reach_tier": 6,
                     "must_be_ruler": True,
-                    "description": "**Reaction:** After you [[receive]] a disciple, you may move it to a tile adjacent to the tile you [[received]] it at",
+                    "description": "**Reaction:** Same as above",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,   
                     "leader_must_be_present": False,

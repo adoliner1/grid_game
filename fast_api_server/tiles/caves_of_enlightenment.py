@@ -7,7 +7,7 @@ class CavesOfEnlightenment(Tile):
         super().__init__(
             name="Caves of Enlightenment",
             type="Giver/Recruitment-Enhancer",
-            number_of_slots=4,
+            number_of_slots=5,
             minimum_influence_to_rule=5,
             influence_tiers=[
                 {

@@ -7,7 +7,7 @@ class CircleOfTheCricket(Tile):
         super().__init__(
             name="Circle of the Cricket",
             type="Generator/Giver",
-            number_of_slots=5,
+            number_of_slots=2,
             minimum_influence_to_rule=2,
             influence_tiers=[
                 {

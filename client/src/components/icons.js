@@ -23,6 +23,10 @@ const iconPaths = {
     grid: "M2 2h6v6H2zM9 2h6v6H9zM16 2h6v6h-6zM2 9h6v6H2zM9 9h6v6H9zM16 9h6v6h-6zM2 16h6v6H2zM9 16h6v6H9zM16 16h6v6h-6z",
     highlight: "M9 2h6v6H9zM9 9h6v6H9zM9 16h6v6H9z"
   },
+  diagonal: {
+    grid: "M2 2h6v6H2zM9 2h6v6H9zM16 2h6v6h-6zM2 9h6v6H2zM9 9h6v6H9zM16 9h6v6h-6zM2 16h6v6H2zM9 16h6v6H9zM16 16h6v6h-6z",
+    highlight: "M2 2h6v6H2zM9 9h6v6H9zM16 16h6v6h-6z"
+  },
   inCorner: {
     grid: "M2 2h6v6H2zM9 2h6v6H9zM16 2h6v6h-6zM2 9h6v6H2zM9 9h6v6H9zM16 9h6v6h-6zM2 16h6v6H2zM9 16h6v6H9zM16 16h6v6h-6z",
     highlight: "M2 2h6v6H2zM16 2h6v6h-6zM2 16h6v6H2zM16 16h6v6h-6z"
@@ -63,6 +67,7 @@ const createIcon = ({ type, tooltipText, color, width = 24, height = 24, classNa
     case 'range':
     case 'follower':
     case 'acolyte':
+      
     case 'leader_movement':
       viewBox = "0 0 512 512"
       break
@@ -106,6 +111,7 @@ const createIcon = ({ type, tooltipText, color, width = 24, height = 24, classNa
     case 'row':
     case 'column':
     case 'connectedChain':
+    case 'diagonal':  
       iconContent = (
         <>
           <path d={iconPaths[type].grid} fill="none" stroke={color || 'currentColor'} strokeWidth="1" />

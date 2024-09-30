@@ -7,7 +7,7 @@ class SigilOfJustice(Tile):
         super().__init__(
             name="Sigil of Justice",
             type="Scorer",
-            number_of_slots=4,
+            number_of_slots=3,
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {

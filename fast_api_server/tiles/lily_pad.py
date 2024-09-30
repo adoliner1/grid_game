@@ -8,7 +8,7 @@ class LilyPad(Tile):
             name="Lily Pad",
             type="Generator",
             minimum_influence_to_rule=3,
-            number_of_slots=2,
+            number_of_slots=3,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,

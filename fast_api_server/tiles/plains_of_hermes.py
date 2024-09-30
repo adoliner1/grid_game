@@ -7,11 +7,11 @@ class PlainsOfHermes(Tile):
         super().__init__(
             name="Plains of Hermes",
             type="Leader-Movement",
-            minimum_influence_to_rule=7,
+            minimum_influence_to_rule=3,
             number_of_slots=5,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 7,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": True,
                     "description": "Increase your leader movement by 1",
                     "is_on_cooldown": False,

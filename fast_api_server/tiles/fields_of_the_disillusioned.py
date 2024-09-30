@@ -7,7 +7,7 @@ class FieldsOfTheDisillusioned(Tile):
         super().__init__(
             name="Fields of the Disillusioned",
             type="Exile-Enhancer",
-            minimum_influence_to_rule=6,
+            minimum_influence_to_rule=4,
             number_of_slots=4,
             influence_tiers=[
                 {

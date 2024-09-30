@@ -349,6 +349,11 @@ def get_tiles_within_recruiting_range(game_state, disciple_to_recruit, player_co
     
     return tiles_in_range
 
+def get_tile_index_of_leader(game_state, color):
+    for tile_index, tile in enumerate(game_state['tiles']):
+        if tile.leaders_here[color]:
+            return tile_index
+
 def get_disciples_that_can_be_recruited(game_state, player_color):
     calculate_recruiting_costs(game_state)
     disciples_that_can_be_recruited = []
@@ -427,6 +432,19 @@ def find_index_of_tile_by_name(game_state, name):
         if tile.name == name:
             return index
     return None
+
+def determine_how_many_full_diagonals_player_rules(game_state, player):
+    full_diagonals = 0
+    
+    # Check main diagonal (top-left to bottom-right)
+    if all(game_state["tiles"][i].ruler == player for i in [0, 4, 8]):
+        full_diagonals += 1
+    
+    # Check anti-diagonal (top-right to bottom-left)
+    if all(game_state["tiles"][i].ruler == player for i in [2, 4, 6]):
+        full_diagonals += 1
+    
+    return full_diagonals
 
 def count_number_of_disciple_for_player_on_tile(disciple, player, tile):
     count = 0

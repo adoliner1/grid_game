@@ -36,31 +36,12 @@ class GameEngine:
         await self.run_game_loop()
 
     async def perform_initial_placements(self):
-        await self.send_clients_log_message(f"Players must make their initial follower recruitments and then place their leaders")
+        await self.send_clients_log_message(f"Players must place their leaders")
         await self.send_clients_game_state(self.game_state)
 
         #set up listeners outside of start round here here in case an initial recruitment triggers one
         for _ , listener_function in self.game_state["listeners"]["start_of_round"].values():
             await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
-
-        for number_of_initial_followers_placed in range(game_constants.number_of_initial_followers_to_place):
-            player = 'red' if number_of_initial_followers_placed % 2 == 0 else 'blue'
-            self.game_state['whose_turn_is_it'] = player
-            await self.send_clients_game_state(self.game_state)
-            await self.send_clients_log_message(f"{player} must recruit a {player}_follower at no cost. They can choose any tile because it's the start of the game.")            
-            action = game_action_container.GameActionContainer(
-                event=asyncio.Event(),
-                game_action="initial_follower_placement",
-                required_data_for_action={
-                    'tile_to_recruit_initial_follower': {}
-                },
-                whose_action=player
-            )
-
-            self.game_action_container_stack.append(action)
-            await self.get_and_send_available_actions()
-            await self.game_action_container_stack[-1].event.wait()
-            await self.send_clients_game_state(self.game_state)
 
         for player in game_constants.player_colors:
             self.game_state['whose_turn_is_it'] = player
@@ -490,12 +471,32 @@ class GameEngine:
     
         return chosen_tiles
 
+    def choose_round_bonuses(self):
+        scorer_bonus_classes, income_bonus_classes = self.get_all_round_bonuses()
+        
+        chosen_scorer_bonuses = [None] * game_constants.number_of_scoring_bonuses
+        chosen_income_bonuses = [None] * game_constants.number_of_income_bonuses
+
+        def choose_bonus_for_round(bonus_classes, round_index):
+            eligible_bonuses = [bonus_class() for bonus_class in bonus_classes if round_index in bonus_class().allowed_rounds]
+            if eligible_bonuses:
+                chosen_bonus = random.choice(eligible_bonuses)
+                bonus_classes.remove(chosen_bonus.__class__)
+                return chosen_bonus
+            return None
+
+        for i in range(game_constants.number_of_scoring_bonuses):
+            chosen_scorer_bonuses[i] = choose_bonus_for_round(scorer_bonus_classes, i)
+
+        for i in range(game_constants.number_of_income_bonuses):
+            chosen_income_bonuses[i] = choose_bonus_for_round(income_bonus_classes, i)
+
+        return chosen_scorer_bonuses, chosen_income_bonuses
+
+
     def create_new_game_state(self):
         chosen_tiles = self.choose_tiles()
-        scorer_bonuses, income_bonuses = self.get_all_round_bonuses()  
-    
-        chosen_scorer_bonuses = random.sample(scorer_bonuses, game_constants.number_of_scoring_bonuses)
-        chosen_income_bonuses = random.sample(income_bonuses, game_constants.number_of_income_bonuses)
+        chosen_scorer_bonuses, chosen_income_bonuses = self.choose_round_bonuses()  
     
         game_state = {
             "round": 0,
@@ -515,8 +516,8 @@ class GameEngine:
             "tiles": chosen_tiles,
             "whose_turn_is_it": "red",
             "first_player": "red",
-            "scorer_bonuses": [bonus() for bonus in chosen_scorer_bonuses],
-            "income_bonuses": [bonus() for bonus in chosen_income_bonuses],
+            "scorer_bonuses": chosen_scorer_bonuses,
+            "income_bonuses": chosen_income_bonuses,
             "listeners": {
                 "on_recruit": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {},
                 "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}, "on_exile": {}

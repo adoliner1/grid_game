@@ -13,7 +13,7 @@ class HolyCouncil(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "**Action:** If your peak influence is\n**>= 6**, +2 power\n**>= 10**, +3 power\n**>= 14**, +6 power",
+                    "description": "**Action:** If your peak influence is\n**>= 7**, +2 power\n**>= 11**, +3 power\n**>= 15**, +6 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,                    
                     "data_needed_for_use": []
@@ -54,11 +54,11 @@ class HolyCouncil(Tile):
             return False
 
         power_to_give = 0
-        if peak_influence >= 14:
+        if peak_influence >= 15:
             power_to_give = 6
-        elif peak_influence >= 10:
+        elif peak_influence >= 11:
             power_to_give = 3
-        elif peak_influence >= 6:
+        elif peak_influence >= 7:
             power_to_give = 2
         else:
             await send_clients_log_message(f"{user}'s peak influence is not high enough to gain any power with **{self.name}**")

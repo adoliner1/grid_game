@@ -8,7 +8,7 @@ class AltarOfBacchus(Tile):
             name="Altar of Bacchus",
             type="Generator/Scorer",
             minimum_influence_to_rule=3,
-            number_of_slots=5,
+            number_of_slots=4,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,

@@ -13,7 +13,7 @@ class AltarOfHades(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** Burn one of your disciples on another tile for +5 power",
+                    "description": "**Action:** ^^Burn^^ one of your disciples on another tile for +5 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": True,                  
@@ -45,7 +45,7 @@ class AltarOfHades(Tile):
        
         if (self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and
             not self.influence_tiers[0]["is_on_cooldown"] and
-            whose_turn_is_it == ruler and self.leaders_here[ruler] and None in self.slots_for_disciples):
+            whose_turn_is_it == ruler and self.leaders_here[ruler]):
                 useable_tiers.append(0)
        
         return useable_tiers

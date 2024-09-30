@@ -8,7 +8,7 @@ class TeleportingCabinet(Tile):
             name="Teleporting Cabinet",
             type="Mover",
             minimum_influence_to_rule=4,
-            number_of_slots=4,
+            number_of_slots=3,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 4,

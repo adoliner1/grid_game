@@ -9,11 +9,11 @@ class TacticiansRiver(Tile):
         super().__init__(
             name="Tactician's River",
             type="Mover",
-            number_of_slots=5,
+            number_of_slots=4,
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 2,
+                    "influence_to_reach_tier": 1,
                     "must_be_ruler": False,                    
                     "description": "**Reaction:** After you [[receive]] a disciple, move it to a tile adjacent to Tactician's River",
                     "is_on_cooldown": False,
@@ -145,7 +145,7 @@ class TacticiansRiver(Tile):
         if not self.influence_tiers[0]['is_on_cooldown'] and self.influence_per_player[receiver] >= self.influence_tiers[0]['influence_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(0)
         
-        if not self.influence_tiers[1]['is_on_cooldown'] and self.determine_ruler(game_state) == receiver:
+        if not self.influence_tiers[1]['is_on_cooldown'] and self.influence_per_player[receiver] >= self.influence_tiers[1]['influence_to_reach_tier'] and self.determine_ruler(game_state) == receiver:
             tiers_that_can_be_reacted_with.append(1)
         
         if tiers_that_can_be_reacted_with:

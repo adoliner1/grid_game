@@ -9,7 +9,7 @@ class PrincesEntourage(Tile):
             type="Scorer",
             minimum_influence_to_rule=3,
             number_of_slots=6,
-            description="At the __end of each round__, for each pair you have here, +2 points\nWhen you exile a disciple from Prince's Entourage, +2 points",
+            description="At the __end of each round__, for each pair you have here, +2 points\nWhen you exile a disciple of any color from Prince's Entourage, +2 points",
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 5,

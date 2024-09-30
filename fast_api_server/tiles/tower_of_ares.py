@@ -17,7 +17,7 @@ class TowerOfAres(Tile):
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,   
                     "leader_must_be_present": False,                
-                    "data_needed_for_use": ["disciple_to_burn_on_Spear", "disciple_to_burn"]
+                    "data_needed_for_use": ["disciple_to_burn_on_tower_of_ares", "disciple_to_burn"]
                 },
             ]
         )
@@ -42,7 +42,7 @@ class TowerOfAres(Tile):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
         user = game_action_container.whose_action
 
-        if current_piece_of_data_to_fill == "disciple_to_burn_on_Spear":
+        if current_piece_of_data_to_fill == "disciple_to_burn_on_tower_of_ares":
             slots_that_can_be_burned_from = game_utilities.get_slots_with_a_disciple_of_player_color_at_tile_index(game_state, user, game_action_container.required_data_for_action["index_of_tile_in_use"])
             available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_that_can_be_burned_from}
         elif current_piece_of_data_to_fill == "disciple_to_burn":
@@ -74,7 +74,7 @@ class TowerOfAres(Tile):
             return False
 
         index_of_spear = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        slot_index_to_burn_disciple_from_here = game_action_container.required_data_for_action['disciple_to_burn_on_Spear']['slot_index']
+        slot_index_to_burn_disciple_from_here = game_action_container.required_data_for_action['disciple_to_burn_on_tower_of_ares']['slot_index']
         slot_index_to_burn_disciple_at = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
         index_of_tile_to_burn_disciple_at = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
 

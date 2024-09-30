@@ -7,7 +7,7 @@ class FieldsOfTheFaithful(Tile):
         super().__init__(
             name="Fields of the Faithful",
             type="Recruitment-Enhancer",
-            minimum_influence_to_rule=8,
+            minimum_influence_to_rule=4,
             number_of_slots=5,
             influence_tiers=[
                 {

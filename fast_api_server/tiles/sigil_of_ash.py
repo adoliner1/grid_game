@@ -7,7 +7,7 @@ class SigilOfAsh(Tile):
         super().__init__(
             name="Sigil of Ash",
             type="Scorer",
-            number_of_slots=5,
+            number_of_slots=4,
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {

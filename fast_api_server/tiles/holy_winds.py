@@ -8,7 +8,7 @@ class HolyWinds(Tile):
             name="Holy Winds",
             type="Disciple Mover",
             minimum_influence_to_rule=4,
-            number_of_slots=7,
+            number_of_slots=5,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 5,
