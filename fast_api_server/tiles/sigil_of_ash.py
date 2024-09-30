@@ -13,7 +13,7 @@ class SigilOfAsh(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": False,
-                    "description": "After one of your disciples is ^^burned^^ on a tile, if you're still present there, +2 points",
+                    "description": "When one of your disciples is ^^burned^^, +2 points",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_cooldown": False,
@@ -46,7 +46,7 @@ class SigilOfAsh(Tile):
         ruler = self.determine_ruler(game_state)
         for player in [first_player, second_player]:
             player_influence = self.influence_per_player[player]
-            if player_influence >= 3 and game_utilities.has_presence(tile_burned_at, player) and color == player:
+            if player_influence >= 3 and color == player:
                 points_gained = 3 if player == ruler else 2
                 game_state["points"][player] += points_gained
                 await send_clients_log_message(f"{player} gains {points_gained} points from **{self.name}** due to their {color}_{disciple} being burned on {tile_burned_at.name}")

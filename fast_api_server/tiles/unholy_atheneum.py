@@ -14,7 +14,7 @@ class UnholyAtheneum(Tile):
                 {
                     "influence_to_reach_tier": 6,
                     "must_be_ruler": True,                    
-                    "description": "**Action:** If Unholy Atheneum is full, you may burn one of your disciples here to gain power equal to its recruitment cost + 1",
+                    "description": "**Action:** If Unholy Atheneum is full, you may ^^burn^^ one of your disciples here to gain power equal to its recruitment cost + 1",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False,                      

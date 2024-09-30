@@ -13,7 +13,7 @@ class CrystalShrine(Tile):
                 {
                     "influence_to_reach_tier": 9,
                     "must_be_ruler": True,                     
-                    "description": "If Crystal Shrine is full at the __end of each round__, +7 power",
+                    "description": "At the __end of each round__, if Crystal Shrine is full, +7 power",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "has_cooldown": False,
