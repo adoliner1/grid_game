@@ -500,7 +500,7 @@ class GameEngine:
     
         game_state = {
             "round": 0,
-            "points": {"red": 0, "blue": 0},
+            "points": {"red": 0, "blue": 2},
             "presence": {"red": 0, "blue": 0},
             "peak_influence": {"red": 0, "blue": 0},
             "player_has_passed": {"red": False, "blue": False},

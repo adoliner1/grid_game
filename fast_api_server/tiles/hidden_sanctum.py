@@ -13,7 +13,7 @@ class HiddenSanctum(Tile):
                 {
                     "influence_to_reach_tier": 4,
                     "must_be_ruler": True,
-                    "description": "Increase your exiling range by 1",
+                    "description": "Increase your ++exiling++ range by 1",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,                    
                     "leader_must_be_present": False, 

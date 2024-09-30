@@ -13,7 +13,7 @@ class ObeliskOfTheWicked(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "After you exile, if you have less than 4 influence at the tile the disciple was exiled from, [[receive]] a follower there",
+                    "description": "After you ++exile++, if you have less than 4 influence at the tile the disciple was ++exiled++ from, [[receive]] a follower there",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
                     "has_a_cooldown": False,                    

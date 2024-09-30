@@ -13,7 +13,7 @@ class SigilOfJustice(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "When one of your disciples is exiled, +3 points",
+                    "description": "When one of your disciples is ++exiled++, +3 points",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
                     "has_cooldown": False,

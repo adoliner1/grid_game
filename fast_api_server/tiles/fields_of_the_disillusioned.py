@@ -11,9 +11,9 @@ class FieldsOfTheDisillusioned(Tile):
             number_of_slots=4,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 6,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,
-                    "description": "Reduce your exiling costs by 1",
+                    "description": "Reduce your ++exiling++ costs by 1",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,                    
                     "leader_must_be_present": False, 

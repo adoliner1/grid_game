@@ -33,7 +33,7 @@ class TowerOfAres(Tile):
 
         if (player_influence >= self.influence_tiers[0]["influence_to_reach_tier"] and 
             not self.influence_tiers[0]["is_on_cooldown"] and 
-            whose_turn_is_it == ruler):
+            whose_turn_is_it == ruler) and game_utilities.has_presence(self, whose_turn_is_it):
             useable_tiers.append(0)
 
         return useable_tiers

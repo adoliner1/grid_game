@@ -19,7 +19,7 @@ class PrincesssWaterfalls(Tile):
                     "leader_must_be_present": False,                 
                 },
                 {
-                    "influence_to_reach_tier": 6,
+                    "influence_to_reach_tier": 7,
                     "must_be_ruler": True,
                     "description": "+2 points instead",
                     "is_on_cooldown": False,

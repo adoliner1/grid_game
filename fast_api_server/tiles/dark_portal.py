@@ -16,7 +16,7 @@ class DarkPortal(Tile):
                     "description": "**Action:** ^^Burn^^ one of your disciples anywhere, then teleport your leader to any tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
-                    "leader_must_be_present": True,                  
+                    "leader_must_be_present": False,                  
                     "data_needed_for_use": ['disciple_to_burn', 'tile_to_teleport_to'],
                 },
             ],
@@ -49,7 +49,7 @@ class DarkPortal(Tile):
        
         if (self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and
             not self.influence_tiers[0]["is_on_cooldown"] and
-            whose_turn_is_it == ruler and self.leaders_here[ruler]):
+            whose_turn_is_it == ruler):
                 useable_tiers.append(0)
        
         return useable_tiers
@@ -69,10 +69,6 @@ class DarkPortal(Tile):
         
         if user != ruler:
             await send_clients_log_message(f"Only the ruler can use **{self.name}**")
-            return False
-       
-        if not self.leaders_here[user]:
-            await send_clients_log_message(f"Leader isn't present on **{self.name}**")
             return False
 
         index_of_tile_to_burn_disciple_from = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
