@@ -12,11 +12,11 @@ class Nexus(Tile):
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
-                    "must_be_ruler": True,                    
+                    "must_be_ruler": True,
                     "description": "**Action:** Gain 2 power for each adjacent tile you rule",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,   
-                    "leader_must_be_present": False,                  
+                    "has_a_cooldown": True,
+                    "leader_must_be_present": False,
                     "data_needed_for_use": [],
                 },
             ]

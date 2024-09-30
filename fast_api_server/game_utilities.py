@@ -237,12 +237,13 @@ def get_available_client_actions(game_state, game_action_container, player_color
 
         if game_state['power'][game_action_container.whose_action] > 0:
             available_client_actions['move_leader'] = []
-        #minimum cost to recruit
-        if game_state['power'][game_action_container.whose_action] > 1:    
+        
+        minimum_cost_to_recruit = min(game_state["recruiting_costs"][game_action_container.whose_action].values())
+        if game_state['power'][game_action_container.whose_action] >= minimum_cost_to_recruit:    
             available_client_actions['recruit'] = []
 
-        #minimum cost to recruit
-        if game_state['power'][game_action_container.whose_action] > 2:    
+        minimum_cost_to_exile = min(game_state["exiling_costs"][game_action_container.whose_action].values())
+        if game_state['power'][game_action_container.whose_action] >= minimum_cost_to_exile:    
             available_client_actions['exile'] = []
 
         available_client_actions['select_a_tier'] = {}
