@@ -13,27 +13,29 @@ const RoundBonusesTable = ({ gameState }) => {
   const peakInfluenceIcon = createIcon({type: 'peakInfluence', width: 24, height: 24});
   const pointsIcon = createIcon({ type: 'points', width: 16, height: 16 });
   const powerIcon = createIcon({ type: 'power', width: 16, height: 16 });
-  const ruledTilesIcon = createIcon({ type: 'ruledTiles', width: 48, height: 24 });
+  const ruledTilesIcon = createIcon({ type: 'crown', width: 16, height: 16 });
   const inCornerIcon = createIcon({ type: 'inCorner', width: 16, height: 16 });
   const connectedChainIcon = createIcon({ type: 'connectedChain', width: 16, height: 16 });
+  const leaderIcon = createIcon({ type: 'leader', width: 16, height: 16 });
 
   const bonusDescriptions = {
-    "12 points row": "If you rule all 3 tiles in a row, +12 points",
-    "10 points column": "If you rule all 3 tiles in a column, +10 points",
-    "16 points diagonal": "If you rule all 3 tiles in a diagonal, +16 points",
-    "2 points tile": "Gain 2 points for each tile you rule",
+    "12 points ruled-tile row": "If you rule all 3 tiles in a row, +12 points",
+    "10 points ruled-tile column": "If you rule all 3 tiles in a column, +10 points",
+    "16 points ruled-tile diagonal": "If you rule all 3 tiles in a diagonal, +16 points",
+    "2 points ruled-tile": "Gain 2 points for each tile you rule",
     "power presence": "Gain power equal to your presence",
-    "power peak-influence": "Gain power equal to your peak influence",
-    "2 power longest-chain": "Gain power equal to the length*2 of your longest connected chain of ruled tiles",
-    "3 points longest-chain": "Gain points equal to the length*3 of your longest connected chain of ruled tiles",
+    "1/2 power peak-influence": "Gain power equal to your peak influence/2 (round down)",
+    "2 power ruled-tile longest-chain": "Gain power equal to the length*2 of your longest connected chain of ruled tiles",
+    "3 points ruled-tile longest-chain": "Gain points equal to the length*3 of your longest connected chain of ruled tiles",
     "points presence": "Gain points equal to your presence",
-    "points peak-influence": "Gain points equal to your peak influence",
-    "3 power corner": "Gain 3 power if your leader is on a corner tile",
-    "7 power row": "If you rule all 3 tiles in a row, gain 7 power",
-    "7 power column": "If you rule all 3 tiles in a column, gain 7 power",
-    "10 power diagonal": "If you rule all 3 tiles in a diagonal, gain 10 power",
-    "2 power tile": "Gain 2 power for each tile you rule",
-    "5 points corner": "Gain 5 points if your leader is on a corner tile"
+    "1/2 points peak-influence": "Gain points equal to your peak influence/2 (round down)",
+    "3 power leader corner": "Gain 3 power if your leader is on a corner tile",
+    "7 power ruled-tile row": "If you rule all 3 tiles in a row, gain 7 power",
+    "7 power ruled-tile column": "If you rule all 3 tiles in a column, gain 7 power",
+    "10 power ruled-tile diagonal": "If you rule all 3 tiles in a diagonal, gain 10 power",
+    "2 power ruled-tile": "Gain 2 power for each tile you rule",
+    "5 points leader corner": "Gain 5 points if your leader is on a corner tile",
+    "25 points ruled-tile corner": "Gain 25 points if you rule all 4 corner tiles"
   };
 
   const getSubtypeIcon = (subtype) => {
@@ -41,8 +43,9 @@ const RoundBonusesTable = ({ gameState }) => {
       case 'row': return rowIcon;
       case 'column': return columnIcon;
       case 'diagonal': return diagonalIcon;
-      case 'tile': return ruledTilesIcon;
+      case 'ruled-tile': return ruledTilesIcon;
       case 'corner': return inCornerIcon;
+      case 'leader': return leaderIcon
       case 'presence': return presenceIcon;
       case 'peak-influence': return peakInfluenceIcon;
       case 'longest-chain': return connectedChainIcon;

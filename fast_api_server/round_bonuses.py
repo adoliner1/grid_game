@@ -25,7 +25,7 @@ class PointsPerRow(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Points Per Completed Row",
-            description = "12 points row",
+            description = "12 points ruled-tile row",
             listener_type="end_of_round",
             bonus_type="scorer",
             allowed_rounds = [3,4,5]
@@ -61,7 +61,7 @@ class PointsPerColumn(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Points Per Completed Column",
-            description = "12 points column",
+            description = "12 points ruled-tile column",
             listener_type="end_of_round",
             bonus_type="scorer",
             allowed_rounds = [3,4,5]
@@ -97,7 +97,7 @@ class PointsPerTileRuled(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "tile-rule points",
-            description = "2 points tile",
+            description = "2 points ruled-tile",
             listener_type="end_of_round",
             bonus_type="scorer",
             allowed_rounds=[0,1,2,3]
@@ -156,7 +156,7 @@ class PowerPerPeakInfluence(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Gain Power for Peak-Influence",
-            description="power peak-influence",
+            description="1/2 power peak-influence",
             listener_type="end_of_round",
             bonus_type="income",
             allowed_rounds=[0,1,2,3]
@@ -166,7 +166,7 @@ class PowerPerPeakInfluence(RoundBonus):
         game_utilities.determine_influence_levels(game_state)
         for player in ["red", "blue"]:
             peak_influence = game_state["peak_influence"][player]
-            power_to_gain = peak_influence
+            power_to_gain = peak_influence // 2
             game_state["expected_power_incomes"][player] += power_to_gain
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
@@ -176,7 +176,7 @@ class PowerPerPeakInfluence(RoundBonus):
 
         for player in [first_player, second_player]:
             peak_influence = game_state["peak_influence"][player]
-            power_to_gain = peak_influence
+            power_to_gain = peak_influence // 2
             game_state['power'][player] += power_to_gain
             await send_clients_log_message(f"{player} has a peak influence of {peak_influence} and gains {power_to_gain}")
             
@@ -184,7 +184,7 @@ class PowerForLongestChain(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Gain Power for Longest Chain",
-            description="2 power longest-chain",
+            description="2 power ruled-tile longest-chain",
             listener_type="end_of_round",
             bonus_type="income",
             allowed_rounds=[]
@@ -214,10 +214,10 @@ class PointsForLongestChain(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Produce Points for Longest Chain",
-            description="3 points longest-chain",
+            description="3 points ruled-tile longest-chain",
             listener_type="end_of_round",
             bonus_type="scorer",
-            allowed_rounds=[5,6]
+            allowed_rounds=[]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -270,7 +270,7 @@ class PointsPerPeakInfluence(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Points for Peak Influence",
-            description="points peak-influence",
+            description="1/2 points peak-influence",
             listener_type="end_of_round",
             bonus_type="scorer",
             allowed_rounds=[0,1,2,3]
@@ -280,7 +280,7 @@ class PointsPerPeakInfluence(RoundBonus):
         game_utilities.determine_influence_levels(game_state)
         for player in ["red", "blue"]:
             peak_influence = game_state["peak_influence"][player]
-            points_to_award = peak_influence
+            points_to_award = peak_influence // 2
             game_state["expected_points_incomes"][player] += points_to_award
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
@@ -290,7 +290,7 @@ class PointsPerPeakInfluence(RoundBonus):
         
         for player in [first_player, second_player]:
             peak_influence = game_state["peak_influence"][player]
-            points_to_award = peak_influence
+            points_to_award = peak_influence // 2
             
             game_state["points"][player] += points_to_award
             await send_clients_log_message(f"{player} gains {points_to_award} points from {self.name} (peak influence: {peak_influence})")
@@ -299,7 +299,7 @@ class PowerForCorner(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Power for Corner",
-            description="3 power corner",
+            description="3 power leader corner",
             listener_type="end_of_round",
             bonus_type="income",
             allowed_rounds=[0,1,2,3]
@@ -326,7 +326,7 @@ class PowerPerRow(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Power Per Completed Row",
-            description = "7 power row",
+            description = "7 power ruled-tile row",
             listener_type="end_of_round",
             bonus_type="income",
             allowed_rounds=[3,4,5]
@@ -353,7 +353,7 @@ class PowerPerColumn(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Power Per Completed Column",
-            description = "7 power column",
+            description = "7 power ruled-tile column",
             listener_type="end_of_round",
             bonus_type="income",
             allowed_rounds=[3,4,5]
@@ -380,7 +380,7 @@ class PowerPerTileRuled(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Power Per Tile Ruled",
-            description = "2 power tile",
+            description = "2 power ruled-tile",
             listener_type="end_of_round",
             bonus_type="income",
             allowed_rounds=[0,1,2,3]
@@ -407,7 +407,7 @@ class PointsForCorner(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Points for Corner",
-            description="5 points corner",
+            description="5 points leader corner",
             listener_type="end_of_round",
             bonus_type="scorer",
             allowed_rounds=[0,1,2,3]
@@ -434,7 +434,7 @@ class PowerPerDiagonal(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Power Per Completed Diagonal",
-            description = "10 power diagonal",
+            description = "10 power ruled-tile diagonal",
             listener_type="end_of_round",
             bonus_type="income",
             allowed_rounds=[3,4,5]
@@ -459,7 +459,7 @@ class PointsPerDiagonal(RoundBonus):
     def __init__(self):
         super().__init__(
             name = "Points Per Completed Diagonal",
-            description = "16 points diagonal",
+            description = "16 points ruled-tile diagonal",
             listener_type="end_of_round",
             bonus_type="scorer",
             allowed_rounds = [3,4,5]
@@ -484,3 +484,28 @@ class PointsPerDiagonal(RoundBonus):
         if blue_complete_diagonals > 0:
             points_to_gain = 16 * blue_complete_diagonals
             game_state["points"]["red"]["blue"] += points_to_gain
+
+class PointsForAllCorners(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Points for All Corners Ruled",
+            description="25 points ruled-tile corner",
+            listener_type="end_of_round",
+            bonus_type="scorer",
+            allowed_rounds=[4,5]
+        )
+
+    def modify_expected_incomes(self, game_state):
+        for player in ["red", "blue"]:
+            if all(game_state["tiles"][corner].ruler == player for corner in game_constants.corner_tiles):
+                game_state["expected_points_incomes"][player] += 25
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+        
+        for player in [first_player, second_player]:
+            if all(game_state["tiles"][corner].ruler == player for corner in game_constants.corner_tiles):
+                points_to_gain = 25
+                game_state['points'][player] += points_to_gain
+                await send_clients_log_message(f"{player} rules all 4 corner tiles and gains {points_to_gain} points")

@@ -8,20 +8,12 @@ class QueensRetinue(Tile):
             name="Queen's Retinue",
             type="Scorer",
             minimum_influence_to_rule=3,
-            number_of_slots=5,
+            number_of_slots=3,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
-                    "must_be_ruler": False,                    
-                    "description": "When your opponent ((recruits)) or ++exiles++ a disciple here or on an adjacent tile, +2 point",
-                    "is_on_cooldown": False,
-                    "leader_must_be_present": False,
-                    "has_a_cooldown": False,                    
-                },
-                {
-                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
-                    "description": "When your opponent ((recruits)) or ++exiles++ a disciple here or on an adjacent tile, +3 points",
+                    "description": "When your opponent ((recruits)) or ++exiles++ a disciple here or on an adjacent tile, +2 point",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
                     "has_a_cooldown": False,                    
@@ -55,10 +47,8 @@ class QueensRetinue(Tile):
         other_player_influence = self.influence_per_player[other_player]
         points_earned = 0
 
-        if other_player_influence >= self.influence_tiers[0]['influence_to_reach_tier']:
-            points_earned += 2
-        if ruler == other_player and other_player_influence >= self.influence_tiers[1]['influence_to_reach_tier']:
-            points_earned += 3
+        if other_player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and ruler == other_player:
+            points_earned = 2
 
         if points_earned > 0:
             game_state["points"][other_player] += points_earned

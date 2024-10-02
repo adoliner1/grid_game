@@ -291,8 +291,8 @@ class GameEngine:
 
         await self.send_clients_log_message(f"{mover}_leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**")
         game_action_container.movements_made += 1 
-        tile_of_players_leader.leaders_here[mover] = False
-        tile_to_move_leader_to.leaders_here[mover] = True
+
+        await game_utilities.move_leader(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index_of_players_leader, tile_index_to_move_leader_to, mover)
         return True
     
     async def player_takes_recruit_action(self, game_action_container):
@@ -519,7 +519,7 @@ class GameEngine:
             "scorer_bonuses": chosen_scorer_bonuses,
             "income_bonuses": chosen_income_bonuses,
             "listeners": {
-                "on_recruit": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {},
+                "on_recruit": {}, "start_of_round": {}, "end_of_round": {}, "end_game": {}, "on_leader_move": {},
                 "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}, "on_exile": {}
             },
         }

@@ -13,7 +13,7 @@ class PlainsOfHermes(Tile):
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": True,
-                    "description": "Increase your leader movement by 1",
+                    "description": "Increase your leader_movement by 1",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
                     "leader_must_be_present": False, 

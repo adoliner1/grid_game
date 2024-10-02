@@ -59,8 +59,14 @@ async def player_receives_a_disciple_on_tile(game_state, game_action_container_s
     await send_clients_log_message(f"{player_color} receives a {player_color}_{disciple_type} on **{tile.name}**")
     update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
-
     await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_receive", receiver=player_color, disciple=disciple_type, index_of_tile_received_at=tile_index, index_of_slot_received_at=next_empty_slot)
+
+async def move_leader(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index_of_players_leader, tile_index_to_move_leader_to, mover):
+    from_tile = game_state['tiles'][tile_index_of_players_leader]
+    to_tile = game_state['tiles'][tile_index_to_move_leader_to]
+    from_tile.leaders_here[mover] = False
+    to_tile.leaders_here[mover] = True
+    await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_leader_move", from_tile_index=tile_index_of_players_leader, to_tile_index=tile_index_to_move_leader_to, leader_color_moved=mover)
 
 async def move_disciple_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, from_tile_index, from_slot_index, to_tile_index, to_slot_index):
     disciple_to_move = game_state["tiles"][from_tile_index].slots_for_disciples[from_slot_index]

@@ -73,7 +73,7 @@ class DarkPortal(Tile):
 
         index_of_tile_to_burn_disciple_from = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
         slot_index_to_burn_disciple_from = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
-        index_of_tile_to_move_leader_to = game_action_container.required_data_for_action['tile_to_move_leader_to']
+        index_of_tile_to_move_leader_to = game_action_container.required_data_for_action['tile_to_teleport_to']
         
         if game_state["tiles"][index_of_tile_to_burn_disciple_from].slots_for_disciples[slot_index_to_burn_disciple_from] is None:
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to burn from {game_state['tiles'][index_of_tile_to_burn_disciple_from].name}")

@@ -30,7 +30,8 @@ class TacticiansMirror(Tile):
                     "leader_must_be_present": False,
                     "data_needed_for_use": ['slot_to_move_disciple_to']
                 },
-            ]
+            ],
+            TILE_PRIORITY=-1
         )
 
     def determine_ruler(self, game_state):

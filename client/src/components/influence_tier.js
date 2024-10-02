@@ -12,7 +12,7 @@ const InfluenceTier = ({
 }) => {
  
   function parseCustomMarkup(text) {
-    const parts = text.split(/(\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b)/gi)
+    const parts = text.split(/(\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b|\bleader_movement\b)/gi)
     return parts.map((part, index) => {
       const lowerPart = part.toLowerCase()
       switch(lowerPart) {
@@ -76,6 +76,14 @@ const InfluenceTier = ({
             width: 16,
             height: 16,
             className: 'leader-icon'
+          })
+        case 'leader_movement':
+          return createIcon({
+            type: 'leader_movement',
+            tooltipText: 'Leader Movement',
+            width: 16,
+            height: 16,
+            className: 'leader-movement-icon'
           })
         default:
           return part

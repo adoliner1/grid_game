@@ -77,6 +77,7 @@ class BladeOfAres(Tile):
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to burn at {game_state['tiles'][index_of_tile_to_burn_disciple_at].name}")
             return False
         
+        game_state['power'][user] -= 1
         await send_clients_log_message(f"{user} uses **{self.name}** and loses one power")
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_disciple_at, slot_index_to_burn_disciple_at)
 

@@ -6,7 +6,7 @@ class CavesOfEnlightenment(Tile):
     def __init__(self):
         super().__init__(
             name="Caves of Enlightenment",
-            type="Giver/Recruitment-Enhancer",
+            type="Giver",
             number_of_slots=5,
             minimum_influence_to_rule=5,
             influence_tiers=[
