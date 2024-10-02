@@ -1,102 +1,129 @@
+/* Individual tile styles */
 .tile {
-    border: 1px solid #000000;
+    border: 2px solid #000000;
     border-radius: 10px;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    justify-content: normal;
+    justify-content: space-between;
     transition: border-color 0.3s;
-}
-
-.tile-header {
+  }
+  
+  .tile-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+  }
+  
+  .tile-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2px;
-}
-
-.tile-name {
+    padding: 5px;
+  }
+  
+  .tile-name {
     margin: 0;
     font-size: 1.2em;
     font-weight: bold;
-}
-
-.tile-type {
+  }
+  
+  .tile-type {
     font-size: 0.9em;
     font-weight: bold;
     color: #666;
-}
-
-.tile-description {
+  }
+  
+  .tile-description {
     border-top: 1px solid #a39e9e;
-    padding: 10px;
+    padding: 5px;
+    flex-grow: 1;
+  }
+  
+  .influence-tiers {
+    padding: 5px;
+    flex-grow: 1;
   }
 
-.power-per-player {
+  .tile-bottom {
+    flex-shrink: 0;
+    flex-grow: 0;
+    display: flex;
+    flex-direction: column;
     border-top: 1px solid #a39e9e;
-    flex-direction: row;
+  }
+  
+  .influence-per-player {
     display: flex;
     justify-content: space-evenly;
-}
-
-@keyframes flash {
-    0% { border-color: gold; }
-    50% { border-color: black; }
-    100% { border-color: gold; }
-}
-
-.selectable-tile {
-    border: 3px solid gold;
-}
-
-.selectable-tile:hover {
-    border-color: black;
+    padding: 1px; /* Reduced from 5px */
+    flex-shrink: 0;
+    font-size: 0.9em; /* Slightly smaller font */
+  }
+  
+  .red-influence, .blue-influence {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Adjust icon sizes */
+  .influence-icon {
+    width: 16px; /* Reduced from 16px */
+    height: 16px; /* Reduced from 16px */
+  }
+  
+  /* Selectable tile styles */
+  .selectable-tile {
+    background-color: #FFF8DC; /* Pale gold color */
+    transition: background-color 0.3s ease;
+  }
+  
+  .selectable-tile:hover {
     cursor: pointer;
-    animation: hover-flash 2s infinite; /* Adjusted animation */
-}
-
-@keyframes hover-flash {
-    0% { border-color: gold; }
-    50% { border-color: black; }
-    100% { border-color: gold; }
-}
-
-.selectable-tile:active {
-    border-color: gold;
-    animation: flash 0.2s;
-}
-
-.red-power{
-    color: rgb(255, 41, 41);
-    font-weight: bold;
-}
-
-.blue-power{
-    color: rgb(52, 52, 255);
-    font-weight: bold;
-}
-
-.ruler-crown-in-header {
+    animation: hover-flash 2s infinite;
+  }
+  
+  @keyframes hover-flash {
+    0% { background-color: #FFF8DC; } /* Pale gold */
+    50% { background-color: #FFD700; } /* Deeper gold */
+    100% { background-color: #FFF8DC; } /* Back to pale gold */
+  }
+  
+  .selectable-tile:active {
+    background-color: #FFD700; /* Deeper gold when active */
+    animation: none; /* Stop the animation when the tile is clicked */
+  }
+  
+  .ruler-crown-in-header {
     display: flex;
     align-items: center;
     font-weight: bold;
-}
-
-.crown-icon {
+  }
+  
+  .crown-icon {
     margin-right: 5px;
     width: 24px;
     height: 24px;
-}
-
-.ruler-crown-red .crown-icon {
+  }
+  
+  .ruler-crown-red .crown-icon {
     color: rgb(255, 41, 41);
-}
-
-.ruler-crown-blue .crown-icon {
+  }
+  
+  .ruler-crown-blue .crown-icon {
     color: rgb(52, 52, 255);
-}
-
-/* Default color when there's no ruler */
-.ruler-crown-in-header:not(.ruler-crown-red):not(.ruler-crown-blue) .crown-icon {
+  }
+  
+  .ruler-crown-in-header:not(.ruler-crown-red):not(.ruler-crown-blue) .crown-icon {
     color: black;
-}
+  }
+  
+
+  .ruler-tile-red {
+    border-color: red
+  }
+
+  .ruler-tile-blue {
+    border-color: blue
+  }

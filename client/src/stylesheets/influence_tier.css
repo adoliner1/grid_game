@@ -1,0 +1,78 @@
+.influence-tier {
+    border-top: 1px solid #a39e9e;
+    display: flex;
+    flex-direction: row;
+    transition: background-color 0.3s;
+    padding: 5px;
+    align-items: center;
+}
+
+.influence-tier-indicators-and-requirements {
+    display: flex;
+    flex-direction: row;
+    padding: 0px;
+    align-items: center; /* This ensures vertical alignment */
+}
+
+.power-icon {
+    vertical-align: middle;
+    display: inline-block;
+  }
+
+.influence-requirement-at-tier,
+.ruler-tier,
+.has_a_cooldown,
+.leader_must_be_present,
+.player-indicators-for-influence-tiers {
+    display: flex;
+    align-items: center;
+    height: 24px; /* Set a consistent height for all elements */
+}
+
+.influence-requirement-at-tier {
+    font-weight: bold;
+}
+
+.ruler-tier {
+    font-weight: bold;
+}
+
+.player-indicators-for-influence-tiers {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.indicator {
+    width: 10px;
+    height: 2px;
+    margin: 1px 0;
+}
+
+.crown-icon,
+.cooldown-icon {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.selectable-influence-tier {
+    cursor: pointer;
+    background-color: #ddb61a;
+}
+
+.selectable-influence-tier:hover {
+    background-color: #ffd700;
+}
+
+.influence-tier-on-cooldown {
+    background-color: #d3d3d3;
+}
+
+.tooltip-container {
+    align-items: center;
+}
+
+.tier-description {
+    align-items: center;
+}

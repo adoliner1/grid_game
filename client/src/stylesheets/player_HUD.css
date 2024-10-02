@@ -1,0 +1,99 @@
+/* player_HUD.css */
+.player-info {
+    border: 2px dotted;
+    border-radius: 5px;
+    padding: 0px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.player-info.player-is-this-color {
+    border-style: solid;
+}
+
+.expected-income {
+    margin-left: 1px
+}
+
+.player-red {
+    border-color: red;
+}
+
+.selectable {
+    border: 2px solid gold;
+    cursor: pointer;
+}
+
+.player-blue {
+    border-color: blue;
+}
+
+@keyframes pulse-red {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: #f3b3bd; }
+}
+
+@keyframes pulse-blue {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: #a9d6f7; }
+}
+
+.player-active.player-red {
+    animation: pulse-red 3s ease-in-out infinite;
+}
+
+.player-active.player-blue {
+    animation: pulse-blue 3s ease-in-out infinite;
+}
+
+
+.points-presence-leader_movement-power-peak-influence-row {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 0px;
+    flex-direction: row;
+    width: 100%;
+    border-bottom: 2px dotted grey;
+}
+
+.icon-value-pair {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
+}
+
+.icon-value-pair span {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    line-height: 24px;
+}
+.player-has-passed {
+    background-color: #d3d3d3;
+}
+.cost-grid {
+    width: 100%;
+    padding: 0px;
+}
+.cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.cost-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    padding: 0px;
+}
+
+.cost-cell svg {
+    width: 15px;
+    height: 15px;
+    padding: 0px;
+}

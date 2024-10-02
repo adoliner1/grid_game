@@ -1,11 +1,11 @@
 import pytest
 from tiles.tile import Tile
-from tiles.algebra import Algebra
-from tiles.boron import Boron
-from tiles.pluto import Pluto
-from tiles.sword import Sword
-from tiles.prince import Prince
-from tiles.caves import Caves
+from tiles.stone_shrine import Algebra
+from tiles.monastery import Boron
+from tiles.altar_of_hades import Pluto
+from tiles.blade_of_wrath import Sword
+from tiles.princes_entourage import Prince
+from tiles.caves_of_enlightenment import Caves
 from game_manager import GameManager
 from round_bonuses import PointsPerCircle
 from game_utilities import *
