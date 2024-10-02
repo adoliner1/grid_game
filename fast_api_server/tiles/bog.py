@@ -10,14 +10,16 @@ class Bog(Tile):
             minimum_influence_to_rule=1,
             description = f"",
             number_of_slots=1,
-            influence_tiers={
+            influence_tiers=[
+                {
                 "influence_to_reach_tier": 1,
                 "must_be_ruler": True,                    
                 "description": "At the __end of the game__, -3 points",
                 "is_on_cooldown": False,
                 "leader_must_be_present": False, 
                 "has_a_cooldown": False,
-            },      
+            }
+        ],      
         )
 
     def determine_ruler(self, game_state):

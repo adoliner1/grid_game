@@ -105,12 +105,8 @@ class GameEngine:
             return
 
         if data['client_action'] == "do_not_react":
-            if self.game_action_container_stack[-1].game_action == 'move_leader':
-                await self.send_clients_log_message(f"{player_color} chooses not to use the rest of their movement")
-                self.game_action_container_stack.pop()
-                self.game_action_container_stack.pop().event.set()
 
-            elif not self.game_action_container_stack[-1].is_a_reaction:
+            if not self.game_action_container_stack[-1].is_a_reaction:
                 await self.send_clients_log_message(f"{player_color} chose not to react but it's not a reaction on top of the stack")
             else:
                 await self.send_clients_log_message(f"{player_color} chooses not to react")
@@ -132,8 +128,6 @@ class GameEngine:
                     'initial_follower_placement',
                     'initial_leader_placement'
                 ],
-                self.game_action_container_stack[-1].game_action == 'move_leader' and 
-                self.game_action_container_stack[-1].movements_made > 0
             ]
 
             # Check if any condition preventing reset is true
@@ -214,14 +208,8 @@ class GameEngine:
                 await self.get_and_send_available_actions()
                 return
             
-            #after an action is successfully executed, we need to pop off the old initial decision container
-            #the exception is if we're in the middle of a move_leader action and there are more moves they can make
             else:
-                if action_to_execute.game_action != 'move_leader':
-                    self.game_action_container_stack.pop().event.set()
-                else:
-                    if not action_to_execute.movements_made < action_to_execute.maxium_number_of_moves:
-                        self.game_action_container_stack.pop().event.set()
+                self.game_action_container_stack.pop().event.set()
                         
             if action_to_execute.is_a_reaction:
                 #the reaction just got popped and executed, the container that was under it should be the reactions to resolve container
@@ -249,14 +237,6 @@ class GameEngine:
             case 'move_leader':
                 if not await self.player_takes_move_leader_action(game_action_container):
                     return False
-                
-                #if more moves can be done we need to do what we normally do, but not pop off the container yet
-                if game_action_container.movements_made < game_action_container.maxium_number_of_moves:
-                    game_action_container.required_data_for_action['tile_to_move_leader_to'] = None
-                    game_utilities.update_all_game_state_values(self.game_state)
-                    await self.send_clients_game_state(self.game_state)
-                    await self.get_and_send_available_actions()
-                    return True
 
             case 'exile':
                 if not await self.player_takes_exile_action(game_action_container):
@@ -277,21 +257,18 @@ class GameEngine:
         tile_indices_adjacent_to_leader = game_utilities.get_adjacent_tile_indices(tile_index_of_players_leader)
         tile_of_players_leader = self.game_state['tiles'][tile_index_of_players_leader]
         tile_to_move_leader_to = self.game_state['tiles'][tile_index_to_move_leader_to]
+
         if not tile_index_to_move_leader_to in tile_indices_adjacent_to_leader:
             await self.send_clients_log_message(f"Chose a non-adjacent tile to move leader to")           
             return False
-        
-        #if it's the first move, we make sure they have enough power and then reduce the power
-        if game_action_container.movements_made == 0:
-            if self.game_state['power'][mover] < 1:
-                await self.send_clients_log_message("Don't have enough power to move leader")
-                return False
 
-            self.game_state['power'][mover] -= 1
+        if self.game_state['leader_movement'][mover] < 1:
+            await self.send_clients_log_message(f"Not enough leader movement to move")           
+            return False       
+             
+        self.game_state['leader_movement'][mover] -= 1
 
         await self.send_clients_log_message(f"{mover}_leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**")
-        game_action_container.movements_made += 1 
-
         await game_utilities.move_leader(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index_of_players_leader, tile_index_to_move_leader_to, mover)
         return True
     
@@ -364,7 +341,6 @@ class GameEngine:
                         "tile_to_move_leader_to": None
                     },
                     whose_action = self.game_state['whose_turn_is_it'],
-                    maxium_number_of_moves = self.game_state["leader_movement"][self.game_state['whose_turn_is_it']]
                 )
             case 'exile':
                 return game_action_container.GameActionContainer(
@@ -509,6 +485,7 @@ class GameEngine:
             "exiling_range": {"red": 0, "blue": 0},
             "expected_power_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
             "expected_points_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
+            "expected_leader_movement_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
             "recruiting_costs": {"red": game_constants.initial_recruiting_costs.copy(), "blue": game_constants.initial_recruiting_costs.copy()},
             "exiling_costs": {"red": game_constants.initial_exiling_costs.copy(), "blue": game_constants.initial_exiling_costs.copy()},
             "power_given_at_start_of_round": game_constants.power_given_at_end_of_round,
@@ -594,10 +571,13 @@ class GameEngine:
         #base power-income
         if self.game_state["round"] < 5:
             power_to_give = game_constants.power_given_at_end_of_round[self.game_state["round"]]
+            leader_movement_to_give = game_constants.leader_movement_to_give_at_end_of_round
             await self.send_clients_log_message(f"Giving {power_to_give} power to each player (base-income)")        
-            
+            await self.send_clients_log_message(f"Giving {power_to_give} power to each player (base-income)")
             for player in game_constants.player_colors:
                 self.game_state['power'][player] += power_to_give
+
+                self.game_state['leader_movement'][player] += leader_movement_to_give
 
         #not normally to do this here
         await self.send_clients_game_state(self.game_state)

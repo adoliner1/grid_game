@@ -326,6 +326,7 @@ const Game = () => {
               power={gameState.power.red}
               expected_power_income={gameState.expected_power_incomes.red}
               expected_points_income={gameState.expected_points_incomes.red}
+              expected_leader_movement_income={gameState.expected_leader_movement_incomes.red}
               peak_influence={gameState.peak_influence.red}
               available_actions={availableActions}
               exiling_costs={gameState.exiling_costs.red}
@@ -345,6 +346,7 @@ const Game = () => {
               power={gameState.power.blue}
               expected_power_income={gameState.expected_power_incomes.blue}
               expected_points_income={gameState.expected_points_incomes.blue}
+              expected_leader_movement_income={gameState.expected_leader_movement_incomes.blue}
               peak_influence={gameState.peak_influence.blue}
               available_actions={availableActions}
               exiling_costs={gameState.exiling_costs.blue}

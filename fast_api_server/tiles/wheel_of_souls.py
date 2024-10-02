@@ -10,6 +10,7 @@ class WheelOfSouls(Tile):
             minimum_influence_to_rule=3,
             description=f"At the __end of each round__, ^^burn^^ each disciple here and [[receive]] the next most influential disciple. sages becomes followers. When they do, the owner [[receives]] another follower here",
             number_of_slots=10,
+            influence_tiers=[],
         )
 
     def determine_ruler(self, game_state):

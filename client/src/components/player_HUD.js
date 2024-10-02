@@ -91,6 +91,7 @@ const PlayerHUD = ({
   power,
   expected_power_income,
   expected_points_income,
+  expected_leader_movement_income,
   peak_influence,
   available_actions,
   onDiscipleClick,
@@ -133,6 +134,9 @@ const PlayerHUD = ({
       <div className="icon-value-pair">
         {leaderMovementIcon} :
         <span>{leader_movement}</span>
+        {expected_leader_movement_income > 0 && (
+            <span className="expected-income">  (+{expected_leader_movement_income})</span>
+          )}
       </div>
       <div className="icon-value-pair">
         {powerIcon} :

@@ -28,7 +28,7 @@ class PointsPerRow(RoundBonus):
             description = "12 points ruled-tile row",
             listener_type="end_of_round",
             bonus_type="scorer",
-            allowed_rounds = [3,4,5]
+            allowed_rounds = [0,1,2,3,4,5]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -64,7 +64,7 @@ class PointsPerColumn(RoundBonus):
             description = "12 points ruled-tile column",
             listener_type="end_of_round",
             bonus_type="scorer",
-            allowed_rounds = [3,4,5]
+            allowed_rounds = [0,1,2,3,4,5]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -100,7 +100,7 @@ class PointsPerTileRuled(RoundBonus):
             description = "2 points ruled-tile",
             listener_type="end_of_round",
             bonus_type="scorer",
-            allowed_rounds=[0,1,2,3]
+            allowed_rounds=[0,1,2,3,4,5]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -131,7 +131,7 @@ class PowerPerPresence(RoundBonus):
             description= "power presence",
             listener_type="end_of_round",
             bonus_type="income",
-            allowed_rounds=[0,1,2,3]
+            allowed_rounds=[0,1,2,3,4,5]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -159,7 +159,7 @@ class PowerPerPeakInfluence(RoundBonus):
             description="1/2 power peak-influence",
             listener_type="end_of_round",
             bonus_type="income",
-            allowed_rounds=[0,1,2,3]
+            allowed_rounds=[0,1,2,3,4,5]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -302,7 +302,7 @@ class PowerForCorner(RoundBonus):
             description="3 power leader corner",
             listener_type="end_of_round",
             bonus_type="income",
-            allowed_rounds=[0,1,2,3]
+            allowed_rounds=[0,1,2,3,4,5]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -329,7 +329,7 @@ class PowerPerRow(RoundBonus):
             description = "7 power ruled-tile row",
             listener_type="end_of_round",
             bonus_type="income",
-            allowed_rounds=[3,4,5]
+            allowed_rounds=[]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -356,7 +356,7 @@ class PowerPerColumn(RoundBonus):
             description = "7 power ruled-tile column",
             listener_type="end_of_round",
             bonus_type="income",
-            allowed_rounds=[3,4,5]
+            allowed_rounds=[]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -383,7 +383,7 @@ class PowerPerTileRuled(RoundBonus):
             description = "2 power ruled-tile",
             listener_type="end_of_round",
             bonus_type="income",
-            allowed_rounds=[0,1,2,3]
+            allowed_rounds=[0,1,2,3,4,5]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -437,7 +437,7 @@ class PowerPerDiagonal(RoundBonus):
             description = "10 power ruled-tile diagonal",
             listener_type="end_of_round",
             bonus_type="income",
-            allowed_rounds=[3,4,5]
+            allowed_rounds=[]
         )
     
     def modify_expected_incomes(self, game_state):
@@ -509,3 +509,86 @@ class PointsForAllCorners(RoundBonus):
                 points_to_gain = 25
                 game_state['points'][player] += points_to_gain
                 await send_clients_log_message(f"{player} rules all 4 corner tiles and gains {points_to_gain} points")
+
+class LeaderMovementForPresence(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Leader Movement for Presence",
+            description="1/2 leader-movement presence",
+            listener_type="end_of_round",
+            bonus_type="income",
+            allowed_rounds=[0,1,2,3,4,5]
+        )
+
+    def modify_expected_incomes(self, game_state):
+        game_utilities.update_presence(game_state)
+        for player in ["red", "blue"]:
+            presence = game_state["presence"][player]
+            movement_to_gain = presence // 2
+            game_state["expected_leader_movement_incomes"][player] += movement_to_gain
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        game_utilities.update_presence(game_state)
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+
+        for player in [first_player, second_player]:
+            presence = game_state["presence"][player]
+            movement_to_gain = presence // 2
+            game_state['leader_movement'][player] += movement_to_gain
+            await send_clients_log_message(f"{player} has {presence} presence and gains {movement_to_gain} leader movement")
+
+class LeaderMovementForPeakInfluence(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Leader Movement for Peak Influence",
+            description="1/3 leader-movement peak-influence",
+            listener_type="end_of_round",
+            bonus_type="income",
+            allowed_rounds=[0,1,2,3,4,5]
+        )
+
+    def modify_expected_incomes(self, game_state):
+        game_utilities.determine_influence_levels(game_state)
+        for player in ["red", "blue"]:
+            peak_influence = game_state["peak_influence"][player]
+            movement_to_gain = peak_influence // 3
+            game_state["expected_leader_movement_incomes"][player] += movement_to_gain
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        game_utilities.determine_influence_levels(game_state)
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+
+        for player in [first_player, second_player]:
+            peak_influence = game_state["peak_influence"][player]
+            movement_to_gain = peak_influence // 3
+            game_state['leader_movement'][player] += movement_to_gain
+            await send_clients_log_message(f"{player} has a peak influence of {peak_influence} and gains {movement_to_gain} leader movement")
+
+class LeaderMovementForCorner(RoundBonus):
+    def __init__(self):
+        super().__init__(
+            name="Leader Movement for Corner",
+            description="2 leader-movement leader corner",
+            listener_type="end_of_round",
+            bonus_type="income",
+            allowed_rounds=[0,1,2,3,4,5]
+        )
+
+    def modify_expected_incomes(self, game_state):
+        for player in ["red", "blue"]:
+            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
+            if tile_index_of_leader in game_constants.corner_tiles:
+                game_state["expected_leader_movement_incomes"][player] += 2
+
+    async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
+        first_player = game_state['first_player']
+        second_player = game_utilities.get_other_player_color(first_player)
+        
+        for player in [first_player, second_player]:
+            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
+            if tile_index_of_leader in game_constants.corner_tiles:
+                movement_to_gain = 2
+                game_state['leader_movement'][player] += movement_to_gain
+                await send_clients_log_message(f"{player} leader is on a corner tile, {game_state['tiles'][tile_index_of_leader].name}, so gains {movement_to_gain} leader movement")
