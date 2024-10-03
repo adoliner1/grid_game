@@ -11,15 +11,6 @@ class HolyWinds(Tile):
             number_of_slots=5,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 5,
-                    "must_be_ruler": False,
-                    "description": "**Action:** Choose any disciple at an adjacent tile. Move it anywhere",
-                    "is_on_cooldown": False,
-                    "has_a_cooldown": True,     
-                    "leader_must_be_present": False,                
-                    "data_needed_for_use": ["disciple_to_move", "slot_to_move_disciple_to"]
-                },
-                {
                     "influence_to_reach_tier": 8,
                     "must_be_ruler": True,
                     "description": "**Action:** Move any disciple anywhere",
@@ -28,7 +19,8 @@ class HolyWinds(Tile):
                     "leader_must_be_present": False, 
                     "data_needed_for_use": ["disciple_to_move", "slot_to_move_disciple_to"]
                 },
-            ]
+            ],
+            TILE_PRIORITY=1
         )
 
     def determine_ruler(self, game_state):
@@ -49,22 +41,16 @@ class HolyWinds(Tile):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
         if current_piece_of_data_to_fill == "disciple_to_move":
             slots_with_a_disciple = {}
-            index_of_road = game_utilities.find_index_of_tile_by_name(game_state, self.name)
+            index_of_holy_winds = game_utilities.find_index_of_tile_by_name(game_state, self.name)
             user = game_action_container.whose_action
 
-            if tier_index == 1:
-                for index, tile in enumerate(game_state["tiles"]):
-                    slots_with_disciples = [i for i, slot in enumerate(tile.slots_for_disciples) if slot]
-                    if slots_with_disciples:
-                        slots_with_a_disciple[index] = slots_with_disciples
-            else:
-                adjacent_tiles = game_utilities.get_adjacent_tile_indices(index_of_road)
-                for index in adjacent_tiles:
-                    slots_with_disciples = [i for i, slot in enumerate(game_state["tiles"][index].slots_for_disciples) if slot]
-                    if slots_with_disciples:
-                        slots_with_a_disciple[index] = slots_with_disciples
+            for index, tile in enumerate(game_state["tiles"]):
+                slots_with_disciples = [i for i, slot in enumerate(tile.slots_for_disciples) if slot]
+                if slots_with_disciples:
+                    slots_with_a_disciple[index] = slots_with_disciples
 
             available_actions["select_a_slot_on_a_tile"] = slots_with_a_disciple
+
         elif current_piece_of_data_to_fill == "slot_to_move_disciple_to":
             slots_without_a_disciple_per_tile = {}
             for index, tile in enumerate(game_state["tiles"]):
@@ -86,15 +72,10 @@ class HolyWinds(Tile):
             await send_clients_log_message(f"Tier {tier_index} of **{self.name}** is on cooldown")
             return False
 
-        index_of_road = game_utilities.find_index_of_tile_by_name(game_state, self.name)
         slot_index_from = game_action_container.required_data_for_action['disciple_to_move']['slot_index']
         tile_index_from = game_action_container.required_data_for_action['disciple_to_move']['tile_index']
         slot_index_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['slot_index']
         tile_index_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['tile_index']
-
-        if tier_index == 0 and not game_utilities.determine_if_directly_adjacent(index_of_road, tile_index_from):
-            await send_clients_log_message(f"Tried to use **{self.name}** but chose a non-adjacent tile")
-            return False
 
         if game_state["tiles"][tile_index_from].slots_for_disciples[slot_index_from] is None:
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to move from {game_state['tiles'][tile_index_from].name}")
