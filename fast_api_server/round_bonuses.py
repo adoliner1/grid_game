@@ -483,7 +483,7 @@ class PointsPerDiagonal(RoundBonus):
             game_state["points"]["red"] += points_to_gain
         if blue_complete_diagonals > 0:
             points_to_gain = 16 * blue_complete_diagonals
-            game_state["points"]["red"]["blue"] += points_to_gain
+            game_state["points"]["blue"] += points_to_gain
 
 class PointsForAllCorners(RoundBonus):
     def __init__(self):

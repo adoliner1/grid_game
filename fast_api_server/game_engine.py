@@ -262,13 +262,21 @@ class GameEngine:
             await self.send_clients_log_message(f"Chose a non-adjacent tile to move leader to")           
             return False
 
-        if self.game_state['leader_movement'][mover] < 1:
-            await self.send_clients_log_message(f"Not enough leader movement to move")           
+        if self.game_state['leader_movement'][mover] < 1 and self.game_state['power'][mover] < 3:
+            await self.send_clients_log_message(f"Not enough leader movement to move, not enough power to convert to movement")           
             return False       
              
-        self.game_state['leader_movement'][mover] -= 1
+        power_spent_to_move = 0
+        if self.game_state['leader_movement'][mover] >= 1:
+            self.game_state['leader_movement'][mover] -= 1
+        else:
+            self.game_state['power'][mover] -= 3
+            power_spent_to_move = 3        
 
-        await self.send_clients_log_message(f"{mover}_leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**")
+        if not power_spent_to_move:
+            await self.send_clients_log_message(f"{mover}_leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**")
+        else:
+           await self.send_clients_log_message(f"{mover}_leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**, they spent {power_spent_to_move} power to do so") 
         await game_utilities.move_leader(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index_of_players_leader, tile_index_to_move_leader_to, mover)
         return True
     

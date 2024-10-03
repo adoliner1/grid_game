@@ -237,7 +237,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
     else:
         available_client_actions['pass'] = []
 
-        if game_state['leader_movement'][game_action_container.whose_action] > 0:
+        if game_state['leader_movement'][game_action_container.whose_action] > 0 or game_state['power'][game_action_container.whose_action] > 2:
             available_client_actions['move_leader'] = []
         
         minimum_cost_to_recruit = min(game_state["recruiting_costs"][game_action_container.whose_action].values())
