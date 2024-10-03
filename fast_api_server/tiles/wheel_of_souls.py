@@ -7,9 +7,10 @@ class WheelOfSouls(Tile):
         super().__init__(
             name="Wheel of Souls",
             type="Giver",
-            minimum_influence_to_rule=3,
-            description=f"At the __end of each round__, ^^burn^^ each disciple here and [[receive]] the next most influential disciple. sages becomes followers. When they do, the owner [[receives]] another follower here",
+            minimum_influence_to_rule=6,
+            description=f"At the __end of each round__, ^^burn^^ each disciple here and [[receive]] the next most influential disciple. sages becomes followers. When they do, the owner [[receives]] 2 more follower here",
             number_of_slots=10,
+            influence_tiers=[],
         )
 
     def determine_ruler(self, game_state):
@@ -36,4 +37,5 @@ class WheelOfSouls(Tile):
 
                 if new_disciple == "follower":
                     await send_clients_log_message(f"A sage became a follower on **{self.name}**")
+                    await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, self, new_disciple)
                     await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, self, new_disciple)

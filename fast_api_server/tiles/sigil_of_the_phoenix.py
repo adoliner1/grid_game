@@ -15,7 +15,7 @@ class SigilOfThePhoenix(Tile):
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": False,
-                    "description": "**Reaction:** After one of your disciples is ^^burned^^ at a tile, you may [[receive]] a follower there",
+                    "description": "**Reaction:** After one of your disciples is ^^burned^^, you may [[receive]] a follower at the tile it was burned",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,         
                     "leader_must_be_present": False,             

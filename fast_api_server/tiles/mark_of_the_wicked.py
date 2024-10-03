@@ -2,18 +2,18 @@ import game_utilities
 import game_constants
 from tiles.tile import Tile
 
-class ObeliskOfTheWicked(Tile):
+class MarkOfTheWicked(Tile):
     def __init__(self):
         super().__init__(
-            name="Obelisk of the Wicked",
-            type="Giver",
+            name="Mark of the Wicked",
+            type="Leader-Movement",
             number_of_slots=3,
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "After you ++exile++, if you have less than 4 influence at the tile the disciple was ++exiled++ from, [[receive]] a follower there",
+                    "description": "After you ++exile++, +1 leader_movement",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
                     "has_a_cooldown": False,                    
@@ -37,15 +37,6 @@ class ObeliskOfTheWicked(Tile):
         self.determine_influence()
         exiler_influence_here = self.influence_per_player[exiler]
 
-        exiler_receives_follower = False
-        if exiler_influence_here >= self.influence_tiers[0]['influence_to_reach_tier'] and exiler_influence_at_tile_exiled_from < 4 and ruler == exiler:
-            exiler_receives_follower = True
-   
-        if exiler_receives_follower:
-            await game_utilities.player_receives_a_disciple_on_tile(
-                game_state, game_action_container_stack, send_clients_log_message,
-                get_and_send_available_actions, send_clients_game_state,
-                exiler, tile_exiled_from, 'follower'
-            )
-       
-            await send_clients_log_message(f"{exiler} receives a {exiler}_follower at **{tile_exiled_from.name}** from **{self.name}**")
+        if exiler_influence_here >= self.influence_tiers[0]['influence_to_reach_tier'] and ruler == exiler:
+            game_state['leader_movement'][exiler] += 1
+            await send_clients_log_message(f"{exiler} gets 1 leader_movement from **{self.name}**")

@@ -152,7 +152,6 @@ def update_all_game_state_values(game_state):
     update_presence(game_state)
     determine_rulers(game_state)
     calculate_exiling_ranges(game_state)
-    calculate_leader_movements(game_state)
     calculate_recruiting_ranges(game_state)
     calculate_expected_incomes(game_state)
     calculate_recruiting_costs(game_state)
@@ -216,9 +215,6 @@ def get_available_client_actions(game_state, game_action_container, player_color
         tile_in_use.set_available_actions_for_use(game_state, index_of_tier_in_use, game_action_container, available_client_actions)
 
     elif game_action_container.game_action == 'move_leader':
-        #after the first move, players can choose to stop their movement
-        if game_action_container.movements_made > 0:
-            available_client_actions["do_not_react"] = None
         available_client_actions["select_a_tile"] = get_adjacent_tile_indices(get_tile_index_of_leader(game_state, game_action_container.whose_action))
 
     elif game_action_container.game_action == 'recruit':
@@ -241,7 +237,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
     else:
         available_client_actions['pass'] = []
 
-        if game_state['power'][game_action_container.whose_action] > 0:
+        if game_state['leader_movement'][game_action_container.whose_action] > 0 or game_state['power'][game_action_container.whose_action] > 2:
             available_client_actions['move_leader'] = []
         
         minimum_cost_to_recruit = min(game_state["recruiting_costs"][game_action_container.whose_action].values())
@@ -263,12 +259,6 @@ def calculate_exiling_ranges(game_state):
     game_state['exiling_range']['blue'] = game_constants.initial_exiling_ranges['blue']
     for tile in game_state['tiles']:
         tile.modify_exiling_ranges(game_state)
-
-def calculate_leader_movements(game_state):
-    game_state['leader_movement']['red'] = game_constants.starting_leader_movement['red']
-    game_state['leader_movement']['blue'] = game_constants.starting_leader_movement['blue']
-    for tile in game_state['tiles']:
-        tile.modify_leader_movements(game_state)
 
 def get_tiles_within_exiling_range(game_state, player_color):
     calculate_exiling_ranges(game_state)
@@ -293,9 +283,13 @@ def calculate_expected_incomes(game_state):
     if round < 5:
         game_state['expected_power_incomes']['red'] = game_constants.power_given_at_end_of_round[round]
         game_state['expected_power_incomes']['blue'] = game_constants.power_given_at_end_of_round[round]
+        game_state['expected_leader_movement_incomes']['red'] = game_constants.leader_movement_to_give_at_end_of_round
+        game_state['expected_leader_movement_incomes']['blue'] = game_constants.leader_movement_to_give_at_end_of_round
     else:
         game_state['expected_power_incomes']['red'] = 0
         game_state['expected_power_incomes']['blue'] = 0
+        game_state['expected_leader_movement_incomes']['red'] = 0
+        game_state['expected_leader_movement_incomes']['blue'] = 0
 
     game_state['expected_points_incomes']['red'] = 0
     game_state['expected_points_incomes']['blue'] = 0

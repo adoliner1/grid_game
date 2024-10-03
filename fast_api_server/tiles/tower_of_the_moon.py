@@ -11,7 +11,7 @@ class TowerOfTheMoon(Tile):
             number_of_slots=4,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 4,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,
                     "description": "**Action:** Swap any two tiles",
                     "is_on_cooldown": False,

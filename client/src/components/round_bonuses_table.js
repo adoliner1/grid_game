@@ -17,6 +17,7 @@ const RoundBonusesTable = ({ gameState }) => {
   const inCornerIcon = createIcon({ type: 'inCorner', width: 16, height: 16 });
   const connectedChainIcon = createIcon({ type: 'connectedChain', width: 16, height: 16 });
   const leaderIcon = createIcon({ type: 'leader', width: 16, height: 16 });
+  const leaderMovementIcon = createIcon({ type: 'leader_movement', width: 16, height: 16 });
 
   const bonusDescriptions = {
     "12 points ruled-tile row": "If you rule all 3 tiles in a row, +12 points",
@@ -35,7 +36,10 @@ const RoundBonusesTable = ({ gameState }) => {
     "10 power ruled-tile diagonal": "If you rule all 3 tiles in a diagonal, gain 10 power",
     "2 power ruled-tile": "Gain 2 power for each tile you rule",
     "5 points leader corner": "Gain 5 points if your leader is on a corner tile",
-    "25 points ruled-tile corner": "Gain 25 points if you rule all 4 corner tiles"
+    "25 points ruled-tile corner": "Gain 25 points if you rule all 4 corner tiles",
+    "1/2 leader-movement presence": "Gain leader movement equal to your presence/2 (round down)",
+    "1/3 leader-movement peak-influence": "Gain leader movement equal to your peak influence/3 (round down)",
+    "2 leader-movement leader corner": "Gain 2 leader movement if your leader is on a corner tile"
   };
 
   const getSubtypeIcon = (subtype) => {
@@ -45,10 +49,11 @@ const RoundBonusesTable = ({ gameState }) => {
       case 'diagonal': return diagonalIcon;
       case 'ruled-tile': return ruledTilesIcon;
       case 'corner': return inCornerIcon;
-      case 'leader': return leaderIcon
+      case 'leader': return leaderIcon;
       case 'presence': return presenceIcon;
       case 'peak-influence': return peakInfluenceIcon;
       case 'longest-chain': return connectedChainIcon;
+      case 'leader-movement': return leaderMovementIcon;
       default: return null;
     }
   };
@@ -64,6 +69,8 @@ const RoundBonusesTable = ({ gameState }) => {
         return <span key={index} className="bonus-icon">{pointsIcon}</span>;
       } else if (part.toLowerCase() === 'power') {
         return <span key={index} className="bonus-icon">{powerIcon}</span>;
+      } else if (part.toLowerCase() === 'leader-movement') {
+        return <span key={index} className="bonus-icon">{leaderMovementIcon}</span>;
       } else {
         const subtypeIcon = getSubtypeIcon(part);
         return subtypeIcon ? <span key={index} className="bonus-icon">{subtypeIcon}</span> : part;
@@ -81,9 +88,9 @@ const RoundBonusesTable = ({ gameState }) => {
     <table className="round-bonuses-table">
       <thead>
         <tr>
-          <th>End of Round Power Income</th>
-          <th>End of Round Bonus Power </th>
-          <th>End of Round Bonus Points </th>
+          <th>End of Round Base Income</th>
+          <th>End of Round Bonus Income</th>
+          <th>End of Round Bonus Points</th>
         </tr>
       </thead>
       <tbody>

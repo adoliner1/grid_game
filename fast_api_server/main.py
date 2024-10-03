@@ -165,7 +165,7 @@ def generate_player_token():
     return str(uuid.uuid4())
 
 
-'''#-------------PROD------------
+#-------------PROD------------
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
     global connections_to_games, game_engines
@@ -226,9 +226,9 @@ async def websocket_game_endpoint(websocket: WebSocket):
         else:
             print(f"Player disconnected")
         connections_to_games[:] = [connection for connection in connections_to_games if connection["websocket"] != websocket]
-#-------------PROD------------'''
+#-------------PROD------------
 
-#--------------DEV-----------------
+'''#--------------DEV-----------------
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
     global game_engine, current_players
@@ -291,7 +291,7 @@ async def send_available_actions_to_client(available_actions, current_piece_of_d
                 "available_actions": available_actions,
                 "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
             })
-#--------------DEV---------------------
+#--------------DEV---------------------'''
 
 async def send_message(game_id: int, message: str):
     for connection in connections_to_games:

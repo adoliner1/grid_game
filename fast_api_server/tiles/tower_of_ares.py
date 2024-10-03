@@ -7,11 +7,11 @@ class TowerOfAres(Tile):
         super().__init__(
             name="Tower of Ares",
             type="Attacker",
-            minimum_influence_to_rule=3,
+            minimum_influence_to_rule=4,
             number_of_slots=4,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 3,
+                    "influence_to_reach_tier": 4,
                     "must_be_ruler": True,
                     "description": "**Action:** ^^Burn^^ one of your disciples here, then ^^burn^^ a disciple at a tile you're present at",
                     "is_on_cooldown": False,

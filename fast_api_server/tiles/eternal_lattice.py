@@ -10,6 +10,7 @@ class EternalLattice(Tile):
             minimum_influence_to_rule=3,
             description="At the __end of each round__, for each unique pair you have here, +1 power\nIf you have all three possible pairs, +6 power per pair instead",
             number_of_slots=8,
+            influence_tiers=[],
         )
 
     def determine_ruler(self, game_state):

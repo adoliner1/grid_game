@@ -179,11 +179,11 @@ const Game = () => {
         }
 
         //PROD
-        //socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
+        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
         //DEV
-        socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
         
-        /*PROD
+        //PROD
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
             socket.current.send(JSON.stringify({
@@ -192,9 +192,9 @@ const Game = () => {
                 game_id: game_id
             }));
         };
-        */
+        //
 
-        //DEV
+        /*DEV
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
         };
@@ -326,6 +326,7 @@ const Game = () => {
               power={gameState.power.red}
               expected_power_income={gameState.expected_power_incomes.red}
               expected_points_income={gameState.expected_points_incomes.red}
+              expected_leader_movement_income={gameState.expected_leader_movement_incomes.red}
               peak_influence={gameState.peak_influence.red}
               available_actions={availableActions}
               exiling_costs={gameState.exiling_costs.red}
@@ -345,6 +346,7 @@ const Game = () => {
               power={gameState.power.blue}
               expected_power_income={gameState.expected_power_incomes.blue}
               expected_points_income={gameState.expected_points_incomes.blue}
+              expected_leader_movement_income={gameState.expected_leader_movement_incomes.blue}
               peak_influence={gameState.peak_influence.blue}
               available_actions={availableActions}
               exiling_costs={gameState.exiling_costs.blue}

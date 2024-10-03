@@ -31,7 +31,6 @@ class TacticiansRiver(Tile):
                     "data_needed_for_use": ['tile_to_move_disciple_to']
                 },
             ],
-            TILE_PRIORITY=-1
         )
 
     def determine_ruler(self, game_state):

@@ -11,7 +11,7 @@ class TeleportingCabinet(Tile):
             number_of_slots=3,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 4,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,
                     "description": "**Action:** Choose a disciple at an adjacent tile and swap it with a disciple anywhere",
                     "is_on_cooldown": False,

@@ -19,7 +19,8 @@ class Orbit(Tile):
                     "leader_must_be_present": False,                  
                     "data_needed_for_use": ["tile_in_the_row_you_want_to_rotate"]
                 },
-            ]      
+            ],
+            TILE_PRIORITY=-1
         )
 
     def get_useable_tiers(self, game_state):
