@@ -1,5 +1,5 @@
-import game_utilities
-import game_constants
+from . import game_utilities
+from . import game_constants
 
 class RoundBonus:
     def __init__(self, name, description, listener_type, bonus_type, allowed_rounds):
