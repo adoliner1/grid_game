@@ -4,12 +4,12 @@ import os
 import random
 import sys
 from typing import Callable, List, OrderedDict
-import game_utilities
-import game_constants
-import game_action_container
 import asyncio
-import round_bonuses
-from tiles.tile import Tile
+from . import game_utilities
+from . import game_constants
+from . import game_action_container
+from . import round_bonuses
+from .tiles.tile import Tile
 
 class GameEngine:
     def __init__(self):

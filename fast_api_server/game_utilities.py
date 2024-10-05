@@ -1,6 +1,6 @@
 import asyncio
-import game_action_container
-import game_constants
+from . import game_action_container
+from . import game_constants
 
 async def recruit_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, slot_index, disciple, color):
     tile_to_recruit_on = game_state["tiles"][tile_index]
