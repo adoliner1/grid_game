@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List, Dict
 import models
@@ -9,6 +9,8 @@ import json
 import copy
 import uuid
 import asyncio
+import os
+import stat
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
@@ -17,31 +19,54 @@ import os
 
 app = FastAPI()
 
-current_file_directory = Path(__file__).resolve().parent
-static_directory = current_file_directory / "static"
+static_directory = os.path.join(os.path.dirname(__file__), "static")
+print(f"Attempting to mount static files from: {static_directory}")
 
-print(f"Current working directory: {os.getcwd()}")
-print(f"__file__: {__file__}")
-print(f"current_file_directory: {current_file_directory}")
-print(f"static_directory: {static_directory}")
-print(f"static_directory exists: {static_directory.exists()}")
-print(f"static_directory is_dir: {static_directory.is_dir()}")
-
-if static_directory.is_dir():
-    print("Contents of static directory:")
-    for item in static_directory.iterdir():
-        print(f"  {item.name}")
+if os.path.isdir(static_directory):
+    try:
+        app.mount("/static", StaticFiles(directory=static_directory), name="static")
+        print(f"Successfully mounted static files from {static_directory}")
+    except Exception as e:
+        print(f"Error mounting static files: {str(e)}")
 else:
-    print("Static directory does not exist or is not a directory")
+    print(f"Static directory does not exist: {static_directory}")
+
+print("Contents of static directory:")
+for root, dirs, files in os.walk(static_directory):
+    level = root.replace(static_directory, '').count(os.sep)
+    indent = ' ' * 4 * level
+    print(f"{indent}{os.path.basename(root)}/")
+    sub_indent = ' ' * 4 * (level + 1)
+    for file in files:
+        print(f"{sub_indent}{file}")
+
+
+def check_permissions(path):
+    st = os.stat(path)
+    permissions = stat.S_IMODE(st.st_mode)
+    print(f"Permissions for {path}: {permissions:o}")
+    print(f"Readable: {bool(permissions & stat.S_IRUSR)}")
+    print(f"Writable: {bool(permissions & stat.S_IWUSR)}")
+    print(f"Executable: {bool(permissions & stat.S_IXUSR)}")
+
+check_permissions(static_directory)
+check_permissions(os.path.join(static_directory, "index.html"))
 
 connections_in_the_lobby: List[Dict] = []
 connections_to_games: List[Dict] = []
 game_engines = {}
 
-@app.get("/")
 @app.head("/")
 async def read_root():
     return HTMLResponse(content="<h1>Welcome to adg!</h1>")
+
+@app.get("/")
+async def read_index():
+    index_path = os.path.join(static_directory, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    else:
+        raise HTTPException(status_code=404, detail="index.html not found")
 
 @app.get("/{full_path:path}")
 async def serve_react(full_path: str):
