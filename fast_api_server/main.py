@@ -16,11 +16,11 @@ from pathlib import Path
 import os
 
 app = FastAPI()
-#current_file_directory = Path(__file__).resolve().parent
-#static_directory = current_file_directory / "static"
-#if not static_directory.is_dir():
-#    raise RuntimeError(f"Static directory does not exist: {static_directory}")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+current_file_directory = Path(__file__).resolve().parent
+static_directory = current_file_directory / "static"
+if not static_directory.is_dir():
+    raise RuntimeError(f"Static directory does not exist: {static_directory}")
+app.mount("/static", StaticFiles(directory=str(static_directory)), name="static")
 
 connections_in_the_lobby: List[Dict] = []
 connections_to_games: List[Dict] = []
