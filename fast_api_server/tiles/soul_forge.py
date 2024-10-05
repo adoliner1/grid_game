@@ -1,6 +1,8 @@
-import game_utilities
-import game_constants
-from tiles.tile import Tile
+import asyncio
+from .. import game_action_container
+from .tile import Tile
+from .. import game_utilities
+from .. import game_constants
 
 class SoulForge(Tile):
     def __init__(self):
