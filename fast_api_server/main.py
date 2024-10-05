@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List, Dict
@@ -21,36 +22,8 @@ app = FastAPI()
 
 static_directory = os.path.join(os.path.dirname(__file__), "static")
 print(f"Attempting to mount static files from: {static_directory}")
-
-if os.path.isdir(static_directory):
-    try:
-        app.mount("/static", StaticFiles(directory=static_directory), name="static")
-        print(f"Successfully mounted static files from {static_directory}")
-    except Exception as e:
-        print(f"Error mounting static files: {str(e)}")
-else:
-    print(f"Static directory does not exist: {static_directory}")
-
-print("Contents of static directory:")
-for root, dirs, files in os.walk(static_directory):
-    level = root.replace(static_directory, '').count(os.sep)
-    indent = ' ' * 4 * level
-    print(f"{indent}{os.path.basename(root)}/")
-    sub_indent = ' ' * 4 * (level + 1)
-    for file in files:
-        print(f"{sub_indent}{file}")
-
-
-def check_permissions(path):
-    st = os.stat(path)
-    permissions = stat.S_IMODE(st.st_mode)
-    print(f"Permissions for {path}: {permissions:o}")
-    print(f"Readable: {bool(permissions & stat.S_IRUSR)}")
-    print(f"Writable: {bool(permissions & stat.S_IWUSR)}")
-    print(f"Executable: {bool(permissions & stat.S_IXUSR)}")
-
-check_permissions(static_directory)
-check_permissions(os.path.join(static_directory, "index.html"))
+app.mount("/static", StaticFiles(directory=static_directory), name="static")
+print(f"Static directory mounted: {static_directory}")
 
 connections_in_the_lobby: List[Dict] = []
 connections_to_games: List[Dict] = []
@@ -69,13 +42,21 @@ async def read_index():
         raise HTTPException(status_code=404, detail="index.html not found")
 
 @app.get("/{full_path:path}")
-async def serve_react(full_path: str):
+async def serve_app(full_path: str):
     if full_path.startswith("api"):
         pass
-    elif full_path.startswith("ws"):
-        pass
     else:
-        return FileResponse("static/index.html")
+        return FileResponse(os.path.join(static_directory, "index.html"))
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    logger.info(f"Received request: {request.method} {request.url}")
+    response = await call_next(request)
+    logger.info(f"Returning response: {response.status_code}")
+    return response
 
 @app.websocket("/ws/lobby/")
 async def websocket_endpoint(websocket: WebSocket):
