@@ -19,11 +19,22 @@ from pathlib import Path
 import os
 
 app = FastAPI()
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+static_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
+logger.info(f"Static directory path: {static_directory}")
+logger.info(f"Static directory exists: {os.path.exists(static_directory)}")
+logger.info(f"Static directory contents: {os.listdir(static_directory)}")
+css_file = os.path.join(static_directory, "css", "main.943fcb4a.css")
+js_file = os.path.join(static_directory, "js", "main.7e940581.js")
+logger.info(f"CSS file exists: {os.path.exists(css_file)}")
+logger.info(f"JS file exists: {os.path.exists(js_file)}")
 static_directory = os.path.join(os.path.dirname(__file__), "static")
 print(f"Attempting to mount static files from: {static_directory}")
 app.mount("/static", StaticFiles(directory=static_directory), name="static")
 print(f"Static directory mounted: {static_directory}")
+
+
 
 connections_in_the_lobby: List[Dict] = []
 connections_to_games: List[Dict] = []
@@ -47,9 +58,6 @@ async def serve_app(full_path: str):
         pass
     else:
         return FileResponse(os.path.join(static_directory, "index.html"))
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 @app.middleware("http")
 async def log_requests(request, call_next):
