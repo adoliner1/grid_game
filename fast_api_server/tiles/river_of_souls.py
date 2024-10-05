@@ -3,6 +3,7 @@ import game_action_container
 from tile import Tile
 import game_utilities
 import game_constants
+
 class RiverOfSouls(Tile):
     def __init__(self):
         super().__init__(
