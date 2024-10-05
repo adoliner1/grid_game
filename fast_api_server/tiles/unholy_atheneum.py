@@ -1,8 +1,8 @@
 import asyncio
-from .. import game_action_container
-from .tile import Tile
-from .. import game_utilities
-from .. import game_constants
+import game_action_container
+from tile import Tile
+import game_utilities
+import game_constants
 
 class UnholyAtheneum(Tile):
     def __init__(self):

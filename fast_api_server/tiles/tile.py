@@ -1,7 +1,7 @@
 import asyncio
-from .. import game_action_container
-from .. import game_utilities
-from .. import game_constants
+import game_action_container
+import game_utilities
+import game_constants
 
 class Tile:
     def __init__(self, name, type, number_of_slots, influence_tiers=[], minimum_influence_to_rule=0, description=None, data_needed_for_use=[], is_on_cooldown=False, disciples_which_can_be_recruited_to_this=["follower", "acolyte", "sage"], TILE_PRIORITY=0):
