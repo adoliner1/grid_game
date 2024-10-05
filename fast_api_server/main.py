@@ -11,6 +11,7 @@ import uuid
 import asyncio
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 from pathlib import Path
 import os
 
@@ -24,6 +25,11 @@ app.mount("/static", StaticFiles(directory=str(static_directory)), name="static"
 connections_in_the_lobby: List[Dict] = []
 connections_to_games: List[Dict] = []
 game_engines = {}
+
+@app.get("/")
+@app.head("/")
+async def read_root():
+    return HTMLResponse(content="<h1>Welcome to adg!</h1>")
 
 @app.get("/{full_path:path}")
 async def serve_react(full_path: str):
