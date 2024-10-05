@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List, Dict
-import models
+from . import models
 from database import get_db
 from game_engine import GameEngine
 from round_bonuses import *
