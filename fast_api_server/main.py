@@ -9,17 +9,25 @@ import json
 import copy
 import uuid
 import asyncio
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 connections_in_the_lobby: List[Dict] = []
 connections_to_games: List[Dict] = []
 game_engines = {}
 
-#DEV
-connected_clients: List[Dict] = []
-current_players = []
-game_engine = None
-#DEV
+@app.get("/{full_path:path}")
+async def serve_react(full_path: str):
+    if full_path.startswith("api"):
+        pass
+    elif full_path.startswith("ws"):
+        pass
+    else:
+        return FileResponse("static/index.html")
 
 @app.websocket("/ws/lobby/")
 async def websocket_endpoint(websocket: WebSocket):
@@ -164,8 +172,6 @@ async def start_game(lobby_table: models.LobbyTable):
 def generate_player_token():
     return str(uuid.uuid4())
 
-
-#-------------PROD------------
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
     global connections_to_games, game_engines
@@ -226,72 +232,6 @@ async def websocket_game_endpoint(websocket: WebSocket):
         else:
             print(f"Player disconnected")
         connections_to_games[:] = [connection for connection in connections_to_games if connection["websocket"] != websocket]
-#-------------PROD------------
-
-'''#--------------DEV-----------------
-@app.websocket("/ws/game/")
-async def websocket_game_endpoint(websocket: WebSocket):
-    global game_engine, current_players
-
-    await websocket.accept()
-    if len(current_players) >= 2:
-        await websocket.send_json({
-            "action": "error",
-            "message": "Game is full"
-        })
-        await websocket.close()
-        return
-
-    player_color = "blue" if current_players else "red"
-    current_players.append({"websocket": websocket, "color": player_color})
-
-    if len(current_players) == 2:
-        await send_player_colors_to_clients()
-        game_engine = GameEngine()
-        game_engine.set_websocket_callbacks(send_clients_new_log_message, send_clients_new_game_state, send_available_actions_to_client)
-        asyncio.create_task(game_engine.start_game())
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-            asyncio.create_task(game_engine.process_data_from_client(data, player_color))
-
-    except WebSocketDisconnect:
-        current_players = [p for p in current_players if p["websocket"] != websocket]
-        print(f"{player_color} player disconnected")
-        if not current_players:
-            game_engine = None
-
-async def send_clients_new_log_message(message):
-        for player in current_players:
-            await player["websocket"].send_json({
-                "action": "message", 
-                "message": message
-            })
-
-async def send_player_colors_to_clients():
-    for player in current_players:
-        await player["websocket"].send_json({
-            "action": "initialize", 
-            "player_color": player["color"]
-        })
-
-async def send_clients_new_game_state(game_state):
-    for player in current_players:
-        await player["websocket"].send_json({
-            "action": "update_game_state",
-            "game_state": json.loads(serialize_game_state(game_state))
-        })
-
-async def send_available_actions_to_client(available_actions, current_piece_of_data_to_fill_in_current_action, player_color_to_send_to):
-    for player in current_players:
-        if player["color"] == player_color_to_send_to:
-            await player["websocket"].send_json({
-                "action": "current_available_actions",
-                "available_actions": available_actions,
-                "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
-            })
-#--------------DEV---------------------'''
 
 async def send_message(game_id: int, message: str):
     for connection in connections_to_games:
@@ -336,3 +276,8 @@ def serialize_game_state(game_state):
     serialized_game_state["scorer_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["scorer_bonuses"]]
     serialized_game_state["income_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["income_bonuses"]]
     return json.dumps(serialized_game_state)
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -178,12 +178,8 @@ const Game = () => {
             return;
         }
 
-        //PROD
-        socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/game/`);
-        //DEV
-        //socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`)
+        socket.current = new WebSocket(`wss://grid-game.onrender.com/ws/game/`);
         
-        //PROD
         socket.current.onopen = () => {
             console.log("WebSocket connection established");
             socket.current.send(JSON.stringify({
@@ -191,15 +187,9 @@ const Game = () => {
                 player_token: player_token,
                 game_id: game_id
             }));
-        };
-        //
 
-        /*DEV
-        socket.current.onopen = () => {
-            console.log("WebSocket connection established");
-        };
-        //DEV*/
-        
+        }
+
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
             switch (data.action) {
