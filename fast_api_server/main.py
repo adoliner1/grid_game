@@ -35,7 +35,6 @@ app.mount("/static", StaticFiles(directory=static_directory), name="static")
 print(f"Static directory mounted: {static_directory}")
 
 
-
 connections_in_the_lobby: List[Dict] = []
 connections_to_games: List[Dict] = []
 game_engines = {}

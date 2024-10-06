@@ -63,13 +63,19 @@ const Game = () => {
             soundRef.current.play().catch(error => {
                 console.warn('Audio playback failed', error);
                 setAudioEnabled(false);
-            });
+            })
         }
-    };
+    }
 
     useEffect(() => {
-        loadAudio(clickSound, '/sounds/click.wav');
-        loadAudio(yourTurnSound, '/sounds/your_turn.wav');
+        if (process.env.NODE_ENV === 'development') {
+            loadAudio(clickSound, '/sounds/click.wav');
+            loadAudio(yourTurnSound, '/sounds/your_turn.wav');
+         }
+        else {
+            loadAudio(clickSound, 'static/sounds/click.wav');
+            loadAudio(yourTurnSound, 'static/sounds/your_turn.wav');            
+        }
 
         const handleUserInteraction = () => {
             userHasInteracted.current = true;
@@ -178,17 +184,27 @@ const Game = () => {
             return;
         }
 
-        socket.current = new WebSocket(`wss://grid-game.onrender.com/ws/game/`);
-        
-        socket.current.onopen = () => {
-            console.log("WebSocket connection established");
-            socket.current.send(JSON.stringify({
-                action: "authenticate",
-                player_token: player_token,
-                game_id: game_id
-            }));
+        if (process.env.NODE_ENV === 'development') {
+            socket.current = new WebSocket(`http://127.0.0.1:8000/ws/game/`) 
 
-        }
+            socket.current.onopen = () => {
+                console.log("WebSocket connection established");
+            }
+          }
+          else
+          {
+            socket.current = new WebSocket(`wss://grid-game.onrender.com/ws/game/`);
+        
+            socket.current.onopen = () => {
+                console.log("WebSocket connection established");
+                socket.current.send(JSON.stringify({
+                    action: "authenticate",
+                    player_token: player_token,
+                    game_id: game_id
+                }))
+    
+            }
+          }
 
         socket.current.onmessage = (event) => {
             const data = JSON.parse(event.data);

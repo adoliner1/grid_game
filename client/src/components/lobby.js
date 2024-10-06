@@ -10,7 +10,14 @@ function Lobby() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    socket.current = new WebSocket(`wss://grid-game.onrender.com/ws/lobby/`);
+    if (process.env.NODE_ENV === 'development') {
+      socket.current = new WebSocket('ws://localhost:8000/ws/lobby/') 
+    }
+    else
+    {
+      socket.current = new WebSocket(`wss://grid-game.onrender.com/ws/lobby/`)
+    }
+
     
     socket.current.onopen = () => {
       console.log('WebSocket connection established');
