@@ -39,8 +39,8 @@ class WheelOfSouls(Tile):
                 
                 await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, self, new_disciple)
 
-            if new_disciple == "follower":
-                number_of_followers_to_give_per_color[player_color] +=2
+                if new_disciple == "follower":
+                    number_of_followers_to_give_per_color[player_color] += 2
 
         first_player = game_state.first_player
         second_player = game_utilities.get_other_player_color(first_player)
