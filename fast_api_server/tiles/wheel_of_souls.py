@@ -42,11 +42,8 @@ class WheelOfSouls(Tile):
                 if new_disciple == "follower":
                     number_of_followers_to_give_per_color[player_color] += 2
 
-        print(number_of_followers_to_give_per_color)
-        first_player = game_state.first_player
+        first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
-        print(first_player)
-        print(second_player)
         for player in [first_player, second_player]:
             await send_clients_log_message(f"**{self.name}** gives {player} {number_of_followers_to_give_per_color[player]} follower")
             for _ in range(number_of_followers_to_give_per_color[player]):
