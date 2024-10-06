@@ -164,7 +164,6 @@ async def start_game(lobby_table: models.LobbyTable):
 def generate_player_token():
     return str(uuid.uuid4())
 
-
 #-------------PROD------------
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
@@ -292,7 +291,7 @@ async def send_available_actions_to_client(available_actions, current_piece_of_d
                 "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
             })
 #--------------DEV---------------------'''
-
+ 
 async def send_message(game_id: int, message: str):
     for connection in connections_to_games:
         if connection["game_id"] == game_id:
