@@ -13,6 +13,7 @@ class DukesFête(Tile):
             influence_tiers=[],
             description="For each disciple type you have more of here at the __end of the game__, +3 points\nIf you have more of every kind of disciple here at the __end of the game__, +5 points",
             number_of_slots=6,
+            TILE_PRIORITY=-1,
         )
 
     def determine_ruler(self, game_state):

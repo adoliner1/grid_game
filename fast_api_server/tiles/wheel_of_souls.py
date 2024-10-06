@@ -48,4 +48,4 @@ class WheelOfSouls(Tile):
         for player in [first_player, second_player]:
             await send_clients_log_message(f"**{self.name}** gives {player} {number_of_followers_to_give_per_color[player]} follower")
             for _ in range(number_of_followers_to_give_per_color[player]):
-                await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, self, new_disciple)
+                await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, self, "follower")
