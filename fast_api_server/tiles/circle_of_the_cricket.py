@@ -19,9 +19,9 @@ class CircleOfTheCricket(Tile):
                     "is_on_cooldown": False,
                     "leader_must_be_present": False, 
                     "data_needed_for_use": ["tile_to_receive_follower"],
-                    "has_a_cooldown": True,                    
-                },                
-            ],      
+                    "has_a_cooldown": True,
+                },
+            ],
         )
 
     def determine_ruler(self, game_state):

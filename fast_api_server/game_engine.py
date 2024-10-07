@@ -300,8 +300,8 @@ class GameEngine:
             await self.send_clients_log_message("Cannot recruit this disciple here")
             return False    
 
-        if slot and not (game_constants.disciple_influence[slot['disciple']] < game_constants.disciple_influence[disciple_type] and color_of_player_recruiting == slot['color']):
-            await self.send_clients_log_message("Cannot recruit on this slot, it's not empty or contains one of your weaker disciples")
+        if slot:
+            await self.send_clients_log_message("Cannot recruit on this slot, it's not empty")
             return False
         
         if self.game_state['recruiting_costs'][color_of_player_recruiting][disciple_type] > self.game_state['power'][color_of_player_recruiting]:

@@ -10,56 +10,59 @@ class EternalLattice(Tile):
             name="Eternal Lattice",
             type="Generator",
             minimum_influence_to_rule=3,
-            description="At the __end of each round__, for each unique pair you have here, +1 power\nIf you have all three possible pairs, +6 power per pair instead",
-            number_of_slots=8,
-            influence_tiers=[],
+            description="",
+            number_of_slots=3,
+            influence_tiers=[
+                {
+                    "influence_to_reach_tier": 5,
+                    "must_be_ruler": True,
+                    "description": "**Action:** Gain 1 power for each tile you're present at",
+                    "is_on_cooldown": False,
+                    "has_a_cooldown": True,
+                    "leader_must_be_present": True,
+                    "data_needed_for_use": [],
+                },
+            ],
         )
 
     def determine_ruler(self, game_state):
         return super().determine_ruler(game_state, self.minimum_influence_to_rule)
 
-    def modify_expected_incomes(self, game_state):
-        first_player = game_state["first_player"]
-        second_player = game_utilities.get_other_player_color(first_player)
-       
-        for color in [first_player, second_player]:
-            disciple_counts = {"follower": 0, "acolyte": 0, "sage": 0}
-            for slot in self.slots_for_disciples:
-                if slot and slot["color"] == color:
-                    disciple_counts[slot["disciple"]] += 1
-           
-            power_gained = 0
-            for disciple, count in disciple_counts.items():
-                if count >= 2:
-                    power_gained += 1
-           
-            # If it's 3, they have all 3 possible pairs
-            if power_gained == 3:
-                power_gained = 18
-            
-            if power_gained > 0:
-                game_state["expected_power_incomes"][color] += power_gained
+    def get_useable_tiers(self, game_state):
+        useable_tiers = []
+        whose_turn_is_it = game_state["whose_turn_is_it"]
+        ruler = self.determine_ruler(game_state)
 
-    async def end_of_round_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
-        first_player = game_state["first_player"]
-        second_player = game_utilities.get_other_player_color(first_player)
+        if (ruler == whose_turn_is_it and 
+            self.influence_per_player[ruler] >= self.influence_tiers[0]['influence_to_reach_tier'] and
+            not self.influence_tiers[0]['is_on_cooldown'] and
+            self.leaders_here[ruler]):
+            useable_tiers.append(0)
         
-        for color in [first_player, second_player]:
-            disciple_counts = {"follower": 0, "acolyte": 0, "sage": 0}
-            for slot in self.slots_for_disciples:
-                if slot and slot["color"] == color:
-                    disciple_counts[slot["disciple"]] += 1
-            
-            power_gained = 0
-            for disciple, count in disciple_counts.items():
-                if count >= 2:
-                    power_gained += 1
-            
-            #if it's 3, they have all 3 possible pairs
-            if power_gained == 3:
-                await send_clients_log_message(f"{color} has all three possible pairs at **{self.name}**")
-                power_gained = 18
+        return useable_tiers
 
-            if power_gained > 0:
-                game_state["power"][color] += power_gained
-                await send_clients_log_message(f"{color} gains {power_gained} power from **{self.name}**")
+    async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
+        game_action_container = game_action_container_stack[-1]
+        user = game_action_container.whose_action
+        ruler = self.determine_ruler(game_state)
+        
+        if user != ruler:
+            await send_clients_log_message(f"Only the ruler can use **{self.name}**")
+            return False
+
+        if self.influence_per_player[user] < self.influence_tiers[0]['influence_to_reach_tier']:
+            await send_clients_log_message(f"Not enough influence to use **{self.name}**")
+            return False
+
+        if not self.leaders_here[user]:
+            await send_clients_log_message(f"Leader must be present to use **{self.name}**")
+            return False
+
+        tiles_present_at = sum(1 for tile in game_state["tiles"] if game_utilities.has_presence(tile, user))
+        power_gained = tiles_present_at
+
+        game_state['power'][user] += power_gained
+        await send_clients_log_message(f"{user} gains {power_gained} power from **{self.name}** for being present at {tiles_present_at} tiles")
+
+        self.influence_tiers[0]['is_on_cooldown'] = True
+        return True

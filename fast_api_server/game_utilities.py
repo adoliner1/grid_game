@@ -516,7 +516,7 @@ def get_tile_slots_that_can_be_recruited_on(game_state, disciple_type, color, ti
         tile = game_state['tiles'][tile_index]
         if disciple_type in tile.disciples_which_can_be_recruited_to_this:
             for slot_index, slot in enumerate(tile.slots_for_disciples):
-                if slot is None or (game_constants.disciple_influence[slot['disciple']] < game_constants.disciple_influence[disciple_type] and color == slot['color']):
+                if slot is None:
                     slots_for_tile.append(slot_index)
             if slots_for_tile:
                 tile_slots_that_can_be_recruited_on[tile_index] = slots_for_tile

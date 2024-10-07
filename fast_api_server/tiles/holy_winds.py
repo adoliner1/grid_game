@@ -13,12 +13,12 @@ class HolyWinds(Tile):
             number_of_slots=5,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 8,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,
-                    "description": "**Action:** Move any disciple anywhere",
+                    "description": "**Action:** Move a disciple from a tile you rule anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
-                    "leader_must_be_present": True, 
+                    "leader_must_be_present": False, 
                     "data_needed_for_use": ["disciple_to_move", "slot_to_move_disciple_to"]
                 },
             ],
@@ -33,7 +33,10 @@ class HolyWinds(Tile):
         player_influence = self.influence_per_player[whose_turn_is_it]
 
         for i, tier in enumerate(self.influence_tiers):
-            if player_influence >= tier["influence_to_reach_tier"] and not tier["is_on_cooldown"]:
+            if (player_influence >= tier["influence_to_reach_tier"] and 
+                not tier["is_on_cooldown"] and 
+                (not tier["must_be_ruler"] or self.determine_ruler(game_state) == whose_turn_is_it) and
+                (not tier["leader_must_be_present"] or self.leaders_here[whose_turn_is_it])):
                 useable_tiers.append(i)
 
         return useable_tiers
@@ -42,13 +45,13 @@ class HolyWinds(Tile):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
         if current_piece_of_data_to_fill == "disciple_to_move":
             slots_with_a_disciple = {}
-            index_of_holy_winds = game_utilities.find_index_of_tile_by_name(game_state, self.name)
             user = game_action_container.whose_action
 
             for index, tile in enumerate(game_state["tiles"]):
-                slots_with_disciples = [i for i, slot in enumerate(tile.slots_for_disciples) if slot]
-                if slots_with_disciples:
-                    slots_with_a_disciple[index] = slots_with_disciples
+                if tile.determine_ruler(game_state) == user:
+                    slots_with_disciples = [i for i, slot in enumerate(tile.slots_for_disciples) if slot]
+                    if slots_with_disciples:
+                        slots_with_a_disciple[index] = slots_with_disciples
 
             available_actions["select_a_slot_on_a_tile"] = slots_with_a_disciple
 
@@ -73,10 +76,22 @@ class HolyWinds(Tile):
             await send_clients_log_message(f"Tier {tier_index} of **{self.name}** is on cooldown")
             return False
 
+        if self.influence_tiers[tier_index]["must_be_ruler"] and self.determine_ruler(game_state) != user:
+            await send_clients_log_message(f"You must be the ruler to use **{self.name}**")
+            return False
+
+        if self.influence_tiers[tier_index]["leader_must_be_present"] and not self.leaders_here[user]:
+            await send_clients_log_message(f"Your leader must be present to use **{self.name}**")
+            return False
+
         slot_index_from = game_action_container.required_data_for_action['disciple_to_move']['slot_index']
         tile_index_from = game_action_container.required_data_for_action['disciple_to_move']['tile_index']
         slot_index_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['slot_index']
         tile_index_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['tile_index']
+
+        if game_state["tiles"][tile_index_from].determine_ruler(game_state) != user:
+            await send_clients_log_message(f"You can only move disciples from tiles you rule with **{self.name}**")
+            return False
 
         if game_state["tiles"][tile_index_from].slots_for_disciples[slot_index_from] is None:
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot with no disciple to move from {game_state['tiles'][tile_index_from].name}")
