@@ -24,7 +24,7 @@ ENV = os.environ.get("ENV", "development")
 if ENV == "production":
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
-    static_directory = os.path.join(os.path.dirname(__file__), "static", "static")
+    static_directory = os.path.join(os.path.dirname(__file__), "static")
     app.mount("/static", StaticFiles(directory=static_directory), name="static")
 
     connections_in_the_lobby: List[Dict] = []

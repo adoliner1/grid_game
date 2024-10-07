@@ -20,9 +20,9 @@ function Lobby() {
 
     
     socket.current.onopen = () => {
-      console.log('WebSocket connection established');
-      socket.current.send(JSON.stringify({ action: 'fetch_lobby_tables' }));
-    };
+      console.log('WebSocket connection established')
+      socket.current.send(JSON.stringify({ action: 'fetch_lobby_tables' }))
+    }
 
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
