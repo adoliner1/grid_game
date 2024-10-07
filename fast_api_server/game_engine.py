@@ -4,10 +4,10 @@ import os
 import random
 import sys
 from typing import Callable, List, OrderedDict
+import asyncio
 import game_utilities
 import game_constants
 import game_action_container
-import asyncio
 import round_bonuses
 from tiles.tile import Tile
 

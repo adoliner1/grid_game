@@ -1,6 +1,8 @@
+import asyncio
+import game_action_container
+from .tile import Tile
 import game_utilities
 import game_constants
-from tiles.tile import Tile
 
 class TempleOfHades(Tile):
     def __init__(self):

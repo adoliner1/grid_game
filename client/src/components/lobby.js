@@ -10,13 +10,19 @@ function Lobby() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    //socket.current = new WebSocket('ws://localhost:8000/ws/lobby/');
-    socket.current = new WebSocket(`https://thrush-vital-properly.ngrok-free.app/ws/lobby/`)
+    if (process.env.NODE_ENV === 'development') {
+      socket.current = new WebSocket('ws://localhost:8000/ws/lobby/') 
+    }
+    else
+    {
+      socket.current = new WebSocket(`wss://grid-game.onrender.com/ws/lobby/`)
+    }
+
     
     socket.current.onopen = () => {
-      console.log('WebSocket connection established');
-      socket.current.send(JSON.stringify({ action: 'fetch_lobby_tables' }));
-    };
+      console.log('WebSocket connection established')
+      socket.current.send(JSON.stringify({ action: 'fetch_lobby_tables' }))
+    }
 
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);

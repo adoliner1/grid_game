@@ -1,6 +1,8 @@
+import asyncio
+import game_action_container
+from .tile import Tile
 import game_utilities
 import game_constants
-from tiles.tile import Tile
 
 class HolyWinds(Tile):
     def __init__(self):
@@ -16,11 +18,10 @@ class HolyWinds(Tile):
                     "description": "**Action:** Move any disciple anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
-                    "leader_must_be_present": False, 
+                    "leader_must_be_present": True, 
                     "data_needed_for_use": ["disciple_to_move", "slot_to_move_disciple_to"]
                 },
             ],
-            TILE_PRIORITY=1
         )
 
     def determine_ruler(self, game_state):

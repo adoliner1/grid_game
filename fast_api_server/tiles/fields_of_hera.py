@@ -1,8 +1,8 @@
 import asyncio
 import game_action_container
+from .tile import Tile
 import game_utilities
 import game_constants
-from tiles.tile import Tile
 
 class FieldsOfHera(Tile):
     def __init__(self):
@@ -10,7 +10,7 @@ class FieldsOfHera(Tile):
             name="Fields of Hera",
             type="Giver",
             minimum_influence_to_rule=6,
-            description="When you ((recruit)) or [[receive]] a disciple adjacent to Fields of Hera, [[receive]] a follower at Fields of Hera",
+            description="When you ((recruit)) or [[receive]] a disciple adjacent to Fields of Hera, [[receive]] 2 follower at Fields of Hera",
             number_of_slots=12,
             influence_tiers=[],
         )
@@ -37,10 +37,12 @@ class FieldsOfHera(Tile):
         if not game_utilities.determine_if_directly_adjacent(fields_of_hera_index, index_of_tile_acted_at):
             return
 
-        await send_clients_log_message(f"**{self.name}** effect runs")
-        await game_utilities.player_receives_a_disciple_on_tile(
-            game_state, game_action_container_stack, send_clients_log_message,
-            get_and_send_available_actions, send_clients_game_state,
-            actor, self, 'follower'
-        )
+        await send_clients_log_message(f"**{self.name}** gives followers")
+
+        for _ in range(2):
+            await game_utilities.player_receives_a_disciple_on_tile(
+                game_state, game_action_container_stack, send_clients_log_message,
+                get_and_send_available_actions, send_clients_game_state,
+                actor, self, 'follower'
+            )
 

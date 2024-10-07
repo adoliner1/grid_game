@@ -1,4 +1,5 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import logging
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List, Dict
 import models
@@ -9,17 +10,57 @@ import json
 import copy
 import uuid
 import asyncio
+import os
+import stat
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
+from pathlib import Path
+import os
 
 app = FastAPI()
-connections_in_the_lobby: List[Dict] = []
-connections_to_games: List[Dict] = []
-game_engines = {}
+ENV = os.environ.get("ENV", "development")
 
-#DEV
-connected_clients: List[Dict] = []
-current_players = []
-game_engine = None
-#DEV
+if ENV == "production":
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    static_directory = os.path.join(os.path.dirname(__file__), "static")
+    app.mount("/static", StaticFiles(directory=static_directory), name="static")
+
+    connections_in_the_lobby: List[Dict] = []
+    connections_to_games: List[Dict] = []
+    game_engines = {}
+
+else:
+    connected_clients: List[Dict] = []
+    current_players = []
+    game_engine = None
+
+@app.head("/")
+async def read_root():
+    return HTMLResponse(content="<h1>Welcome to adg!</h1>")
+
+@app.get("/")
+async def read_index():
+    index_path = os.path.join(static_directory, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    else:
+        raise HTTPException(status_code=404, detail="index.html not found")
+
+@app.get("/{full_path:path}")
+async def serve_app(full_path: str):
+    if full_path.startswith("api"):
+        pass
+    else:
+        return FileResponse(os.path.join(static_directory, "index.html"))
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    logger.info(f"Received request: {request.method} {request.url}")
+    response = await call_next(request)
+    logger.info(f"Returning response: {response.status_code}")
+    return response
 
 @app.websocket("/ws/lobby/")
 async def websocket_endpoint(websocket: WebSocket):
@@ -51,7 +92,7 @@ async def create_lobby_table(websocket: WebSocket, data: Dict, connection: Dict)
         db.commit()
         db.refresh(new_lobby_table)
         connection["lobby_table_id"] = new_lobby_table.id
-        await notify_clients()
+        await notify_clients_of_lobby_table_changes()
     finally:
         db.close()
 
@@ -82,7 +123,7 @@ async def join_lobby_table(websocket: WebSocket, data: Dict, connection: Dict):
         if lobby_table.status == "Full":
             await start_game(lobby_table)
         else:
-            await notify_clients()
+            await notify_clients_of_lobby_table_changes()
     finally:
         db.close()
 
@@ -103,7 +144,7 @@ async def fetch_lobby_tables(websocket: WebSocket):
     finally:
         db.close()
 
-async def notify_clients():
+async def notify_clients_of_lobby_table_changes():
     db: Session = next(get_db())
     try:
         lobby_tables = db.query(models.LobbyTable).all()
@@ -132,7 +173,7 @@ async def disconnect_handler(connection: Dict):
             if lobby_table:
                 db.delete(lobby_table)
                 db.commit()
-            await notify_clients()
+            await notify_clients_of_lobby_table_changes()
     finally:
         db.close()
 
@@ -164,109 +205,145 @@ async def start_game(lobby_table: models.LobbyTable):
 def generate_player_token():
     return str(uuid.uuid4())
 
-#-------------PROD------------
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
-    global connections_to_games, game_engines
-    
+    global connections_to_games, game_engines, current_players, game_engine
+
     await websocket.accept()
-    try:
-        auth_data = await websocket.receive_json()
-        player_token = auth_data.get("player_token")
-        game_id = int(auth_data.get("game_id"))
-        db: Session = next(get_db())
-        game = db.query(models.Game).filter(models.Game.id == game_id).first()
-        if not game or game_id not in game_engines:
-            await websocket.send_json({"error": "Game not found"})
-            await websocket.close()
-            return
-        
-        game_engine = game_engines[game_id]
 
-        if game.player1_token == player_token:
-            player_color = "red"
-        elif game.player2_token == player_token:
-            player_color = "blue"
-        else:
-            await websocket.send_json({"error": "Unauthorized access"})
-            await websocket.close()
-            return
-        
-        connection = {
-            "websocket": websocket,
-            "game_id": game_id,
-            "player_token": player_token,
-            "player_color": player_color
-        }
-        connections_to_games.append(connection)
-        
-        print(f"Player {player_color} connected to game {game_id}")
-
-        await websocket.send_json({
-            "action": "initialize",
-            "player_color": player_color
-        })
-
-        if game.status == "Waiting to Start" and count_connections_to_game_id(game_id, connections_to_games) == 2:
-            game.status = "In Progress"
-            db.commit()
-            asyncio.create_task(game_engines[game_id].start_game())
-        else:    
-            await send_game_state(game_id, game_engine.game_state)
-            await game_engine.get_and_send_available_actions()
-        
-        while True:
-            data = await websocket.receive_json()
-            asyncio.create_task(game_engine.process_data_from_client(data, player_color))
+    if ENV == "production":
+        try:
+            auth_data = await websocket.receive_json()
+            player_token = auth_data.get("player_token")
+            game_id = int(auth_data.get("game_id"))
+            db: Session = next(get_db())
+            game = db.query(models.Game).filter(models.Game.id == game_id).first()
+            if not game or game_id not in game_engines:
+                await websocket.send_json({"error": "Game not found"})
+                await websocket.close()
+                return
             
-    except WebSocketDisconnect:
-        if game_id:
-            print(f"Player disconnected from game {game_id}")
-        else:
-            print(f"Player disconnected")
-        connections_to_games[:] = [connection for connection in connections_to_games if connection["websocket"] != websocket]
-#-------------PROD------------
+            game_engine = game_engines[game_id]
 
-#--------------DEV-----------------
-@app.websocket("/ws/game/")
-async def websocket_game_endpoint(websocket: WebSocket):
-    global game_engine, current_players
+            if game.player1_token == player_token:
+                player_color = "red"
+            elif game.player2_token == player_token:
+                player_color = "blue"
+            else:
+                await websocket.send_json({"error": "Unauthorized access"})
+                await websocket.close()
+                return
+            
+            connection = {
+                "websocket": websocket,
+                "game_id": game_id,
+                "player_token": player_token,
+                "player_color": player_color
+            }
+            connections_to_games.append(connection)
+            
+            print(f"Player {player_color} connected to game {game_id}")
 
-    await websocket.accept()
-    if len(current_players) >= 2:
-        await websocket.send_json({
-            "action": "error",
-            "message": "Game is full"
-        })
-        await websocket.close()
-        return
+            await websocket.send_json({
+                "action": "initialize",
+                "player_color": player_color
+            })
 
-    player_color = "blue" if current_players else "red"
-    current_players.append({"websocket": websocket, "color": player_color})
+            if game.status == "Waiting to Start" and count_connections_to_game_id(game_id, connections_to_games) == 2:
+                game.status = "In Progress"
+                db.commit()
+                asyncio.create_task(game_engines[game_id].start_game())
+            else:    
+                await send_game_state(game_id, game_engine.game_state)
+                await game_engine.get_and_send_available_actions()
+            
+            while True:
+                data = await websocket.receive_json()
+                asyncio.create_task(game_engine.process_data_from_client(data, player_color))
+                
+        except WebSocketDisconnect:
+            if 'game_id' in locals():
+                print(f"Player disconnected from game {game_id}")
+            else:
+                print(f"Player disconnected")
+            connections_to_games[:] = [conn for conn in connections_to_games if conn["websocket"] != websocket]
 
-    if len(current_players) == 2:
-        await send_player_colors_to_clients()
-        game_engine = GameEngine()
-        game_engine.set_websocket_callbacks(send_clients_new_log_message, send_clients_new_game_state, send_available_actions_to_client)
-        asyncio.create_task(game_engine.start_game())
+    #DEV
+    else:
+        if len(current_players) >= 2:
+            await websocket.send_json({
+                "action": "error",
+                "message": "Game is full"
+            })
+            await websocket.close()
+            return
 
-    try:
-        while True:
-            data = await websocket.receive_json()
-            asyncio.create_task(game_engine.process_data_from_client(data, player_color))
+        player_color = "blue" if current_players else "red"
+        current_players.append({"websocket": websocket, "color": player_color})
 
-    except WebSocketDisconnect:
-        current_players = [p for p in current_players if p["websocket"] != websocket]
-        print(f"{player_color} player disconnected")
-        if not current_players:
-            game_engine = None
+        if len(current_players) == 2:
+            await send_player_colors_to_clients()
+            game_engine = GameEngine()
+            game_engine.set_websocket_callbacks(
+                lambda msg: send_message(None, msg),
+                lambda state: send_game_state(None, state),
+                lambda actions, data, color: send_available_actions(None, actions, data, color)
+        )
+            asyncio.create_task(game_engine.start_game())
 
-async def send_clients_new_log_message(message):
+        try:
+            while True:
+                data = await websocket.receive_json()
+                asyncio.create_task(game_engine.process_data_from_client(data, player_color))
+
+        except WebSocketDisconnect:
+            current_players[:] = [p for p in current_players if p["websocket"] != websocket]
+            print(f"{player_color} player disconnected")
+            if not current_players:
+                game_engine = None
+
+async def send_message(game_id: int, message: str):
+    if ENV == "production":
+        for connection in connections_to_games:
+            if connection["game_id"] == game_id:
+                await connection["websocket"].send_json({"action": "message", "message": message})
+    else:
+        for player in current_players:
+            await player["websocket"].send_json({"action": "message", "message": message})
+
+async def send_game_state(game_id: int, game_state: Dict):
+    serialized_state = json.loads(serialize_game_state(game_state))
+    if ENV == "production":
+        for connection in connections_to_games:
+            if connection["game_id"] == game_id:
+                await connection["websocket"].send_json({
+                    "action": "update_game_state",
+                    "game_state": serialized_state
+                })
+    else:
         for player in current_players:
             await player["websocket"].send_json({
-                "action": "message", 
-                "message": message
+                "action": "update_game_state",
+                "game_state": serialized_state
             })
+
+async def send_available_actions(game_id: int, available_actions: list, current_data: str, player_color_to_send_to: str):
+    if ENV == "production":
+        for connection in connections_to_games:
+            if connection["game_id"] == game_id and connection["player_color"] == player_color_to_send_to:
+                await connection["websocket"].send_json({
+                    "action": "current_available_actions",
+                    "available_actions": available_actions,
+                    "current_piece_of_data_to_fill_in_current_action": current_data
+                })
+    else:
+        for player in current_players:
+            if player["color"] == player_color_to_send_to:
+                await player["websocket"].send_json({
+                    "action": "current_available_actions",
+                    "available_actions": available_actions,
+                    "current_piece_of_data_to_fill_in_current_action": current_data
+                })
 
 async def send_player_colors_to_clients():
     for player in current_players:
@@ -274,53 +351,6 @@ async def send_player_colors_to_clients():
             "action": "initialize", 
             "player_color": player["color"]
         })
-
-async def send_clients_new_game_state(game_state):
-    for player in current_players:
-        await player["websocket"].send_json({
-            "action": "update_game_state",
-            "game_state": json.loads(serialize_game_state(game_state))
-        })
-
-async def send_available_actions_to_client(available_actions, current_piece_of_data_to_fill_in_current_action, player_color_to_send_to):
-    for player in current_players:
-        if player["color"] == player_color_to_send_to:
-            await player["websocket"].send_json({
-                "action": "current_available_actions",
-                "available_actions": available_actions,
-                "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
-            })
-#--------------DEV---------------------
- 
-async def send_message(game_id: int, message: str):
-    for connection in connections_to_games:
-        if connection["game_id"] == game_id:
-            await connection["websocket"].send_json({
-                "action": "message",
-                "message": message})
-
-async def send_game_state(game_id: int, game_state: Dict):
-    for connection in connections_to_games:
-        if connection["game_id"] == game_id:
-            await connection["websocket"].send_json({
-                "action": "update_game_state",
-                "game_state": json.loads(serialize_game_state(game_state))
-            })
-
-async def send_available_actions(game_id: int, available_actions: list, current_data: str, player_color_to_send_to: str):
-    for connection in connections_to_games:
-        if connection["game_id"] == game_id and connection["player_color"] == player_color_to_send_to:
-            await connection["websocket"].send_json({
-                "action": "current_available_actions",
-                "available_actions": available_actions,
-                "current_piece_of_data_to_fill_in_current_action": current_data
-            })
-
-async def send_game_state_to_one_client(websocket: WebSocket, game_state: Dict):
-    await websocket.send_json({
-        "action": "update_game_state",
-        "game_state": json.loads(serialize_game_state(game_state))
-    })
 
 def count_connections_to_game_id(game_id, connections_to_games):
     return sum(1 for connection in connections_to_games if connection["game_id"] == game_id)
@@ -337,3 +367,8 @@ def serialize_game_state(game_state):
     serialized_game_state["scorer_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["scorer_bonuses"]]
     serialized_game_state["income_bonuses"] = [round_bonus.serialize() for round_bonus in game_state["income_bonuses"]]
     return json.dumps(serialized_game_state)
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
