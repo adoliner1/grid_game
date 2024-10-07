@@ -227,7 +227,7 @@ async def websocket_game_endpoint(websocket: WebSocket):
         connections_to_games[:] = [connection for connection in connections_to_games if connection["websocket"] != websocket]
 #-------------PROD------------
 
-'''#--------------DEV-----------------
+#--------------DEV-----------------
 @app.websocket("/ws/game/")
 async def websocket_game_endpoint(websocket: WebSocket):
     global game_engine, current_players
@@ -290,12 +290,14 @@ async def send_available_actions_to_client(available_actions, current_piece_of_d
                 "available_actions": available_actions,
                 "current_piece_of_data_to_fill_in_current_action": current_piece_of_data_to_fill_in_current_action
             })
-#--------------DEV---------------------'''
+#--------------DEV---------------------
  
 async def send_message(game_id: int, message: str):
     for connection in connections_to_games:
         if connection["game_id"] == game_id:
-            await connection["websocket"].send_json({"action": "message", "message": message})
+            await connection["websocket"].send_json({
+                "action": "message",
+                "message": message})
 
 async def send_game_state(game_id: int, game_state: Dict):
     for connection in connections_to_games:
