@@ -202,7 +202,6 @@ const Game = () => {
                     player_token: player_token,
                     game_id: game_id
                 }))
-    
             }
           }
 
