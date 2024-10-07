@@ -9,7 +9,7 @@ class CircleOfTheWolf(Tile):
         super().__init__(
             name="Circle of the Wolf",
             type="Generator/Giver",
-            number_of_slots=3,
+            number_of_slots=4,
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {

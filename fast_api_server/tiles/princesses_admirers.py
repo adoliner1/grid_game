@@ -15,7 +15,7 @@ class PrincesssAdmirers(Tile):
                 {
                     "influence_to_reach_tier": 4,
                     "must_be_ruler": False,
-                    "description": "At the **end of each round**, +1 points per tile you're present at",
+                    "description": "At the __end of each round__, +1 points per tile you're present at",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,    
                     "leader_must_be_present": False,                

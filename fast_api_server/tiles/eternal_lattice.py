@@ -11,10 +11,10 @@ class EternalLattice(Tile):
             type="Generator",
             minimum_influence_to_rule=3,
             description="",
-            number_of_slots=3,
+            number_of_slots=5,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 5,
+                    "influence_to_reach_tier": 6,
                     "must_be_ruler": True,
                     "description": "**Action:** Gain 1 power for each tile you're present at",
                     "is_on_cooldown": False,

@@ -15,7 +15,7 @@ class RiverOfSouls(Tile):
                 {
                     "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ one of your disciples here to move a disciple from your leader's tile to any other tile",
+                    "description": "**Action:** ^^Burn^^ one of your disciples here to move a disciple from the tile your leader is on to any tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,       
                     "leader_must_be_present": False,              

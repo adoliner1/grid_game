@@ -17,7 +17,6 @@ function Lobby() {
     {
       socket.current = new WebSocket(`wss://grid-game.onrender.com/ws/lobby/`)
     }
-
     
     socket.current.onopen = () => {
       console.log('WebSocket connection established')
