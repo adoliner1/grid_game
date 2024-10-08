@@ -22,10 +22,11 @@ class WheelOfSouls(Tile):
         await send_clients_log_message(f"Applying end of round effect for **{self.name}**")
         
         number_of_followers_to_give_per_color = {"red": 0, "blue": 0}
+        copy_of_slots_for_disciples = self.slots_for_disciples.copy()
         for i in range(len(self.slots_for_disciples)):
-            if self.slots_for_disciples[i]:
-                current_disciple = self.slots_for_disciples[i]["disciple"]
-                player_color = self.slots_for_disciples[i]["color"]
+            if copy_of_slots_for_disciples[i]:
+                current_disciple = copy_of_slots_for_disciples[i]["disciple"]
+                player_color = copy_of_slots_for_disciples[i]["color"]
                 
                 await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, game_utilities.find_index_of_tile_by_name(game_state, self.name), i)
                 
@@ -47,4 +48,4 @@ class WheelOfSouls(Tile):
             if number_of_followers_to_give_per_color[player]:
                 await send_clients_log_message(f"**{self.name}** gives {number_of_followers_to_give_per_color[player]} {player}_follower")
                 for _ in range(number_of_followers_to_give_per_color[player]):
-                    await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, self, "follower")
+                    await game_utilities.player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player, self, "follower")

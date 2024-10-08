@@ -9,7 +9,7 @@ class SummoningStone(Tile):
         super().__init__(
             name="Summoning Stone",
             type="Giver",
-            number_of_slots=8,
+            number_of_slots=10,
             minimum_influence_to_rule=5,
             influence_tiers=[
                 {

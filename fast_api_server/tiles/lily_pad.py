@@ -35,4 +35,4 @@ class LilyPad(Tile):
         if self.determine_ruler(game_state) == color:
             leader_movement_to_gain = 1
             game_state['leader_movement'][color] += leader_movement_to_gain
-            await send_clients_log_message(f"{color} gains {leader_movement_to_gain} power for moving on to **{self.name}**")
+            await send_clients_log_message(f"{color} gains {leader_movement_to_gain} leader_movement for moving on to **{self.name}**")
