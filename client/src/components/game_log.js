@@ -11,7 +11,7 @@ const GameLog = ({ logs }) => {
     }, [logs]);
 
     function parseCustomMarkup(text) {
-        const parts = text.split(/(\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b|\bred_\w+\b|\bblue_\w+\b)/gi);
+        const parts = text.split(/(\bleader_movement\b|\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b|\bred_\w+\b|\bblue_\w+\b)/gi);
         return parts.map((part, index) => {
             const lowerPart = part.toLowerCase();
             const colorMatch = lowerPart.match(/^(red|blue)_(\w+)$/);
@@ -28,6 +28,7 @@ const GameLog = ({ logs }) => {
             }
             switch(lowerPart) {
                 case 'power':
+                case 'leader_movement':
                 case 'influence':
                 case 'follower':
                 case 'followers':

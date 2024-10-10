@@ -66,6 +66,13 @@ class GameEngine:
 
     async def get_and_send_available_actions(self):
         top_of_game_action_stack = self.game_action_container_stack[-1]
+
+        if top_of_game_action_stack.game_action == 'move_leader' and top_of_game_action_stack.required_data_for_action['path_to_move_leader']:
+            costs = game_utilities.find_costs_leader_movement_will_incur(self.game_state, top_of_game_action_stack)
+            mover = top_of_game_action_stack.whose_action
+            path_to_move = [self.game_state['tiles'][tile_index].name for tile_index in top_of_game_action_stack.required_data_for_action['path_to_move_leader']]
+            await self.send_clients_log_message(f"{mover} is performing a move action. Current costs are: {costs}. Current path is {path_to_move}")
+
         for player in game_constants.player_colors:
             await self.send_available_actions(game_utilities.get_available_client_actions(self.game_state, top_of_game_action_stack, player_color_to_get_actions_for=player),
                                               top_of_game_action_stack.get_next_piece_of_data_to_fill(),
@@ -269,7 +276,7 @@ class GameEngine:
                 self.game_state['leader_movement'][mover] -= 1
             else:
                 self.game_state['power'][mover] -= 3
-                power_spent_to_move = 3        
+                power_spent_to_move += 3        
 
             if not power_spent_to_move:
                 await self.send_clients_log_message(f"{mover}_leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**")

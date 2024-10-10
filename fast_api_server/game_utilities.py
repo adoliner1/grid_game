@@ -198,6 +198,25 @@ def update_presence(game_state):
 def count_all_disciples_for_color_on_tile(color, tile):
     return sum(1 for slot in tile.slots_for_disciples if slot and slot["color"] == color)
 
+def find_costs_leader_movement_will_incur(game_state, game_action_container):
+    mover = game_action_container.whose_action
+    costs = {'leader_movement': 0, 'power': 0}
+    path = game_action_container.required_data_for_action['path_to_move_leader']
+
+    if path:
+        leader_movement_to_use = game_state['leader_movement'][mover]
+        power_to_use = game_state['power'][mover]
+
+        for _ in range(len(path)):
+            if leader_movement_to_use > 0:
+                leader_movement_to_use -= 1
+                costs['leader_movement'] += 1
+            elif power_to_use > 2:
+                power_to_use -= 3
+                costs['power'] += 3
+
+    return costs
+
 def get_available_client_actions(game_state, game_action_container, player_color_to_get_actions_for):
     if game_action_container.whose_action != player_color_to_get_actions_for:
         return {}
@@ -214,6 +233,13 @@ def get_available_client_actions(game_state, game_action_container, player_color
         tile_in_use.set_available_actions_for_use(game_state, index_of_tier_in_use, game_action_container, available_client_actions)
 
     elif game_action_container.game_action == 'move_leader':
+        mover = game_action_container.whose_action
+
+        costs = find_costs_leader_movement_will_incur(game_state, game_action_container)
+        if game_state['leader_movement'][mover] < costs['leader_movement']+1 and game_state['power'][mover] < costs['power']+3:
+            available_client_actions['confirm_leader_movement'] = None
+            return available_client_actions
+
         if not game_action_container.required_data_for_action['path_to_move_leader']:
             available_client_actions["select_a_tile"] = get_adjacent_tile_indices(get_tile_index_of_leader(game_state, game_action_container.whose_action))
         else:
