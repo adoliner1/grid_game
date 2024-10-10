@@ -43,10 +43,13 @@ async def exile_disciple_on_tile(game_state, game_action_container_stack, send_c
                                                                   slot_index_exiled_at=slot_index_to_exile_from)
 
 async def place_leader_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index, color):
+    if tile_index > 8 or tile_index < 0:
+        return False
     game_state['tiles'][tile_index].leaders_here[color] = True
     update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
     await send_clients_log_message(f"{color}_leader starts on **{game_state['tiles'][tile_index].name}**")
+    return True
 
 async def player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, tile, disciple_type):
     if None not in tile.slots_for_disciples:
@@ -201,11 +204,7 @@ def get_available_client_actions(game_state, game_action_container, player_color
     
     available_client_actions = {}
 
-    if game_action_container.game_action == 'initial_follower_placement':
-        slots_that_can_be_placed_on = get_tile_slots_that_can_be_placed_on(game_state, 'follower', game_action_container.whose_action)
-        available_client_actions["select_a_slot_on_a_tile"] = slots_that_can_be_placed_on
-
-    elif game_action_container.game_action == 'initial_leader_placement':
+    if game_action_container.game_action == 'initial_leader_placement':
         available_client_actions["select_a_tile"] = game_constants.all_tile_indices
 
     elif game_action_container.game_action == 'use_a_tier':
@@ -215,7 +214,11 @@ def get_available_client_actions(game_state, game_action_container, player_color
         tile_in_use.set_available_actions_for_use(game_state, index_of_tier_in_use, game_action_container, available_client_actions)
 
     elif game_action_container.game_action == 'move_leader':
-        available_client_actions["select_a_tile"] = get_adjacent_tile_indices(get_tile_index_of_leader(game_state, game_action_container.whose_action))
+        if not game_action_container.required_data_for_action['path_to_move_leader']:
+            available_client_actions["select_a_tile"] = get_adjacent_tile_indices(get_tile_index_of_leader(game_state, game_action_container.whose_action))
+        else:
+            available_client_actions['confirm_leader_movement'] = None
+            available_client_actions["select_a_tile"] = get_adjacent_tile_indices(game_action_container.required_data_for_action['path_to_move_leader'][-1])
 
     elif game_action_container.game_action == 'recruit':
         if game_action_container.get_next_piece_of_data_to_fill() == 'disciple_type_to_recruit':

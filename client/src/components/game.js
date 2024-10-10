@@ -104,6 +104,12 @@ const Game = () => {
         sendRequest();
     };
 
+    const handleConfirmMovement = () => {
+        playSound(clickSound);
+        request.current.client_action = "confirm_leader_movement";
+        sendRequest();
+    };
+
     const handleDiscipleInHUDClick = (disciple_type) => {
         if (availableActions.hasOwnProperty('select_a_disciple_in_the_HUD')) {
             playSound(clickSound);
@@ -255,6 +261,9 @@ const Game = () => {
                     case 'd':
                         if (availableActions.hasOwnProperty('do_not_react')) handleChooseNotToReactClick();
                         break;
+                    case 'c':
+                        if (availableActions.hasOwnProperty('confirm_leader_movement')) handleConfirmMovement();
+                        break;                        
                     case 'm':
                         if (availableActions.hasOwnProperty('move_leader')) handleMoveButtonClick();
                         break;
@@ -377,6 +386,14 @@ const Game = () => {
                     hotkey="D"
                 >
                     Don't Use
+                </ButtonWithHotkey>
+                <ButtonWithHotkey 
+                    onClick={handleConfirmMovement} 
+                    disabled={!availableActions.hasOwnProperty('confirm_leader_movement')} 
+                    className={availableActions.hasOwnProperty('confirm_leader_movement') ? 'btn-enabled' : 'btn-disabled'}
+                    hotkey="C"
+                >
+                    Confirm Movement
                 </ButtonWithHotkey>
                 <ButtonWithHotkey 
                     onClick={handleMoveButtonClick} 
