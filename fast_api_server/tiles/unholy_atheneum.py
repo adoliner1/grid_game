@@ -8,7 +8,7 @@ class UnholyAtheneum(Tile):
     def __init__(self):
         super().__init__(
             name="Unholy Atheneum",
-            type="Giver/Generator",
+            type="Giver/Generator/Burner",
             description="At the __end of each round__, for each sage you have here, [[receive]] an acolyte then a follower here",
             number_of_slots=10,
             minimum_influence_to_rule=7,

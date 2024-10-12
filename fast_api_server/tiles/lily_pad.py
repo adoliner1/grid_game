@@ -32,7 +32,8 @@ class LilyPad(Tile):
 
     async def on_leader_move_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, reactions_by_player, **data):
         color = data.get('leader_color_moved')
-        if self.determine_ruler(game_state) == color:
-            leader_movement_to_gain = 1
-            game_state['leader_movement'][color] += leader_movement_to_gain
-            await send_clients_log_message(f"{color} gains {leader_movement_to_gain} leader_movement for moving on to **{self.name}**")
+        if self.leaders_here[color]:
+            if self.determine_ruler(game_state) == color:
+                leader_movement_to_gain = 1
+                game_state['leader_movement'][color] += leader_movement_to_gain
+                await send_clients_log_message(f"{color} gains {leader_movement_to_gain} leader_movement for moving on to **{self.name}**")

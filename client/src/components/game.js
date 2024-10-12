@@ -27,6 +27,7 @@ const Game = () => {
     const [gameState, setGameState] = useState(null);
     const [availableActions, setAvailableActions] = useState({});
     const [currentPieceOfDataToFill, setcurrentPieceOfDataToFill] = useState("");
+    const [showGameLog, setShowGameLog] = useState(false);
     const [logs, setLogs] = useState([]);
     const [audioEnabled, setAudioEnabled] = useState(true);
 
@@ -180,6 +181,28 @@ const Game = () => {
         socket.current.send(JSON.stringify(request.current));
         request.current = {};
     };
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Tab') {
+                event.preventDefault();
+                setShowGameLog(true);
+            }
+        };
+
+        const handleKeyUp = (event) => {
+            if (event.key === 'Tab') {
+                setShowGameLog(false);
+            }
+        };
+    
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, []);
     
     useEffect(() => {
         const game_id = localStorage.getItem('game_id');
@@ -349,6 +372,7 @@ const Game = () => {
               leader_movement={gameState.leader_movement.red}
               exiling_range={gameState.exiling_range.red}
               onDiscipleClick={handleDiscipleInHUDClick}
+              statuses={gameState.statuses}
             />
             <PlayerHUD 
               player_color="blue" 
@@ -369,6 +393,7 @@ const Game = () => {
               leader_movement={gameState.leader_movement.blue}
               exiling_range={gameState.exiling_range.blue}
               onDiscipleClick={handleDiscipleInHUDClick}
+              statuses={gameState.statuses}
             />
             <div className="action-buttons">
                 <ButtonWithHotkey 
@@ -420,7 +445,13 @@ const Game = () => {
                     Exile
                 </ButtonWithHotkey>                                     
             </div>
-            <GameLog logs={logs} />
+            {showGameLog && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <GameLog logs={logs} />
+                    </div>
+                </div>
+            )}
           </div>
           <div className="tiles">
             {gameState.tiles.map((tile, tile_index) => (

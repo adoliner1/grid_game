@@ -18,7 +18,7 @@ class CrystalShrine(Tile):
                     "description": "**Action**: If Crystal Shrine is full, +8 power",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
-                    "has_cooldown": True,
+                    "has_a_cooldown": True,
                     "data_needed_for_use": [],
                 }
             ],

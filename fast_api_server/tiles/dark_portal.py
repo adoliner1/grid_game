@@ -13,11 +13,11 @@ class DarkPortal(Tile):
             number_of_slots=3,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 4,
+                    "influence_to_reach_tier": 2,
                     "must_be_ruler": True,
                     "description": "**Action:** ^^Burn^^ one of your disciples anywhere, then teleport your leader to any tile",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": False,
+                    "has_a_cooldown": True,
                     "leader_must_be_present": False,                  
                     "data_needed_for_use": ['disciple_to_burn', 'tile_to_teleport_to'],
                 },
@@ -96,7 +96,9 @@ class DarkPortal(Tile):
 
         # Move the leader
         await send_clients_log_message(f"{user}_leader took **{self.name}** to **{tile_to_move_leader_to.name}**")
-        self.leaders_here[user] = False
+        tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, user)
+        game_state['tiles'][tile_index_of_leader].leaders_here[user] = False
         tile_to_move_leader_to.leaders_here[user] = True
 
+        self.influence_tiers[0]["is_on_cooldown"] = True
         return True

@@ -9,7 +9,7 @@ class EternalLattice(Tile):
         super().__init__(
             name="Eternal Lattice",
             type="Generator",
-            minimum_influence_to_rule=3,
+            minimum_influence_to_rule=4,
             description="",
             number_of_slots=5,
             influence_tiers=[

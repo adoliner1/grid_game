@@ -97,3 +97,12 @@
     height: 15px;
     padding: 0px;
 }
+
+.status-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    width: 100%;
+    border-top: 2px dotted grey;
+  }

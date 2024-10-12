@@ -14,7 +14,7 @@ class PrincesssAdmirers(Tile):
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 4,
-                    "must_be_ruler": False,
+                    "must_be_ruler": True,
                     "description": "At the __end of each round__, +1 points per tile you're present at",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,    

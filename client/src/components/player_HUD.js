@@ -24,7 +24,6 @@ const CostGrid = ({ recruiting_costs, exiling_costs, player_color, available_act
       clients_color === player_color
     )
   }
-
   const renderDiscipleComponent = (disciple) => {
     const selectable = isSelectable(disciple);
     const clickHandler = selectable ? () => onDiscipleClick(disciple, player_color) : undefined;
@@ -81,6 +80,20 @@ const CostGrid = ({ recruiting_costs, exiling_costs, player_color, available_act
   )
 }
 
+const StatusDisplay = ({ statuses, playerColor }) => {
+  const filteredStatuses = statuses.filter(status => status.player_with_status === playerColor);
+
+  return (
+    <div className="status-row">
+      {filteredStatuses.map((status, index) => (
+          <div className="status-icon">
+            {createIcon({ type: status.name.toLowerCase().replace(/\s+/g, '_'), tooltipText: status.description, width: 18, height: 18 })}
+          </div>
+      ))}
+    </div>
+  );
+};
+
 const PlayerHUD = ({
   player_color,
   whose_turn_is_it,
@@ -100,6 +113,7 @@ const PlayerHUD = ({
   recruiting_range,
   leader_movement,
   exiling_range,
+  statuses,
 }) => {
   const class_for_player_color = player_color === 'red' ? 'player-red' : 'player-blue';
   const active_player_class = whose_turn_is_it === player_color ? 'player-active' : '';
@@ -158,8 +172,9 @@ const PlayerHUD = ({
         clients_color={clients_color}
         onDiscipleClick={onDiscipleClick}
       />
+      <StatusDisplay statuses={statuses} playerColor = {player_color}/>
     </div>
   )
 }
 
-export default PlayerHUD 
+export default PlayerHUD

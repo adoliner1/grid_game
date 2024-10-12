@@ -83,4 +83,4 @@ class TowerOfTheMoon(Tile):
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
        
         self.influence_tiers[tier_index]["is_on_cooldown"] = True
-        return True
+        return True 

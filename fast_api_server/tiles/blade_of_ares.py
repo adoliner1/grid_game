@@ -8,7 +8,7 @@ class BladeOfAres(Tile):
     def __init__(self):
         super().__init__(
             name="Blade of Ares",
-            type="Attacker",
+            type="Attacker/Burner",
             minimum_influence_to_rule=3,
             number_of_slots=3,
             influence_tiers=[

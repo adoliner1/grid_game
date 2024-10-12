@@ -9,6 +9,8 @@ import game_utilities
 import game_constants
 import game_action_container
 import round_bonuses
+from statuses.fire_brand import FireBrand
+from statuses.heras_gift import HerasGift
 from tiles.tile import Tile
 
 class GameEngine:
@@ -30,6 +32,10 @@ class GameEngine:
     async def start_game(self):
         self.game_state['power']['red'] = game_constants.first_player_starting_power
         self.game_state['power']['blue'] = game_constants.second_player_starting_power
+
+        #if no burners, give fire_brand, if no receivers, give gift_of_hera
+
+
         await self.send_clients_log_message(f"Starting a new game. Red starts with {game_constants.first_player_starting_power} power. Blue starts with {game_constants.second_player_starting_power} power")
         await self.perform_initial_placements()
         await self.start_round()
@@ -487,7 +493,7 @@ class GameEngine:
     def create_new_game_state(self):
         chosen_tiles = self.choose_tiles()
         chosen_scorer_bonuses, chosen_income_bonuses = self.choose_round_bonuses()  
-    
+
         game_state = {
             "round": 0,
             "points": {"red": 0, "blue": 2},
@@ -497,9 +503,10 @@ class GameEngine:
             "power": {"red": 0, "blue": 0},
             "recruiting_range": {"red": 0, "blue": 0},
             "exiling_range": {"red": 0, "blue": 0},
-            "expected_power_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
-            "expected_points_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
-            "expected_leader_movement_incomes": {"red": 0, "blue": 0}, #not really part of game state, should be somewhere else
+            "statuses": [],
+            "expected_power_incomes": {"red": 0, "blue": 0},
+            "expected_points_incomes": {"red": 0, "blue": 0},
+            "expected_leader_movement_incomes": {"red": 0, "blue": 0},
             "recruiting_costs": {"red": game_constants.initial_recruiting_costs.copy(), "blue": game_constants.initial_recruiting_costs.copy()},
             "exiling_costs": {"red": game_constants.initial_exiling_costs.copy(), "blue": game_constants.initial_exiling_costs.copy()},
             "power_given_at_start_of_round": game_constants.power_given_at_end_of_round,
@@ -514,11 +521,28 @@ class GameEngine:
                 "on_produce": {}, "on_move": {}, "on_burn": {}, "on_receive": {}, "on_exile": {}
             },
         }
-        
+
+        if not any("Giver" in tile.type for tile in chosen_tiles):
+            game_state["statuses"].extend([
+                HerasGift(duration="game", player_with_status="red"),
+                HerasGift(duration="game", player_with_status="blue")
+            ])
+
+        if not any("Burner" in tile.type for tile in chosen_tiles):
+            game_state["statuses"].extend([
+                FireBrand(duration="game", player_with_status="red"),
+                FireBrand(duration="game", player_with_status="blue")
+            ])
+
         for tile in game_state["tiles"]:
             if hasattr(tile, 'setup_listener'):
                 tile.setup_listener(game_state)
-        
+
+        for player in game_constants.player_colors:
+            for status in game_state['statuses']:
+                if status.duration == 'game':
+                    status.setup_listener(game_state)
+
         return game_state
 
     def create_initial_decision_game_action_container(self):
@@ -576,6 +600,11 @@ class GameEngine:
         self.round_just_ended = True
         for tile in self.game_state["tiles"]:
             await tile.end_of_round_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
+
+        for index, status in enumerate(self.game_state['statuses']):
+            if status.duration == 'round':
+                status.cleanup_listener(self.game_state)
+                self.game_state['statuses'].pop(index)
 
         for _, listener_function in self.game_state["listeners"]["end_of_round"].items():
             await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  

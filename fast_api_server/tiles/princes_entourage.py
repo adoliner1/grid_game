@@ -22,6 +22,7 @@ class PrincesEntourage(Tile):
                     "has_a_cooldown": False,
                 },
             ],
+            TILE_PRIORITY=-1
         )
 
     def determine_ruler(self, game_state):

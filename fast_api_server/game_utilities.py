@@ -288,6 +288,8 @@ def calculate_exiling_ranges(game_state):
     game_state['exiling_range']['blue'] = game_constants.initial_exiling_ranges['blue']
     for tile in game_state['tiles']:
         tile.modify_exiling_ranges(game_state)
+    for status in game_state['statuses']:
+        status.modify_exiling_ranges(game_state)
 
 def get_tiles_within_exiling_range(game_state, player_color):
     calculate_exiling_ranges(game_state)

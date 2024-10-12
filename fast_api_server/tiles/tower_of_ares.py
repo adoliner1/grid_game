@@ -8,7 +8,7 @@ class TowerOfAres(Tile):
     def __init__(self):
         super().__init__(
             name="Tower of Ares",
-            type="Attacker",
+            type="Attacker/Burner",
             minimum_influence_to_rule=4,
             number_of_slots=4,
             influence_tiers=[

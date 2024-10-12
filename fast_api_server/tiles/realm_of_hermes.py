@@ -8,7 +8,7 @@ class RealmOfHermes(Tile):
     def __init__(self):
         super().__init__(
             name="Realm of Hermes",
-            type="Leader-Movement",
+            type="Leader-Movement/Burner",
             minimum_influence_to_rule=3,
             number_of_slots=3,
             influence_tiers=[

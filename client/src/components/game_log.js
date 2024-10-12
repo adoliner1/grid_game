@@ -10,6 +10,33 @@ const GameLog = ({ logs }) => {
         }
     }, [logs]);
 
+    // New effect to scroll to bottom when the component becomes visible
+    useEffect(() => {
+        const scrollToBottom = () => {
+            if (logContainerRef.current) {
+                logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+            }
+        };
+
+        // Scroll to bottom initially
+        scrollToBottom();
+
+        // Set up a MutationObserver to detect when the component becomes visible
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    scrollToBottom();
+                }
+            });
+        });
+
+        if (logContainerRef.current) {
+            observer.observe(logContainerRef.current, { attributes: true });
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
     function parseCustomMarkup(text) {
         const parts = text.split(/(\bleader_movement\b|\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b|\bred_\w+\b|\bblue_\w+\b)/gi);
         return parts.map((part, index) => {

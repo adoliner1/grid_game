@@ -8,7 +8,7 @@ class RiverOfSouls(Tile):
     def __init__(self):
         super().__init__(
             name="River of Souls",
-            type="Disciple Mover",
+            type="Disciple Mover/Burner",
             minimum_influence_to_rule=3,
             number_of_slots=3,
             influence_tiers=[

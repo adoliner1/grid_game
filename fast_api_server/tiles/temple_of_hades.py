@@ -8,7 +8,7 @@ class TempleOfHades(Tile):
     def __init__(self):
         super().__init__(
             name="Temple of Hades",
-            type="Giver",
+            type="Giver/Burner",
             description="At the __end of each round__, for each follower you have here, [[receive]] another follower here",
             number_of_slots=9,
             minimum_influence_to_rule=3,            

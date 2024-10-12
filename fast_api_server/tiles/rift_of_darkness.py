@@ -22,6 +22,7 @@ class RiftOfDarkness(Tile):
                     "data_needed_for_use": ["tile_to_move_leader_to"]
                 },
             ],
+            TILE_PRIORITY=-1
         )
 
     def determine_ruler(self, game_state):

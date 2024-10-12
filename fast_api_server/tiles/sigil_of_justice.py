@@ -15,7 +15,7 @@ class SigilOfJustice(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "When one of your disciples is ++exiled++, +3 points",
+                    "description": "When one of your disciples is ++exiled++, +4 points",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
                     "has_cooldown": False,
@@ -40,6 +40,6 @@ class SigilOfJustice(Tile):
         player_influence = self.influence_per_player[exiler]
 
         if player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and exiled_disciple['color'] == ruler:
-            points_gained = 3
+            points_gained = 4
             game_state["points"][ruler] += points_gained
             await send_clients_log_message(f"{exiler} gains {points_gained} points from **{self.name}** due to their {exiled_disciple['color']}_{exiled_disciple['disciple']} being exiled from **{tile_exiled_from.name}**")

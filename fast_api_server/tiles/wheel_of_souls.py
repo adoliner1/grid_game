@@ -8,7 +8,7 @@ class WheelOfSouls(Tile):
     def __init__(self):
         super().__init__(
             name="Wheel of Souls",
-            type="Giver",
+            type="Giver/Burner",
             minimum_influence_to_rule=6,
             description=f"At the __end of each round__, ^^burn^^ each disciple here and [[receive]] the next most influential disciple. sages becomes followers. When they do, the owner [[receives]] 2 more follower here",
             number_of_slots=10,

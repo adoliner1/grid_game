@@ -8,7 +8,7 @@ class PyramidOfTheSun(Tile):
     def __init__(self):
         super().__init__(
             name="Pyramid of the Sun",
-            type="Tile-Mover",
+            type="Tile-Mover/Burner",
             minimum_influence_to_rule=1,
             number_of_slots=3,
             influence_tiers=[
