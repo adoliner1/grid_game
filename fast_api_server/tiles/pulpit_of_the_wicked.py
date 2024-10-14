@@ -15,7 +15,7 @@ class PulpitOfTheWicked(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "Increase your ++exiling++ range by 2",
+                    "description": "Your ++exiling++ range is increased by 2",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,                    
                     "leader_must_be_present": True, 

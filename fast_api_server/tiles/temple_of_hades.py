@@ -19,7 +19,7 @@ class TempleOfHades(Tile):
                     "description": "**Action:** ^^Burn^^ 3 of your followers here (one at a time) to [[receive]] a sage here",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
-                    "leader_must_be_present": False, 
+                    "leader_must_be_present":  False, 
                     "data_needed_for_use": [],
                 },
             ]      

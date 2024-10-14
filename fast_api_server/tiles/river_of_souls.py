@@ -15,11 +15,11 @@ class RiverOfSouls(Tile):
                 {
                     "influence_to_reach_tier": 2,
                     "must_be_ruler": False,                    
-                    "description": "**Action:** ^^Burn^^ one of your disciples here to move a disciple from the tile your leader is on to any tile",
+                    "description": "**Action:** ^^Burn^^ an acolyte here to move any disciple from the tile you're on to a tile anywhere",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,       
+                    "has_a_cooldown": False,       
                     "leader_must_be_present": False,              
-                    "data_needed_for_use": ["disciple_to_burn", "disciple_to_move", "slot_to_move_disciple_to"]
+                    "data_needed_for_use": ["acolyte_to_burn", "disciple_to_move", "slot_to_move_disciple_to"]
                 },
             ],
         )
@@ -33,8 +33,7 @@ class RiverOfSouls(Tile):
         useable_tiers = []
 
         if (current_players_influence_here >= self.influence_tiers[0]['influence_to_reach_tier'] and
-            not self.influence_tiers[0]['is_on_cooldown'] and
-            game_utilities.count_all_disciples_for_color_on_tile(current_player, self) > 0):
+            any(slot for slot in self.slots_for_disciples if slot and slot["color"] == current_player and slot["disciple"] == "acolyte")):
                 useable_tiers.append(0)
 
         return useable_tiers
@@ -42,15 +41,18 @@ class RiverOfSouls(Tile):
     def set_available_actions_for_use(self, game_state, tier_index, game_action_container, available_actions):
         current_piece_of_data_to_fill_in_current_action = game_action_container.get_next_piece_of_data_to_fill()     
 
-        if current_piece_of_data_to_fill_in_current_action == "disciple_to_burn":
-            slots_that_can_be_burned_from = game_utilities.get_slots_with_a_disciple_of_player_color_at_tile_index(game_state, game_action_container.whose_action, game_action_container.required_data_for_action["index_of_tile_in_use"])
-            available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_that_can_be_burned_from}
+        if current_piece_of_data_to_fill_in_current_action == "acolyte_to_burn":
+            slots_with_acolytes = [i for i, slot in enumerate(self.slots_for_disciples) 
+                                   if slot and slot["color"] == game_action_container.whose_action and slot["disciple"] == "acolyte"]
+            available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_with_acolytes}
         elif current_piece_of_data_to_fill_in_current_action == "disciple_to_move":
             leader_tile_index = game_utilities.get_tile_index_of_leader(game_state, game_action_container.whose_action)
+            index_of_river = game_utilities.find_index_of_tile_by_name(game_state, self.name)
+            slot_index_to_burn_disciple_from = game_action_container.required_data_for_action['acolyte_to_burn']['slot_index']
 
             if leader_tile_index is not None:
-                slots_with_disciples = [index for index, slot in enumerate(game_state["tiles"][leader_tile_index].slots_for_disciples) if slot and 
-                                        not (game_action_container.required_data_for_action['disciple_to_burn']['tile_index'] == leader_tile_index and game_action_container.required_data_for_action['disciple_to_burn']['slot_index'] == index)]
+                slots_with_disciples = [index for index, slot in enumerate(game_state["tiles"][leader_tile_index].slots_for_disciples) 
+                                        if slot and not (leader_tile_index == index_of_river and index == slot_index_to_burn_disciple_from)]
                 available_actions["select_a_slot_on_a_tile"] = {leader_tile_index: slots_with_disciples}
         elif current_piece_of_data_to_fill_in_current_action == "slot_to_move_disciple_to":
             slots_without_a_disciple = {}
@@ -64,23 +66,19 @@ class RiverOfSouls(Tile):
         game_action_container = game_action_container_stack[-1]
         user = game_action_container.whose_action
         
-        if self.influence_tiers[tier_index]['is_on_cooldown']:
-            await send_clients_log_message(f"Tried to use **{self.name}** but it's on cooldown")
-            return False
-        
         if self.influence_per_player[user] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
             await send_clients_log_message(f"Not enough influence on **{self.name}** to use")
             return False
 
         index_of_river = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        slot_index_to_burn_disciple_from = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
+        slot_index_to_burn_disciple_from = game_action_container.required_data_for_action['acolyte_to_burn']['slot_index']
         index_of_tile_to_move_disciple_from = game_action_container.required_data_for_action['disciple_to_move']['tile_index']
         slot_index_to_move_disciple_from = game_action_container.required_data_for_action['disciple_to_move']['slot_index']
         index_of_tile_to_move_disciple_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['tile_index']
         slot_index_to_move_disciple_to = game_action_container.required_data_for_action['slot_to_move_disciple_to']['slot_index']
 
-        if self.slots_for_disciples[slot_index_to_burn_disciple_from]["color"] != user:
-            await send_clients_log_message(f"Tried to use **{self.name}** but chose a disciple owned by opponent to burn")
+        if self.slots_for_disciples[slot_index_to_burn_disciple_from]["color"] != user or self.slots_for_disciples[slot_index_to_burn_disciple_from]["disciple"] != "acolyte":
+            await send_clients_log_message(f"Tried to use **{self.name}** but didn't choose a valid acolyte to burn")
             return False
 
         leader_tile_index = game_utilities.get_tile_index_of_leader(game_state, user)
@@ -96,8 +94,9 @@ class RiverOfSouls(Tile):
             await send_clients_log_message(f"Tried to use **{self.name}** but chose a slot that is not empty to move to at {game_state['tiles'][index_of_tile_to_move_disciple_to].name}")
             return False
 
+        # Check if the acolyte being burned is the same as the disciple being moved
         if index_of_river == index_of_tile_to_move_disciple_from and slot_index_to_burn_disciple_from == slot_index_to_move_disciple_from:
-            await send_clients_log_message(f"Tried to use **{self.name}** but chose the same disciple to burn and move")
+            await send_clients_log_message(f"Tried to use **{self.name}** but chose the same acolyte to burn and move")
             return False
 
         await send_clients_log_message(f"Using **{self.name}**")
@@ -110,5 +109,4 @@ class RiverOfSouls(Tile):
         color_of_disciple_moved = game_state['tiles'][index_of_tile_to_move_disciple_to].slots_for_disciples[slot_index_to_move_disciple_to]["color"]
         await send_clients_log_message(f"{user} used **{self.name}** to move a {color_of_disciple_moved}_{disciple_moved} from {game_state['tiles'][index_of_tile_to_move_disciple_from].name} to {game_state['tiles'][index_of_tile_to_move_disciple_to].name}")
 
-        self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True

@@ -9,19 +9,19 @@ class TowerOfTheMoon(Tile):
         super().__init__(
             name="Tower of the Moon",
             type="Tile-Mover",
-            minimum_influence_to_rule=3,
+            minimum_influence_to_rule=4,
             number_of_slots=4,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 5,
+                    "influence_to_reach_tier": 4,
                     "must_be_ruler": True,
-                    "description": "**Action:** Swap any two tiles",
+                    "description": "**Action:** Swap any tile with a tile adjacent to it",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,                    
                     "leader_must_be_present": False, 
                     "data_needed_for_use": ["tile_to_swap", "other_tile_to_swap"]
                 },
-            ]
+            ],
         )
 
     def determine_ruler(self, game_state):
@@ -44,10 +44,9 @@ class TowerOfTheMoon(Tile):
         if current_piece_of_data_to_fill == "tile_to_swap":
             available_actions["select_a_tile"] = list(range(len(game_state["tiles"])))
         elif current_piece_of_data_to_fill == "other_tile_to_swap":
-            available_tiles = list(range(len(game_state["tiles"])))
             tile1_index = game_action_container.required_data_for_action["tile_to_swap"]
-            if tile1_index is not None:
-                available_tiles.remove(tile1_index)
+            available_tiles = [i for i in range(len(game_state["tiles"])) 
+                               if i != tile1_index and game_utilities.determine_if_directly_adjacent(tile1_index, i)]
             available_actions["select_a_tile"] = available_tiles
 
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
@@ -78,9 +77,13 @@ class TowerOfTheMoon(Tile):
             await send_clients_log_message(f"Cannot select the same tile twice for **{self.name}**")
             return False
 
-        await send_clients_log_message(f"Used **{self.name}** to swap **{game_state['tiles'][tile1_index].name}** and **{game_state['tiles'][tile2_index].name}**")
+        if not game_utilities.determine_if_directly_adjacent(tile1_index, tile2_index):
+            await send_clients_log_message(f"Selected tiles must be adjacent for **{self.name}**")
+            return False
+
+        await send_clients_log_message(f"{user} used **{self.name}** to swap **{game_state['tiles'][tile1_index].name}** and **{game_state['tiles'][tile2_index].name}**")
         # Swap the tiles
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
        
         self.influence_tiers[tier_index]["is_on_cooldown"] = True
-        return True 
+        return True

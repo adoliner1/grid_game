@@ -9,7 +9,7 @@ class HiddenSanctumStatus(Status):
     def __init__(self, duration, player_with_status):
         super().__init__(
             name="Hidden Sanctum",
-            description="Exiling range is increased by 1",
+            description="Exiling range is increased by 1 (Hidden Sanctum)",
             duration=duration,
             player_with_status=player_with_status
         )

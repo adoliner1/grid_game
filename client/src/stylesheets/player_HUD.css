@@ -1,16 +1,12 @@
 /* player_HUD.css */
 .player-info {
-    border: 2px dotted;
+    border: 2px solid;
     border-radius: 5px;
     padding: 0px;
     margin-bottom: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.player-info.player-is-this-color {
-    border-style: solid;
 }
 
 .expected-income {
@@ -56,7 +52,7 @@
     padding: 0px;
     flex-direction: row;
     width: 100%;
-    border-bottom: 2px dotted grey;
+    border-bottom: 1px solid grey;
 }
 
 .icon-value-pair {
@@ -104,5 +100,6 @@
     align-items: center;
     padding: 0px;
     width: 100%;
-    border-top: 2px dotted grey;
+    min-height: 24px;
+    border-top: 1px solid grey;
   }

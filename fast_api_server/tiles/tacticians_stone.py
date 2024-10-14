@@ -9,19 +9,19 @@ class TacticiansStone(Tile):
         super().__init__(
             name="Tactician's Stone",
             type="Attacker",
-            minimum_influence_to_rule=3,
+            minimum_influence_to_rule=4,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 4,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
                     "description": "**Reaction:** After you [[receive]] a disciple, you may ^^burn^^ any disciple at or adjacent to the tile you received it",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,
+                    "has_a_cooldown": False,
                     "leader_must_be_present": False, 
                     "data_needed_for_use": ['disciple_to_burn'],
                 },        
             ],            
-            number_of_slots=3,
+            number_of_slots=4,
         )
 
     def determine_ruler(self, game_state):
@@ -57,10 +57,6 @@ class TacticiansStone(Tile):
             await send_clients_log_message(f"Not enough influence to use tier {tier_index} of **{self.name}**")
             return False
 
-        if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"Tier {tier_index} of **{self.name}** is on cooldown")
-            return False
-
         slot_index_to_burn_disciple = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
         index_of_tile_to_burn_disciple = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
         index_of_tile_received_at = game_action_container.required_data_for_action['index_of_tile_received_at']
@@ -76,7 +72,6 @@ class TacticiansStone(Tile):
 
         await send_clients_log_message(f"Reacting with tier {tier_index} of **{self.name}**")
 
-        self.influence_tiers[tier_index]["is_on_cooldown"] = True    
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_disciple, slot_index_to_burn_disciple)
 
         return True

@@ -14,7 +14,7 @@ class Nexus(Tile):
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
-                    "must_be_ruler": True,
+                    "must_be_ruler": False,
                     "description": "**Action:** Gain 2 power for each adjacent tile you rule",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
@@ -45,10 +45,6 @@ class Nexus(Tile):
        
         if self.influence_per_player[user] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
             await send_clients_log_message(f"Not enough influence on **{self.name}** to use tier {tier_index}")
-            return False
-       
-        if self.determine_ruler(game_state) != user:
-            await send_clients_log_message(f"You must be the ruler to use **{self.name}**")
             return False
 
         index_of_locus = game_utilities.find_index_of_tile_by_name(game_state, self.name)

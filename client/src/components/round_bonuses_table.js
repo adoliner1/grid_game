@@ -30,16 +30,16 @@ const RoundBonusesTable = ({ gameState }) => {
     "3 points ruled-tile longest-chain": "Gain points equal to the length*3 of your longest connected chain of ruled tiles",
     "points presence": "Gain points equal to your presence",
     "1/2 points peak-influence": "Gain points equal to your peak influence/2 (round down)",
-    "3 power leader corner": "Gain 3 power if your leader is on a corner tile",
+    "3 power ruled-tile corner": "Gain 3 power for each corner tile you rule",
     "7 power ruled-tile row": "If you rule all 3 tiles in a row, gain 7 power",
     "7 power ruled-tile column": "If you rule all 3 tiles in a column, gain 7 power",
     "10 power ruled-tile diagonal": "If you rule all 3 tiles in a diagonal, gain 10 power",
     "2 power ruled-tile": "Gain 2 power for each tile you rule",
-    "5 points leader corner": "Gain 5 points if your leader is on a corner tile",
+    "5 points ruled-tile corner": "Gain 5 points for each corner tile you rule",
     "25 points ruled-tile corner": "Gain 25 points if you rule all 4 corner tiles",
     "1/2 leader-movement presence": "Gain leader movement equal to your presence/2 (round down)",
     "1/3 leader-movement peak-influence": "Gain leader movement equal to your peak influence/3 (round down)",
-    "2 leader-movement leader corner": "Gain 2 leader movement if your leader is on a corner tile"
+    "2 leader-movement ruled-tile corner": "Gain 2 leader movement for each corner tile you rule"
   };
 
   const getSubtypeIcon = (subtype) => {

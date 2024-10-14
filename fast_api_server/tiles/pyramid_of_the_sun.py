@@ -15,13 +15,13 @@ class PyramidOfTheSun(Tile):
                 {
                     "influence_to_reach_tier": 1,
                     "must_be_ruler": True,
-                    "description": "**Action:** ^^Burn^^ one of your disciples here to swap the position of 2 tiles",
+                    "description": "**Action:** ^^Burn^^ an acolyte here to swap 2 tiles",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
                     "leader_must_be_present": False,
                     "data_needed_for_use": ["disciple_to_burn", "tile_to_swap", "other_tile_to_swap"]
                 },
-            ]
+            ],
         )
 
     def determine_ruler(self, game_state):
@@ -32,7 +32,9 @@ class PyramidOfTheSun(Tile):
         whose_turn_is_it = game_state["whose_turn_is_it"]
         ruler = self.determine_ruler(game_state)
         
-        if ruler == whose_turn_is_it and self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and any(slot for slot in self.slots_for_disciples if slot and slot["color"] == whose_turn_is_it):
+        if (ruler == whose_turn_is_it and 
+            self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and 
+            any(slot for slot in self.slots_for_disciples if slot and slot["color"] == whose_turn_is_it and slot["disciple"] == "acolyte")):
             useable_tiers.append(0)
 
         return useable_tiers
@@ -41,8 +43,9 @@ class PyramidOfTheSun(Tile):
         current_piece_of_data_to_fill = game_action_container.get_next_piece_of_data_to_fill()
         
         if current_piece_of_data_to_fill == "disciple_to_burn":
-            slots_that_can_be_burned_from = game_utilities.get_slots_with_a_disciple_of_player_color_at_tile_index(game_state, game_action_container.whose_action, game_action_container.required_data_for_action["index_of_tile_in_use"])
-            available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_that_can_be_burned_from}
+            slots_with_acolytes = [i for i, slot in enumerate(self.slots_for_disciples) 
+                                   if slot and slot["color"] == game_action_container.whose_action and slot["disciple"] == "acolyte"]
+            available_actions["select_a_slot_on_a_tile"] = {game_action_container.required_data_for_action["index_of_tile_in_use"]: slots_with_acolytes}
         elif current_piece_of_data_to_fill == "tile_to_swap":
             available_actions["select_a_tile"] = list(range(len(game_state["tiles"])))
         elif current_piece_of_data_to_fill == "other_tile_to_swap":
@@ -72,17 +75,17 @@ class PyramidOfTheSun(Tile):
             await send_clients_log_message(f"Cannot swap a tile with itself using **{self.name}**")
             return False
 
-        if self.slots_for_disciples[slot_to_burn_from]["color"] != player:
-            await send_clients_log_message(f"Cannot burn another player's disciple on **{self.name}**")
+        if self.slots_for_disciples[slot_to_burn_from]["color"] != player or self.slots_for_disciples[slot_to_burn_from]["disciple"] != "acolyte":
+            await send_clients_log_message(f"Must burn your own acolyte to use **{self.name}**")
             return False
         
         if self.determine_ruler(game_state) != player:
             await send_clients_log_message(f"Must be ruler to use **{self.name}**")
             return False            
         
-        red_dwarf_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
-        await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, red_dwarf_index, slot_to_burn_from)
-        await send_clients_log_message(f"Used **{self.name}** to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
+        pyramid_index = game_utilities.find_index_of_tile_by_name(game_state, self.name)
+        await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, pyramid_index, slot_to_burn_from)
+        await send_clients_log_message(f"{player} used **{self.name}** to swap {game_state['tiles'][tile1_index].name} and {game_state['tiles'][tile2_index].name}")
         game_state["tiles"][tile1_index], game_state["tiles"][tile2_index] = game_state["tiles"][tile2_index], game_state["tiles"][tile1_index]
 
         return True

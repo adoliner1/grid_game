@@ -124,6 +124,7 @@ const GameLog = ({ logs }) => {
 
     return (
         <div className="game-log" ref={logContainerRef}>
+            <h3> Game Log </h3>
             {logs.map(formatLine)}
         </div>
     );

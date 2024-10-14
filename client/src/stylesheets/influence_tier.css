@@ -56,6 +56,14 @@
     display: block;
 }
 
+.crown-red {
+    color: red
+}
+
+.crown-blue {
+    color: blue
+}
+
 .selectable-influence-tier {
     cursor: pointer;
     background-color: #ddb61a;

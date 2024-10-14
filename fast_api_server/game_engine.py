@@ -32,17 +32,19 @@ class GameEngine:
     async def start_game(self):
         self.game_state['power']['red'] = game_constants.first_player_starting_power
         self.game_state['power']['blue'] = game_constants.second_player_starting_power
-
-        #if no burners, give fire_brand, if no receivers, give gift_of_hera
-
-
         await self.send_clients_log_message(f"Starting a new game. Red starts with {game_constants.first_player_starting_power} power. Blue starts with {game_constants.second_player_starting_power} power")
+             
+        if any(isinstance(status, FireBrand) for status in self.game_state['statuses']):
+            await self.send_clients_log_message(f"There are no burners in this game, players are given Fire Brand status")
+
+        if any(isinstance(status, HerasGift) for status in self.game_state['statuses']):
+            await self.send_clients_log_message(f"There are no givers in this game, players are given Hera's Gift status")
+
         await self.perform_initial_placements()
         await self.start_round()
         await self.run_game_loop()
 
     async def perform_initial_placements(self):
-        await self.send_clients_log_message(f"Players must place their leaders")
         await self.send_clients_game_state(self.game_state)
 
         #set up listeners outside of start round in case an initial recruitment triggers one

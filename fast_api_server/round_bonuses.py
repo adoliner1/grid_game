@@ -299,7 +299,7 @@ class PowerForCorner(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Power for Corner",
-            description="3 power leader corner",
+            description="3 power ruled-tile corner",
             listener_type="end_of_round",
             bonus_type="income",
             allowed_rounds=[0,1,2,3,4,5]
@@ -307,20 +307,26 @@ class PowerForCorner(RoundBonus):
 
     def modify_expected_incomes(self, game_state):
         for player in ["red", "blue"]:
-            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
-            if tile_index_of_leader in game_constants.corner_tiles:
-                game_state["expected_power_incomes"][player] += 3
+            corner_tiles_ruled = sum(1 for tile_index in game_constants.corner_tiles 
+                                     if game_state["tiles"][tile_index].determine_ruler(game_state) == player)
+            game_state["expected_power_incomes"][player] += 3 * corner_tiles_ruled
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
-        
+       
         for player in [first_player, second_player]:
-            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
-            if tile_index_of_leader in game_constants.corner_tiles:
-                power_to_gain = 3
+            corner_tiles_ruled = 0
+            for tile_index in game_constants.corner_tiles:
+                if game_state["tiles"][tile_index].determine_ruler(game_state) == player:
+                    corner_tiles_ruled += 1
+            
+            if corner_tiles_ruled > 0:
+                power_to_gain = 3 * corner_tiles_ruled
                 game_state['power'][player] += power_to_gain
-                await send_clients_log_message(f"{player} leader is on a corner tile, {game_state['tiles'][tile_index_of_leader].name}, so gains {power_to_gain} power")
+                corner_names = ", ".join(game_state['tiles'][tile_index].name for tile_index in game_constants.corner_tiles 
+                                         if game_state["tiles"][tile_index].determine_ruler(game_state) == player)
+                await send_clients_log_message(f"{player} rules {corner_tiles_ruled} corner tile{'s' if corner_tiles_ruled > 1 else ''} ({corner_names}), so gains {power_to_gain} power")
 
 class PowerPerRow(RoundBonus):
     def __init__(self):
@@ -407,28 +413,35 @@ class PointsForCorner(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Points for Corner",
-            description="5 points leader corner",
+            description="5 points ruled-tile corner",
             listener_type="end_of_round",
             bonus_type="scorer",
-            allowed_rounds=[0,1,2,3]
+            allowed_rounds=[0,1,2,3,4,5]
         )
 
     def modify_expected_incomes(self, game_state):
         for player in ["red", "blue"]:
-            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
-            if tile_index_of_leader in game_constants.corner_tiles:
-                game_state["expected_points_incomes"][player] += 5
+            corner_tiles_ruled = sum(1 for tile_index in game_constants.corner_tiles 
+                                     if game_state["tiles"][tile_index].determine_ruler(game_state) == player)
+            game_state["expected_points_incomes"][player] += 5 * corner_tiles_ruled
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
-        
+       
         for player in [first_player, second_player]:
-            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
-            if tile_index_of_leader in game_constants.corner_tiles:
-                points_to_gain = 5
+            corner_tiles_ruled = 0
+            ruled_corner_names = []
+            for tile_index in game_constants.corner_tiles:
+                if game_state["tiles"][tile_index].determine_ruler(game_state) == player:
+                    corner_tiles_ruled += 1
+                    ruled_corner_names.append(game_state['tiles'][tile_index].name)
+            
+            if corner_tiles_ruled > 0:
+                points_to_gain = 5 * corner_tiles_ruled
                 game_state['points'][player] += points_to_gain
-                await send_clients_log_message(f"{player} leader is on a corner tile, {game_state['tiles'][tile_index_of_leader].name}, so gains {points_to_gain} points")
+                corner_names = ", ".join(ruled_corner_names)
+                await send_clients_log_message(f"{player} rules {corner_tiles_ruled} corner tile{'s' if corner_tiles_ruled > 1 else ''} ({corner_names}), so gains {points_to_gain} points")
 
 class PowerPerDiagonal(RoundBonus):
     def __init__(self):
@@ -492,7 +505,7 @@ class PointsForAllCorners(RoundBonus):
             description="25 points ruled-tile corner",
             listener_type="end_of_round",
             bonus_type="scorer",
-            allowed_rounds=[4,5]
+            allowed_rounds=[5]
         )
 
     def modify_expected_incomes(self, game_state):
@@ -536,7 +549,7 @@ class LeaderMovementForPresence(RoundBonus):
             presence = game_state["presence"][player]
             movement_to_gain = presence // 2
             game_state['leader_movement'][player] += movement_to_gain
-            await send_clients_log_message(f"{player} has {presence} presence and gains {movement_to_gain} leader movement")
+            await send_clients_log_message(f"{player} has {presence} presence and gains {movement_to_gain} leader_movement")
 
 class LeaderMovementForPeakInfluence(RoundBonus):
     def __init__(self):
@@ -564,13 +577,13 @@ class LeaderMovementForPeakInfluence(RoundBonus):
             peak_influence = game_state["peak_influence"][player]
             movement_to_gain = peak_influence // 3
             game_state['leader_movement'][player] += movement_to_gain
-            await send_clients_log_message(f"{player} has a peak influence of {peak_influence} and gains {movement_to_gain} leader movement")
+            await send_clients_log_message(f"{player} has a peak influence of {peak_influence} and gains {movement_to_gain} leader_movement")
 
 class LeaderMovementForCorner(RoundBonus):
     def __init__(self):
         super().__init__(
             name="Leader Movement for Corner",
-            description="2 leader-movement leader corner",
+            description="2 leader-movement ruled-tile corner",
             listener_type="end_of_round",
             bonus_type="income",
             allowed_rounds=[0,1,2,3,4,5]
@@ -578,17 +591,24 @@ class LeaderMovementForCorner(RoundBonus):
 
     def modify_expected_incomes(self, game_state):
         for player in ["red", "blue"]:
-            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
-            if tile_index_of_leader in game_constants.corner_tiles:
-                game_state["expected_leader_movement_incomes"][player] += 2
+            corner_tiles_ruled = sum(1 for tile_index in game_constants.corner_tiles 
+                                     if game_state["tiles"][tile_index].determine_ruler(game_state) == player)
+            game_state["expected_leader_movement_incomes"][player] += 2 * corner_tiles_ruled
 
     async def run_effect(self, game_state, game_action_container_stack, send_clients_log_message, send_clients_available_actions, send_clients_game_state, **data):
         first_player = game_state['first_player']
         second_player = game_utilities.get_other_player_color(first_player)
-        
+       
         for player in [first_player, second_player]:
-            tile_index_of_leader = game_utilities.get_tile_index_of_leader(game_state, player)
-            if tile_index_of_leader in game_constants.corner_tiles:
-                movement_to_gain = 2
+            corner_tiles_ruled = 0
+            ruled_corner_names = []
+            for tile_index in game_constants.corner_tiles:
+                if game_state["tiles"][tile_index].determine_ruler(game_state) == player:
+                    corner_tiles_ruled += 1
+                    ruled_corner_names.append(game_state['tiles'][tile_index].name)
+            
+            if corner_tiles_ruled > 0:
+                movement_to_gain = 2 * corner_tiles_ruled
                 game_state['leader_movement'][player] += movement_to_gain
-                await send_clients_log_message(f"{player} leader is on a corner tile, {game_state['tiles'][tile_index_of_leader].name}, so gains {movement_to_gain} leader movement")
+                corner_names = ", ".join(ruled_corner_names)
+                await send_clients_log_message(f"{player} rules {corner_tiles_ruled} corner tile{'s' if corner_tiles_ruled > 1 else ''} ({corner_names}), so gains {movement_to_gain} leader_movement")

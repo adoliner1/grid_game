@@ -10,7 +10,7 @@ async def recruit_disciple_on_tile(game_state, game_action_container_stack, send
     await send_clients_game_state(game_state)
     await send_clients_log_message(f"{color} recruited a {color}_{disciple} at **{tile_to_recruit_on.name}**")
     if old_disciple:
-        await send_clients_log_message(f"this replaced a {old_disciple['color']}_{old_disciple['disciple']}")
+        await send_clients_log_message(f"This replaced a {old_disciple['color']}_{old_disciple['disciple']}")
     await call_listener_functions_for_event_type(game_state,
                                                   game_action_container_stack,
                                                     send_clients_log_message,
@@ -83,7 +83,7 @@ async def move_disciple_between_tiles(game_state, game_action_container_stack, s
     game_state["tiles"][from_tile_index].slots_for_disciples[from_slot_index] = None
     game_state["tiles"][to_tile_index].slots_for_disciples[to_slot_index] = disciple_to_move
 
-    await send_clients_log_message(f"moved a {disciple_to_move['color']}_{disciple_to_move['disciple']} from **{game_state['tiles'][from_tile_index].name}** to **{game_state['tiles'][to_tile_index].name}**")
+    await send_clients_log_message(f"Moved a {disciple_to_move['color']}_{disciple_to_move['disciple']} from **{game_state['tiles'][from_tile_index].name}** to **{game_state['tiles'][to_tile_index].name}**")
     update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
     await call_listener_functions_for_event_type(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, "on_move", disciple=disciple_to_move["disciple"], from_tile_index=from_tile_index, to_tile_index=to_tile_index)
@@ -95,7 +95,7 @@ async def burn_disciple_at_tile_at_index(game_state, game_action_container_stack
     disciple = tile.slots_for_disciples[slot_index]["disciple"]
     color = tile.slots_for_disciples[slot_index]["color"]
     tile.slots_for_disciples[slot_index] = None
-    await send_clients_log_message(f"burning a {color}_{disciple} at **{tile.name}**")
+    await send_clients_log_message(f"A {color}_{disciple} is burned on **{tile.name}**")
     update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
 
@@ -291,6 +291,13 @@ def calculate_exiling_ranges(game_state):
     for status in game_state['statuses']:
         status.modify_exiling_ranges(game_state)
 
+def get_distance_between_tile_indexes(tile_index_1, tile_index_2):
+    tile_index_1_row = tile_index_1 // game_constants.grid_size
+    tile_index_1_col = tile_index_1 % game_constants.grid_size
+    tile_index_2_row = tile_index_2 // game_constants.grid_size
+    tile_index_2_col = tile_index_2 % game_constants.grid_size
+    return abs(tile_index_1_row - tile_index_2_row) + abs(tile_index_1_col - tile_index_2_col)
+
 def get_tiles_within_exiling_range(game_state, player_color):
     calculate_exiling_ranges(game_state)
     exiling_range = game_state['exiling_range'][player_color]
@@ -334,8 +341,12 @@ def calculate_expected_incomes(game_state):
 def calculate_recruiting_ranges(game_state):
     game_state['recruiting_range']['red'] = game_constants.initial_recruiting_ranges['red']
     game_state['recruiting_range']['blue'] = game_constants.initial_recruiting_ranges['blue']
+
     for tile in game_state['tiles']:
         tile.modify_recruiting_ranges(game_state)
+
+    for status in game_state['statuses']:
+        status.modify_recruiting_ranges(game_state)
 
 def calculate_exiling_costs(game_state):
     for disciple in game_constants.disciples:
@@ -344,6 +355,9 @@ def calculate_exiling_costs(game_state):
 
     for tile in game_state['tiles']:
         tile.modify_exiling_costs(game_state)
+
+    for status in game_state['statuses']:
+        status.modify_exiling_costs(game_state)
 
     for disciple in game_constants.disciples:
         game_state['exiling_costs']['red'][disciple] = max(1, game_state['exiling_costs']['red'][disciple])
@@ -356,6 +370,9 @@ def calculate_recruiting_costs(game_state):
 
     for tile in game_state['tiles']:
         tile.modify_recruiting_costs(game_state)
+
+    for status in game_state['statuses']:
+        status.modify_recruiting_costs(game_state)
 
     for disciple in game_constants.disciples:
         game_state['recruiting_costs']['red'][disciple] = max(1, game_state['recruiting_costs']['red'][disciple])

@@ -14,8 +14,8 @@ class JestersParty(Tile):
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
-                    "must_be_ruler": True,
-                    "description": "**Action:** Pay one leader_movement for 2 power",
+                    "must_be_ruler": False,
+                    "description": "**Action:** Pay one points for 2 power",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,  
                     "leader_must_be_present": True,                  
@@ -30,9 +30,8 @@ class JestersParty(Tile):
     def get_useable_tiers(self, game_state):
         useable_tiers = []
         current_player = game_state["whose_turn_is_it"]
-        ruler = self.determine_ruler(game_state)
 
-        if (ruler == current_player and
+        if (
             not self.influence_tiers[0]["is_on_cooldown"] and
             self.influence_per_player[current_player] >= self.influence_tiers[0]["influence_to_reach_tier"] and
             self.leaders_here[current_player] and
@@ -52,19 +51,11 @@ class JestersParty(Tile):
         if not self.leaders_here[user]:
             await send_clients_log_message(f"Leader must be on **{self.name}** to use it")
             return False
-        
-        if game_state['leader_movement'][user] < 1:
-            await send_clients_log_message(f"Not enough leader movement to use **{self.name}**")
-            return False
-        
-        if user != self.determine_ruler(game_state):
-            await send_clients_log_message(f"Only the ruler can use **{self.name}**")
-            return False
 
         await send_clients_log_message(f"**{self.name}** is used")
-        game_state['leader_movement'][user] -= 1
+        game_state['points'][user] -= 1
         game_state['power'][user] += 2
-        await send_clients_log_message(f"{user} pays 1 leader_movement and gains 2 power from **{self.name}**")
+        await send_clients_log_message(f"{user} pays 1 points and gains 2 power from **{self.name}**")
         
         self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True

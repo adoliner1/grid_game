@@ -10,7 +10,7 @@ class RealmOfZeus(Tile):
             name="Realm of Zeus",
             type="Scorer/Burner",
             minimum_influence_to_rule=3,
-            number_of_slots=3,
+            number_of_slots=4,
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,

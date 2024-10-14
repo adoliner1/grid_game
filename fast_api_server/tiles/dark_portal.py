@@ -8,14 +8,14 @@ class DarkPortal(Tile):
     def __init__(self):
         super().__init__(
             name="Dark Portal",
-            type="Leader-Mover",
-            minimum_influence_to_rule=4,
+            type="Leader-Mover/Burner",
+            minimum_influence_to_rule=3,
             number_of_slots=3,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 2,
+                    "influence_to_reach_tier": 3,
                     "must_be_ruler": True,
-                    "description": "**Action:** ^^Burn^^ one of your disciples anywhere, then teleport your leader to any tile",
+                    "description": "**Action:** ^^Burn^^ one of your disciples anywhere then teleport anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False,                  

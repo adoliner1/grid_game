@@ -9,13 +9,13 @@ class ObeliskOfTheWicked(Tile):
         super().__init__(
             name="Obelisk of the Wicked",
             type="Giver",
-            number_of_slots=3,
-            minimum_influence_to_rule=3,
+            number_of_slots=5,
+            minimum_influence_to_rule=4,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 3,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
-                    "description": "After you ++exile++, if you have less than 4 influence at the tile the disciple was ++exiled++ from, [[receive]] a follower there",
+                    "description": "After you ++exile++, [[receive]] a follower at the tile the disciple was exiled from",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
                     "has_a_cooldown": False,                    
@@ -34,13 +34,12 @@ class ObeliskOfTheWicked(Tile):
         ruler = self.determine_ruler(game_state)
         index_of_tile_exiled_from = data.get('index_of_tile_exiled_from')
         tile_exiled_from = game_state['tiles'][index_of_tile_exiled_from]
-        exiler_influence_at_tile_exiled_from = tile_exiled_from.influence_per_player[exiler]
-        
+
         self.determine_influence()
         exiler_influence_here = self.influence_per_player[exiler]
-
         exiler_receives_follower = False
-        if exiler_influence_here >= self.influence_tiers[0]['influence_to_reach_tier'] and exiler_influence_at_tile_exiled_from < 4 and ruler == exiler:
+
+        if exiler_influence_here >= self.influence_tiers[0]['influence_to_reach_tier'] and ruler == exiler:
             exiler_receives_follower = True
    
         if exiler_receives_follower:

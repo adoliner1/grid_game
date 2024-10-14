@@ -21,7 +21,7 @@ class CircleOfTheWolf(Tile):
                     "has_a_cooldown": True,             
                     "leader_must_be_present": False,        
                 },                
-            ],      
+            ],
         )
 
     def determine_ruler(self, game_state):

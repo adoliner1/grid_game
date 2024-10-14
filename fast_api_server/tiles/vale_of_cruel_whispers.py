@@ -12,11 +12,11 @@ class ValeOfCruelWhispers(Tile):
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 3,
+                    "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
                     "description": "**Reaction:** After you ++exile++, you may ^^burn^^ any disciple at or adjacent to the tile where the ++exiled++ disciple was",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,
+                    "has_a_cooldown": False,
                     "leader_must_be_present": False, 
                     "data_needed_for_use": ['disciple_to_burn'],
                 },        
@@ -57,10 +57,6 @@ class ValeOfCruelWhispers(Tile):
             await send_clients_log_message(f"Not enough influence to use tier {tier_index} of **{self.name}**")
             return False
 
-        if self.influence_tiers[tier_index]["is_on_cooldown"]:
-            await send_clients_log_message(f"Tier {tier_index} of **{self.name}** is on cooldown")
-            return False
-
         slot_index_to_burn_disciple = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
         index_of_tile_to_burn_disciple = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']
         index_of_tile_exiled_from = game_action_container.required_data_for_action['index_of_tile_exiled_from']
@@ -76,9 +72,6 @@ class ValeOfCruelWhispers(Tile):
 
         await send_clients_log_message(f"Reacting with tier {tier_index} of **{self.name}**")
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_disciple, slot_index_to_burn_disciple)
-        
-        self.influence_tiers[tier_index]["is_on_cooldown"] = True
-        return True
     
     def setup_listener(self, game_state):
         game_state["listeners"]["on_exile"][self.name] = self.on_exile_effect
@@ -113,7 +106,7 @@ class ValeOfCruelWhispers(Tile):
         ruler = self.determine_ruler(game_state)
         player_influence = self.influence_per_player[exiler]
 
-        if not self.influence_tiers[0]["is_on_cooldown"] and player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and ruler == exiler:
+        if player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and ruler == exiler:
             tiers_that_can_be_reacted_with.append(0)
 
         if tiers_that_can_be_reacted_with:

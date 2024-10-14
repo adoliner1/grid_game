@@ -13,20 +13,11 @@ class TacticiansMirror(Tile):
             number_of_slots=5,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 2,
-                    "must_be_ruler": False,
+                    "influence_to_reach_tier": 5,
+                    "must_be_ruler": True,
                     "description": "**Reaction:** After you [[receive]] a disciple, you may move it to a tile adjacent to the tile you [[received]] it at",
                     "is_on_cooldown": False,
-                    "has_a_cooldown": True,  
-                    "leader_must_be_present": False,
-                    "data_needed_for_use": ['slot_to_move_disciple_to']
-                },
-                {
-                    "influence_to_reach_tier": 6,
-                    "must_be_ruler": True,
-                    "description": "**Reaction:** Same as above",
-                    "is_on_cooldown": False,
-                    "has_a_cooldown": False,   
+                    "has_a_cooldown": False,  
                     "leader_must_be_present": False,
                     "data_needed_for_use": ['slot_to_move_disciple_to']
                 },
@@ -50,21 +41,16 @@ class TacticiansMirror(Tile):
 
     async def use_a_tier(self, game_state, tier_index, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         game_action_container = game_action_container_stack[-1]
+        player = game_action_container.whose_action
         ruler = self.determine_ruler(game_state)
         
-        if tier_index == 0:
-            if self.influence_per_player[game_action_container.whose_action] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
-                await send_clients_log_message(f"Cannot react with tier {tier_index} of **{self.name}**, not enough influence")
-                return False
-            
-            if self.influence_tiers[tier_index]['is_on_cooldown']:
-                await send_clients_log_message(f"Cannot react with tier {tier_index} of **{self.name}**, it's on cooldown")
-                return False
-            
-        elif tier_index == 1:
-            if game_action_container.whose_action != ruler:
-                await send_clients_log_message(f"Cannot react with tier {tier_index} of **{self.name}**, not the ruler")
-                return False    
+        if self.influence_per_player[game_action_container.whose_action] < self.influence_tiers[tier_index]['influence_to_reach_tier']:
+            await send_clients_log_message(f"Cannot react with tier {tier_index} of **{self.name}**, not enough influence")
+            return False
+        
+        if self.influence_tiers[tier_index]["must_be_ruler"] and player != ruler:
+            await send_clients_log_message(f"Only the ruler can use tier **{self.name}**")
+            return False
 
         slot_index_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['slot_index']
         tile_index_from = game_action_container.required_data_for_action['slot_and_tile_to_move_disciple_from']['tile_index']
@@ -86,8 +72,6 @@ class TacticiansMirror(Tile):
         await send_clients_log_message(f"Reacting with tier {tier_index} of **{self.name}**")
         await game_utilities.move_disciple_between_tiles(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, tile_index_from, slot_index_from, tile_index_to, slot_index_to)
         
-        if tier_index == 0:
-            self.influence_tiers[tier_index]['is_on_cooldown'] = True
         return True
 
     def setup_listener(self, game_state):
@@ -122,9 +106,6 @@ class TacticiansMirror(Tile):
         
         if not self.influence_tiers[0]['is_on_cooldown'] and self.influence_per_player[receiver] >= self.influence_tiers[0]['influence_to_reach_tier']:
             tiers_that_can_be_reacted_with.append(0)
-        
-        if not self.influence_tiers[1]['is_on_cooldown'] and self.determine_ruler(game_state) == receiver:
-            tiers_that_can_be_reacted_with.append(1)
         
         if tiers_that_can_be_reacted_with:
             reactions_by_player[receiver].tiers_to_resolve[game_utilities.find_index_of_tile_by_name(game_state, self.name)] = tiers_that_can_be_reacted_with

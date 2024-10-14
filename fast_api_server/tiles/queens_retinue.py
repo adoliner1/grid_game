@@ -15,7 +15,7 @@ class QueensRetinue(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "When your opponent ((recruits)) or ++exiles++ a disciple here or on an adjacent tile, +2 point",
+                    "description": "When your opponent ((recruits)) or ++exiles++ here or on an adjacent tile, +2 point",
                     "is_on_cooldown": False,
                     "leader_must_be_present": False,
                     "has_a_cooldown": False,                    

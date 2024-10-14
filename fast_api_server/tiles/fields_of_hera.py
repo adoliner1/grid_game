@@ -10,7 +10,7 @@ class FieldsOfHera(Tile):
             name="Fields of Hera",
             type="Giver",
             minimum_influence_to_rule=6,
-            description="When you ((recruit)) or [[receive]] a disciple adjacent to Fields of Hera, [[receive]] 2 follower at Fields of Hera",
+            description="When you ((recruit)) or [[receive]] adjacent to Fields of Hera, [[receive]] 2 follower at Fields of Hera",
             number_of_slots=12,
             influence_tiers=[],
         )

@@ -86,12 +86,12 @@
   
   @keyframes hover-flash {
     0% { background-color: #FFF8DC; } /* Pale gold */
-    50% { background-color: #FFD700; } /* Deeper gold */
+    50% { background-color: #ffeb79; } /* Deeper gold */
     100% { background-color: #FFF8DC; } /* Back to pale gold */
   }
   
   .selectable-tile:active {
-    background-color: #FFD700; /* Deeper gold when active */
+    background-color: #ffeb79; /* Deeper gold when active */
     animation: none; /* Stop the animation when the tile is clicked */
   }
   

@@ -9,7 +9,7 @@ class HallsOfHades(Tile):
         super().__init__(
             name="Halls of Hades",
             type="Giver/Scorer",
-            minimum_influence_to_rule=3,
+            minimum_influence_to_rule=5,
             influence_tiers=[],
             description=f"You may not ((recruit)) here\n\nWhen a disciple is ^^burned^^, the owner [[receives]] a copy of it here\n\nAt the __end of each round__, if the Halls of Hades are full, remove all the disciples. +6 points to whichever player had more",
             number_of_slots=9,
