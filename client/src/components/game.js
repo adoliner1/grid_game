@@ -69,6 +69,29 @@ const Game = () => {
     }
 
     useEffect(() => {
+
+        if (process.env.NODE_ENV !== 'development') {
+        const sendHeartbeat = () => {
+            fetch('https://grid-game.onrender.com/', {
+                method: 'GET',
+            })
+                .then(response => response.json())
+                .then(data => console.log('Heartbeat response:', data))
+                .catch(error => console.error('Error sending heartbeat:', error));
+        };
+
+        // Send heartbeat immediately on component mount
+        sendHeartbeat();
+
+        // Set up interval to send heartbeat every 10 minutes
+        const intervalId = setInterval(sendHeartbeat, 10 * 60 * 1000);
+
+        // Clean up interval on component unmount
+        return () => clearInterval(intervalId);
+    }
+    }, []);
+
+    useEffect(() => {
         if (process.env.NODE_ENV === 'development') {
             loadAudio(clickSound, '/sounds/click.wav');
             loadAudio(yourTurnSound, '/sounds/your_turn.wav');
