@@ -8,7 +8,7 @@ class TacticiansStone(Tile):
     def __init__(self):
         super().__init__(
             name="Tactician's Stone",
-            type="Attacker",
+            type="Burner",
             minimum_influence_to_rule=4,
             influence_tiers=[
                 {

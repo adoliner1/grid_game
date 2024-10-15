@@ -287,9 +287,9 @@ class GameEngine:
                 power_spent_to_move += 3        
 
             if not power_spent_to_move:
-                await self.send_clients_log_message(f"{mover}_leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**")
+                await self.send_clients_log_message(f"{mover}_leader Moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**")
             else:
-                await self.send_clients_log_message(f"{mover}_leader moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**, they spent {power_spent_to_move} power to do so") 
+                await self.send_clients_log_message(f"{mover}_leader Moves from **{tile_of_players_leader.name}** to **{tile_to_move_leader_to.name}**, they spent {power_spent_to_move} power to do so") 
             await game_utilities.move_leader(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state, tile_index_of_players_leader, tile_index_to_move_leader_to, mover)
         return True
     
@@ -618,10 +618,9 @@ class GameEngine:
             power_to_give = game_constants.power_given_at_end_of_round[self.game_state["round"]]
             leader_movement_to_give = game_constants.leader_movement_to_give_at_end_of_round
             await self.send_clients_log_message(f"Giving {power_to_give} power to each player (base-income)")        
-            await self.send_clients_log_message(f"Giving {power_to_give} power to each player (base-income)")
+            await self.send_clients_log_message(f"Giving {leader_movement_to_give} leader_movement to each player (base-income)")
             for player in game_constants.player_colors:
                 self.game_state['power'][player] += power_to_give
-
                 self.game_state['leader_movement'][player] += leader_movement_to_give
 
         #not normally to do this here
@@ -632,7 +631,7 @@ class GameEngine:
             await self.start_round()
 
     async def check_for_end_of_game(self):
-        await self.send_clients_log_message(f"checking for end of game")
+        await self.send_clients_log_message(f"Checking for end of game")
         tiles_with_a_ruler = [tile for tile in self.game_state["tiles"] if tile.determine_ruler(self.game_state) is not None]
         if len(tiles_with_a_ruler) == 9:
             await self.send_clients_log_message(f"All tiles have a ruler, ending game")

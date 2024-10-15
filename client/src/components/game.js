@@ -80,13 +80,10 @@ const Game = () => {
                 .catch(error => console.error('Error sending heartbeat:', error));
         };
 
-        // Send heartbeat immediately on component mount
         sendHeartbeat();
 
-        // Set up interval to send heartbeat every 10 minutes
         const intervalId = setInterval(sendHeartbeat, 10 * 60 * 1000);
 
-        // Clean up interval on component unmount
         return () => clearInterval(intervalId);
     }
     }, []);
@@ -466,7 +463,7 @@ const Game = () => {
                     hotkey="E"
                 >
                     Exile
-                </ButtonWithHotkey>                                     
+                </ButtonWithHotkey>                                 
             </div>
             {showGameLog && (
                 <div className="modal-overlay">

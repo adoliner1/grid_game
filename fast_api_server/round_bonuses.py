@@ -50,12 +50,12 @@ class PointsPerRow(RoundBonus):
         if red_complete_rows > 0:
             points_to_gain = 12*red_complete_rows
             game_state["points"]["red"] += points_to_gain
-            await send_clients_log_message(f"red gets {points_to_gain} points for round bonus")
+            await send_clients_log_message(f"Red gets {points_to_gain} points for round bonus")
 
         if blue_complete_rows > 0:
             points_to_gain = 12*blue_complete_rows
             game_state["points"]["blue"] += points_to_gain
-            await send_clients_log_message(f"blue gets {points_to_gain} points for round bonus") 
+            await send_clients_log_message(f"Blue gets {points_to_gain} points for round bonus") 
 
 class PointsPerColumn(RoundBonus):
     def __init__(self):
@@ -86,12 +86,12 @@ class PointsPerColumn(RoundBonus):
         if red_complete_columns > 0:
             points_to_gain = 12 * red_complete_columns
             game_state["points"]["red"] += points_to_gain
-            await send_clients_log_message(f"red gets {points_to_gain} points for round bonus")
+            await send_clients_log_message(f"Red gets {points_to_gain} points for round bonus")
 
         if blue_complete_columns > 0:
             points_to_gain = 12 * blue_complete_columns
             game_state["points"]["blue"] += points_to_gain
-            await send_clients_log_message(f"blue gets {points_to_gain} points for round bonus")
+            await send_clients_log_message(f"Blue gets {points_to_gain} points for round bonus")
 
 class PointsPerTileRuled(RoundBonus):
     def __init__(self):

@@ -221,7 +221,7 @@ svg.selectable:active {
   overflow-y: auto;
   font-size: 0.8em;
   scroll-behavior: auto;
-  padding: 3px; /* Match the padding of the general div style */
+  padding: 3px;
 }
 
 .game-log p {
@@ -234,4 +234,16 @@ svg.selectable:active {
   display: inline-flex;
   align-items: center;
   vertical-align: middle;
+}
+
+.color-text {
+  font-weight: bold;
+}
+
+.color-text.red {
+  color: #ff0000;
+}
+
+.color-text.blue {
+  color: #0000ff;
 }

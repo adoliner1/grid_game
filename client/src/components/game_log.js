@@ -10,7 +10,6 @@ const GameLog = ({ logs }) => {
         }
     }, [logs]);
 
-    // New effect to scroll to bottom when the component becomes visible
     useEffect(() => {
         const scrollToBottom = () => {
             if (logContainerRef.current) {
@@ -18,10 +17,8 @@ const GameLog = ({ logs }) => {
             }
         };
 
-        // Scroll to bottom initially
         scrollToBottom();
 
-        // Set up a MutationObserver to detect when the component becomes visible
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
@@ -38,7 +35,8 @@ const GameLog = ({ logs }) => {
     }, []);
 
     function parseCustomMarkup(text) {
-        const parts = text.split(/(\bleader_movement\b|\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b|\bred_\w+\b|\bblue_\w+\b)/gi);
+        text = text.charAt(0).toUpperCase() + text.slice(1);
+        const parts = text.split(/(\bleader_movement\b|\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b|\bred_\w+\b|\bblue_\w+\b|\bred\b|\bblue\b)/gi);
         return parts.map((part, index) => {
             const lowerPart = part.toLowerCase();
             const colorMatch = lowerPart.match(/^(red|blue)_(\w+)$/);
@@ -65,6 +63,7 @@ const GameLog = ({ logs }) => {
                 case 'sages':
                 case 'leader':
                 case 'leaders':
+                case 'points':
                     return createIcon({
                         type: lowerPart.replace(/s$/, ''),
                         tooltipText: lowerPart.charAt(0).toUpperCase() + lowerPart.slice(1).replace(/s$/, ''),
@@ -72,14 +71,9 @@ const GameLog = ({ logs }) => {
                         height: 14,
                         className: `${lowerPart.replace(/s$/, '')}-icon`
                     });
-                case 'points':
-                    return createIcon({
-                        type: 'points',
-                        tooltipText: lowerPart.charAt(0).toUpperCase() + lowerPart.slice(1).replace(/s$/, ''),
-                        width: 14,
-                        height: 14,
-                        className: `${lowerPart.replace(/s$/, '')}-icon`
-                    });
+                case 'red':
+                case 'blue':
+                    return <span key={`color-${index}`} className={`color-text ${lowerPart}`}>{part}</span>;
                 default:
                     // Split the part into segments that should be processed together
                     const segments = part.split(/(\*\*.*?\*\*|__.*?__|\[\[.*?\]\]|\(\(.*?\)\)|\+\+.*?\+\+|\s+)/g);
@@ -99,10 +93,13 @@ const GameLog = ({ logs }) => {
                                     .replace(/\+\+(.*?)\+\+/g, '<span style="color: #019000">$1</span>')
                             }} />;
                         } else {
-                            // Apply word-specific replacements
-                            return <span key={`text-${index}-${segmentIndex}`} dangerouslySetInnerHTML={{
-                                __html: segment.replace(/\b(red|blue)\b/gi, (match) => match.charAt(0).toUpperCase() + match.slice(1).toLowerCase())
-                            }} />;
+                            return segment.split(/\b/).map((word, wordIndex) => {
+                                const lowerWord = word.toLowerCase();
+                                if (lowerWord === 'red' || lowerWord === 'blue') {
+                                    return <span key={`color-${index}-${segmentIndex}-${wordIndex}`} className={`color-text ${lowerWord}`}>{word}</span>;
+                                }
+                                return word;
+                            });
                         }
                     });
             }

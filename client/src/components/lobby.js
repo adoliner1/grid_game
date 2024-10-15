@@ -58,6 +58,9 @@ function Lobby() {
   return (
     <div className='lobby-div'>
       <h2>Lobby Tables</h2>
+      <p>
+        <a href="https://docs.google.com/document/d/1hKATNg-UF-BnJWOyNphiv7hFPWJ81dy6zJYiH3Jl96I/edit?tab=t.0" target="_blank" rel="noopener noreferrer">Rules</a>
+      </p>
       {error && <p className="error">{error}</p>}
       <input
         type="text"

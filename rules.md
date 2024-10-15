@@ -1,20 +1,24 @@
 # Overview and Objective
-The board consists of a 3x3 grid of randomly selected Tiles. Players place their resources (shapes) on the Tiles to rule them and get various benefits. The objective is to have the most points at the end of the game.
+The board consists of a 3x3 grid of randomly selected Tiles. Each player has a leader. Leaders travel aroud the tiles, placing or removing disciples, and in doing so ruling them. Tiles have various effects/benefits. The object of the game is the have the most points when the game ends.
 
-End conditions:
+The game ends when either:
+
 1. All tiles have a ruler at the end of a round
 2. At the end of the 6th round
 
 ## Gameplay
 
-Rounds consist of alternating turns between players. On a player's turn, they may take one of these actions:
+Rounds consist of alternating turns between players. On a player's turn, they must take one of these actions:
 
-1. Place a shape from their bank on to a tile
-2. Use a tile
-3. Use a powerup
-4. Pass 
+1. Move their leader
+2. Recruit a disciple
+3. Exile a disciple
+4. Use a Tile's ability
+5. Pass
 
-After passing, a player may not take any more actions that round (they can still react). If they're the first player to pass in a round, they become first player for the next round. A round ends when both players have passed. 
+## Leader Movement
+
+
 
 ## Shape Hierarchy/Power
 
