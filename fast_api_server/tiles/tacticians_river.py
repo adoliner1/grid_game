@@ -8,7 +8,7 @@ class TacticiansRiver(Tile):
     def __init__(self):
         super().__init__(
             name="Tactician's River",
-            type="Mover",
+            type="Disciple-Mover",
             number_of_slots=3,
             minimum_influence_to_rule=3,
             influence_tiers=[

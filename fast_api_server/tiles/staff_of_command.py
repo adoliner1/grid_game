@@ -8,7 +8,7 @@ class StaffOfCommand(Tile):
     def __init__(self):
         super().__init__(
             name="Staff of Command",
-            type="Disciple Mover",
+            type="Disciple-Mover",
             minimum_influence_to_rule=3,
             number_of_slots=3,
             influence_tiers=[

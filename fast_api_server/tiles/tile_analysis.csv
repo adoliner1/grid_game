@@ -1,0 +1,68 @@
+Name,Type 1,Type 2,Type 3,Minimum Influence to Rule,Number of Slots,Influence to Reach Tier,Must Be Ruler,Is On Cooldown,Has A Cooldown,Leader Must Be Present
+Altar of Bacchus,Generator,Scorer,N/A,3,4,3,True,False,True,True
+Altar of Hades,Generator,Burner,N/A,3,3,3,True,False,True,True
+Altar of Hermes,Leader-Movement,Burner,N/A,3,3,3,True,False,True,True
+Blade of Ares,Burner,N/A,N/A,3,3,3,True,False,True,True
+Bog,Swamp,N/A,N/A,1,1,1,True,False,False,False
+Caves of Enlightenment,Giver,N/A,N/A,5,5,2,False,False,False,False
+Circle of the Cricket,Generator,Giver,N/A,2,2,2,True,False,True,False
+Circle of the Wolf,Generator,Giver,N/A,3,4,3,True,False,True,False
+Crystal Shrine,Generator,N/A,N/A,3,4,11,True,False,True,False
+Dark Portal,Leader-Mover,Burner,N/A,2,3,2,False,False,True,False
+Duke's Fête,Scorer,N/A,N/A,3,6,4,True,False,False,False
+Eternal Lattice,Generator,N/A,N/A,4,5,6,True,False,True,True
+Fields of Hera,Giver,N/A,N/A,6,12,N/A,N/A,N/A,N/A,N/A
+Fields of Hermes,Giver,N/A,N/A,5,12,N/A,N/A,N/A,N/A,N/A
+Fields of the Disillusioned,Exile-Enhancer,N/A,N/A,4,4,4,True,False,True,True
+Fields of the Faithful,Recruitment-Enhancer,N/A,N/A,4,5,7,True,False,True,True
+Halls of Bacchus,Giver,Generator,N/A,4,6,4,True,False,False,False
+Halls of Hades,Giver,Scorer,N/A,5,9,N/A,N/A,N/A,N/A,N/A
+Hidden Sanctum,Exile-Enhancer,N/A,N/A,3,3,3,True,False,True,True
+Holy Council,Generator,N/A,N/A,3,3,3,True,False,True,N/A
+Holy Winds,Disciple Mover,N/A,N/A,4,5,5,True,False,True,False
+Infinity Nexus,Generator,N/A,N/A,3,3,3,False,False,True,False
+Jester's Party,Generator,N/A,N/A,3,3,3,False,False,True,True
+King's Court,Scorer,N/A,N/A,4,5,4,True,False,False,False
+Lily Pad,Generator,N/A,N/A,3,3,3,True,False,False,False
+Mark of the Moon,Tile-Mover,N/A,N/A,2,2,2,True,False,True,False
+Mark of the Wicked,Leader-Movement,N/A,N/A,3,3,3,True,False,False,False
+Monastery,Giver,Disciple Mover,N/A,5,12,3,False,False,False,True
+Nexus of Hermes,Leader-Movement,N/A,N/A,3,3,3,False,False,True,False
+Obelisk of the Wicked,Giver,N/A,N/A,4,5,5,True,False,False,False
+Plains of Hermes,Leader-Movement,N/A,N/A,3,3,3,True,False,False,False
+Portal,Leader-Mover,N/A,N/A,3,2,3,True,False,True,True
+Princess's Admirers,Scorer,N/A,N/A,3,5,4,True,False,False,False
+Prince's Entourage,Scorer,N/A,N/A,3,4,3,True,False,False,False
+Pulpit of the Wicked,Exile-Enhancer,N/A,N/A,3,3,3,True,False,False,True
+Pyramid of the Sun,Tile-Mover,Burner,N/A,1,3,1,True,False,False,False
+Queen's Retinue,Scorer,N/A,N/A,3,3,3,True,False,False,False
+Realm of Hermes,Leader-Movement,Burner,N/A,3,3,3,True,False,True,True
+Realm of the Jester,Generator,N/A,N/A,1,2,1,True,False,False,False
+Realm of Zeus,Scorer,Burner,N/A,3,4,3,True,False,False,False
+Rift of Darkness,Leader-Mover,N/A,N/A,4,3,5,True,False,True,False
+Rift of Light,Leader-Mover,N/A,N/A,4,3,4,True,False,True,False
+River of Souls,Disciple Mover,Burner,N/A,3,3,2,False,False,False,False
+Scepter of Command,Disciple Mover,N/A,N/A,3,3,3,True,False,True,True
+Sigil of Ash,Scorer,N/A,N/A,3,3,3,False,False,N/A,False
+Sigil of Justice,Scorer,N/A,N/A,3,3,3,True,False,N/A,False
+Sigil of the Phoenix,Giver,N/A,N/A,4,4,4,True,False,True,False
+Soul Forge,Generator,N/A,N/A,3,3,3,True,False,N/A,False
+Staff of Command,Disciple Mover,N/A,N/A,3,3,3,True,False,True,True
+Staff of the Moon,Tile-Mover,N/A,N/A,3,3,3,True,False,True,True
+Starlight,Tile-Mover,N/A,N/A,3,3,3,True,False,True,False
+Stone of Command,Disciple Mover,N/A,N/A,3,3,3,True,False,False,False
+Summoning Stone,Giver,N/A,N/A,5,10,3,False,False,True,True
+Summoning Tower,Giver,N/A,N/A,3,4,3,False,False,True,True
+Summoning Tree,Giver,N/A,N/A,5,4,3,False,False,True,True
+Swamp,Swamp,N/A,N/A,1,2,N/A,N/A,N/A,N/A,N/A
+Tactician's Mirror,Disciple Mover,N/A,N/A,3,5,5,True,False,False,False
+Tactician's River,Mover,N/A,N/A,3,3,3,True,False,False,False
+Tactician's Stone,Burner,N/A,N/A,4,4,5,True,False,False,False
+Teleporting Cabinet,Disciple-Mover,N/A,N/A,4,3,5,True,False,True,False
+Temple of Hades,Giver,Burner,N/A,3,9,3,False,False,False,False
+Tower of Ares,Burner,N/A,N/A,4,4,4,True,False,True,False
+Tower of the Moon,Tile-Mover,N/A,N/A,4,4,4,True,False,True,False
+Unholy Atheneum,Giver,Generator,Burner,7,10,6,True,False,True,False
+Vale of Cruel Whispers,Exile-Enhancer,Burner,N/A,3,4,5,True,False,False,False
+Wheel of Souls,Giver,Burner,N/A,6,10,N/A,N/A,N/A,N/A,N/A
+Zealot's Enclave,Recruitment-Enhancer,N/A,N/A,3,5,4,True,False,True,True

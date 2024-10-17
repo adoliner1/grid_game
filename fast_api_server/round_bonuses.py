@@ -150,7 +150,7 @@ class PowerPerPresence(RoundBonus):
             presence = game_state["presence"][player]
             power_to_gain = presence
             game_state['power'][player] += power_to_gain
-            await send_clients_log_message(f"{player} has {presence} presence and gains {power_to_gain}")
+            await send_clients_log_message(f"{player} has {presence} presence and gains {power_to_gain} power")
 
 class PowerPerPeakInfluence(RoundBonus):
     def __init__(self):

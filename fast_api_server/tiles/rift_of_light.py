@@ -8,7 +8,7 @@ class RiftOfLight(Tile):
     def __init__(self):
         super().__init__(
             name="Rift of Light",
-            type="Leader-Mover",
+            type="Leader-Movement",
             minimum_influence_to_rule=4,
             number_of_slots=3,
             influence_tiers=[

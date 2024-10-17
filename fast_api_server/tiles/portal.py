@@ -8,7 +8,7 @@ class Portal(Tile):
     def __init__(self):
         super().__init__(
             name="Portal",
-            type="Leader-Mover",
+            type="Leader-Movement",
             minimum_influence_to_rule=3,
             number_of_slots=2,
             influence_tiers=[

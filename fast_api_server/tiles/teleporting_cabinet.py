@@ -8,7 +8,7 @@ class TeleportingCabinet(Tile):
     def __init__(self):
         super().__init__(
             name="Teleporting Cabinet",
-            type="Mover",
+            type="Disciple-Mover",
             minimum_influence_to_rule=4,
             number_of_slots=3,
             influence_tiers=[

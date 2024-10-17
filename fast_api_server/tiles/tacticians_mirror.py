@@ -8,7 +8,7 @@ class TacticiansMirror(Tile):
     def __init__(self):
         super().__init__(
             name="Tactician's Mirror",
-            type="Disciple Mover",
+            type="Disciple-Mover",
             minimum_influence_to_rule=3,
             number_of_slots=5,
             influence_tiers=[

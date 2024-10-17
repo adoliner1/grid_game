@@ -8,7 +8,7 @@ class HallsOfBacchus(Tile):
     def __init__(self):
         super().__init__(
             name="Halls of Bacchus",
-            type="Giver/Scorer",
+            type="Giver/Generator",
             minimum_influence_to_rule=4,
             influence_tiers=[
                 {

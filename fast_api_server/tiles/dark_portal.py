@@ -8,14 +8,14 @@ class DarkPortal(Tile):
     def __init__(self):
         super().__init__(
             name="Dark Portal",
-            type="Leader-Mover/Burner",
-            minimum_influence_to_rule=3,
+            type="Leader-Movement/Burner",
+            minimum_influence_to_rule=2,
             number_of_slots=3,
             influence_tiers=[
                 {
-                    "influence_to_reach_tier": 3,
-                    "must_be_ruler": True,
-                    "description": "**Action:** ^^Burn^^ one of your disciples anywhere then teleport anywhere",
+                    "influence_to_reach_tier": 2,
+                    "must_be_ruler": False,
+                    "description": "**Action:** If you have an acolyte here, ^^burn^^ one of your disciples anywhere then teleport anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": True,
                     "leader_must_be_present": False,                  
@@ -48,10 +48,13 @@ class DarkPortal(Tile):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         ruler = self.determine_ruler(game_state)
+        
+        acolyte_count = sum(1 for slot in self.slots_for_disciples if slot and slot["color"] == whose_turn_is_it and slot["disciple"] == "acolyte")
        
         if (self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier'] and
             not self.influence_tiers[0]["is_on_cooldown"] and
-            whose_turn_is_it == ruler):
+            whose_turn_is_it == ruler and
+            acolyte_count > 0):
                 useable_tiers.append(0)
        
         return useable_tiers
@@ -71,6 +74,12 @@ class DarkPortal(Tile):
         
         if user != ruler:
             await send_clients_log_message(f"Only the ruler can use **{self.name}**")
+            return False
+
+        # Check if the user has an acolyte on this tile
+        acolyte_count = sum(1 for slot in self.slots_for_disciples if slot and slot["color"] == user and slot["disciple"] == "acolyte")
+        if acolyte_count == 0:
+            await send_clients_log_message(f"You need an acolyte on **{self.name}** to use its action")
             return False
 
         index_of_tile_to_burn_disciple_from = game_action_container.required_data_for_action['disciple_to_burn']['tile_index']

@@ -102,16 +102,16 @@ const Game = () => {
             userHasInteracted.current = true;
         };
     
-        window.addEventListener('click', handleUserInteraction);
-        window.addEventListener('keypress', handleUserInteraction);
+        window.addEventListener('click', handleUserInteraction)
+        window.addEventListener('keypress', handleUserInteraction)
     
         return () => {
-            window.removeEventListener('click', handleUserInteraction);
-            window.removeEventListener('keypress', handleUserInteraction);
-            if (clickSound.current) clickSound.current.removeEventListener('error', () => {});
-            if (yourTurnSound.current) yourTurnSound.current.removeEventListener('error', () => {});
-        };
-    }, []);
+            window.removeEventListener('click', handleUserInteraction)
+            window.removeEventListener('keypress', handleUserInteraction)
+            if (clickSound.current) clickSound.current.removeEventListener('error', () => {})
+            if (yourTurnSound.current) yourTurnSound.current.removeEventListener('error', () => {})
+        }
+    }, [])
 
     const handlePassButtonClick = () => {
         playSound(clickSound);

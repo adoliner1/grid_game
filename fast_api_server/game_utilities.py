@@ -48,7 +48,7 @@ async def place_leader_on_tile(game_state, game_action_container_stack, send_cli
     game_state['tiles'][tile_index].leaders_here[color] = True
     update_all_game_state_values(game_state)
     await send_clients_game_state(game_state)
-    await send_clients_log_message(f"{color}_leader starts on **{game_state['tiles'][tile_index].name}**")
+    await send_clients_log_message(f"{color}_leader Starts on **{game_state['tiles'][tile_index].name}**")
     return True
 
 async def player_receives_a_disciple_on_tile(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, player_color, tile, disciple_type):

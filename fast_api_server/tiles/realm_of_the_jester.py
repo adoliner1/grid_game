@@ -8,7 +8,7 @@ class RealmOfTheJester(Tile):
     def __init__(self):
         super().__init__(
             name="Realm of the Jester",
-            type="Generator/Scorer",
+            type="Generator",
             minimum_influence_to_rule=1,
             description = f"When you ((recruit)) here, +4 power",
             number_of_slots=2,

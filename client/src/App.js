@@ -4,7 +4,8 @@ import Lobby from './components/lobby';
 import Game from './components/game';
 
 const App = () => {
-  if (process.env.NODE_ENV === 'development') {
+  
+  /*if (process.env.NODE_ENV === 'development') {
     return (
       <div className="App">
         <header className="App-header">
@@ -12,7 +13,7 @@ const App = () => {
         </header>
       </div>
     )
-  }
+  }*/
 
   return (
     <Router>

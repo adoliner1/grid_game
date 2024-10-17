@@ -36,20 +36,27 @@ const GameLog = ({ logs }) => {
 
     function parseCustomMarkup(text) {
         text = text.charAt(0).toUpperCase() + text.slice(1);
-        const parts = text.split(/(\bleader_movement\b|\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b|\bred_\w+\b|\bblue_\w+\b|\bred\b|\bblue\b)/gi);
+        const parts = text.split(/(\bleader_movement\b|\bpower\b|\binfluence\b|\bpoints?\b|\bfollowers?\b|\bacolytes?\b|\bsages?\b|\bleaders?\b|\bRed(?:_\w+|'s)?\b|\bBlue(?:_\w+|'s)?\b)/gi);
         return parts.map((part, index) => {
             const lowerPart = part.toLowerCase();
-            const colorMatch = lowerPart.match(/^(red|blue)_(\w+)$/);
+            const colorMatch = lowerPart.match(/^(red|blue)(?:_(\w+)|('s))?$/);
            
             if (colorMatch) {
-                const [, color, disciple] = colorMatch;
-                return createIcon({
-                    type: disciple,
-                    color: color,
-                    width: 12,
-                    height: 12,
-                    tooltipText: `${color.charAt(0).toUpperCase() + color.slice(1)} ${disciple.charAt(0).toUpperCase() + disciple.slice(1)}`
-                });
+                const [, color, disciple, possessive] = colorMatch;
+                const capitalizedColor = color.charAt(0).toUpperCase() + color.slice(1);
+                if (possessive) {
+                    return <span key={`color-${index}`} className={`color-text ${color}`}>{capitalizedColor}'s</span>;
+                } else if (disciple) {
+                    return createIcon({
+                        type: disciple,
+                        color: capitalizedColor,
+                        width: 12,
+                        height: 12,
+                        tooltipText: `${capitalizedColor} ${disciple.charAt(0).toUpperCase() + disciple.slice(1)}`
+                    });
+                } else {
+                    return <span key={`color-${index}`} className={`color-text ${color}`}>{capitalizedColor}</span>;
+                }
             }
             switch(lowerPart) {
                 case 'power':
@@ -63,17 +70,21 @@ const GameLog = ({ logs }) => {
                 case 'sages':
                 case 'leader':
                 case 'leaders':
-                case 'points':
                     return createIcon({
                         type: lowerPart.replace(/s$/, ''),
-                        tooltipText: lowerPart.charAt(0).toUpperCase() + lowerPart.slice(1).replace(/s$/, ''),
+                        tooltipText: lowerPart.charAt(0).toUpperCase() + lowerPart.slice(1),
                         width: 14,
                         height: 14,
                         className: `${lowerPart.replace(/s$/, '')}-icon`
                     });
-                case 'red':
-                case 'blue':
-                    return <span key={`color-${index}`} className={`color-text ${lowerPart}`}>{part}</span>;
+                case 'points':
+                    return createIcon({
+                        type: lowerPart,
+                        tooltipText: lowerPart.charAt(0).toUpperCase() + lowerPart.slice(1),
+                        width: 14,
+                        height: 14,
+                        className: `${lowerPart}-icon`
+                    });
                 default:
                     // Split the part into segments that should be processed together
                     const segments = part.split(/(\*\*.*?\*\*|__.*?__|\[\[.*?\]\]|\(\(.*?\)\)|\+\+.*?\+\+|\s+)/g);
@@ -82,7 +93,7 @@ const GameLog = ({ logs }) => {
                             // Preserve spaces
                             return <span key={`space-${index}-${segmentIndex}`}>{'\u00A0'.repeat(segment.length)}</span>;
                         } else if (/^(\*\*.*\*\*|__.*__|\[\[.*\]\]|\(\(.*\)\)|\+\+.*\+\+)$/.test(segment)) {
-                            // Apply markup for special segments
+                            // Apply markup for special segments (unchanged)
                             return <span key={`markup-${index}-${segmentIndex}`} dangerouslySetInnerHTML={{
                                 __html: segment
                                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -94,9 +105,11 @@ const GameLog = ({ logs }) => {
                             }} />;
                         } else {
                             return segment.split(/\b/).map((word, wordIndex) => {
-                                const lowerWord = word.toLowerCase();
-                                if (lowerWord === 'red' || lowerWord === 'blue') {
-                                    return <span key={`color-${index}-${segmentIndex}-${wordIndex}`} className={`color-text ${lowerWord}`}>{word}</span>;
+                                const colorMatch = word.match(/^(red|blue)('s)?$/i);
+                                if (colorMatch) {
+                                    const [, color, possessive] = colorMatch;
+                                    const capitalizedWord = color.charAt(0).toUpperCase() + color.slice(1) + (possessive || '');
+                                    return <span key={`color-${index}-${segmentIndex}-${wordIndex}`} className={`color-text ${color.toLowerCase()}`}>{capitalizedWord}</span>;
                                 }
                                 return word;
                             });

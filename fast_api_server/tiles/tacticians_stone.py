@@ -14,7 +14,7 @@ class TacticiansStone(Tile):
                 {
                     "influence_to_reach_tier": 5,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** After you [[receive]] a disciple, you may ^^burn^^ any disciple at or adjacent to the tile you received it",
+                    "description": "**Reaction:** After you [[receive]] a disciple, you may spend one power to ^^burn^^ any disciple at or adjacent to the tile you received it",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
                     "leader_must_be_present": False, 
@@ -50,11 +50,15 @@ class TacticiansStone(Tile):
         ruler = self.determine_ruler(game_state)
 
         if self.influence_tiers[tier_index]["must_be_ruler"] and player != ruler:
-            await send_clients_log_message(f"Only the ruler can use tier {tier_index} of **{self.name}**")
+            await send_clients_log_message(f"Only the ruler can use **{self.name}**")
             return False
 
         if self.influence_per_player[player] < self.influence_tiers[tier_index]["influence_to_reach_tier"]:
-            await send_clients_log_message(f"Not enough influence to use tier {tier_index} of **{self.name}**")
+            await send_clients_log_message(f"Not enough influence to use **{self.name}**")
+            return False
+        
+        if game_state['power'][player] < 1:
+            await send_clients_log_message(f"Not enough power to use **{self.name}**")
             return False
 
         slot_index_to_burn_disciple = game_action_container.required_data_for_action['disciple_to_burn']['slot_index']
@@ -70,8 +74,8 @@ class TacticiansStone(Tile):
             await send_clients_log_message(f"Tried to react with **{self.name}** but there is no disciple to burn at {game_state['tiles'][index_of_tile_to_burn_disciple].name} at slot {slot_index_to_burn_disciple}")
             return False
 
-        await send_clients_log_message(f"Reacting with tier {tier_index} of **{self.name}**")
-
+        await send_clients_log_message(f"Reacting with **{self.name}**, {player} loses 1 power")
+        game_state['power'][player] -= 1
         await game_utilities.burn_disciple_at_tile_at_index(game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state, index_of_tile_to_burn_disciple, slot_index_to_burn_disciple)
 
         return True
@@ -109,7 +113,7 @@ class TacticiansStone(Tile):
         ruler = self.determine_ruler(game_state)
         player_influence = self.influence_per_player[receiver]
 
-        if not self.influence_tiers[0]["is_on_cooldown"] and player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and ruler == receiver:
+        if not self.influence_tiers[0]["is_on_cooldown"] and player_influence >= self.influence_tiers[0]['influence_to_reach_tier'] and ruler == receiver and game_state['power'][ruler] > 0:
             tiers_that_can_be_reacted_with.append(0)
 
         if tiers_that_can_be_reacted_with:

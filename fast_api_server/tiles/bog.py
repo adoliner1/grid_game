@@ -16,7 +16,7 @@ class Bog(Tile):
                 {
                 "influence_to_reach_tier": 1,
                 "must_be_ruler": True,                    
-                "description": "At the __end of the game__, -3 points",
+                "description": "At the __end of the game__, -5 points",
                 "is_on_cooldown": False,
                 "leader_must_be_present": False, 
                 "has_a_cooldown": False,
@@ -30,6 +30,6 @@ class Bog(Tile):
     async def end_of_game_effect(self, game_state, game_action_container_stack, send_clients_log_message, get_and_send_available_actions, send_clients_game_state):
         ruler = self.determine_ruler(game_state)
         if ruler:
-            points_to_lose = 3
+            points_to_lose = 5
             game_state['points'][ruler] -= points_to_lose
             await send_clients_log_message(f"{ruler} loses {points_to_lose} points from **{self.name}**")

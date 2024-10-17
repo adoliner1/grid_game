@@ -8,7 +8,7 @@ class ValeOfCruelWhispers(Tile):
     def __init__(self):
         super().__init__(
             name="Vale of Cruel Whispers",
-            type="Attacker/Burner",
+            type="Exile-Enhancer/Burner",
             minimum_influence_to_rule=3,
             influence_tiers=[
                 {

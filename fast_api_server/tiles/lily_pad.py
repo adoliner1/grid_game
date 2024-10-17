@@ -8,7 +8,7 @@ class LilyPad(Tile):
     def __init__(self):
         super().__init__(
             name="Lily Pad",
-            type="Generator",
+            type="Leader-Movement",
             minimum_influence_to_rule=3,
             number_of_slots=3,
             influence_tiers=[

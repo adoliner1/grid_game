@@ -94,7 +94,7 @@ class GameEngine:
                 self.game_action_container_stack.append(self.create_initial_decision_game_action_container())
 
                 if self.round_just_ended:
-                    await self.send_clients_log_message(f"New round starting, first player is {self.game_state['first_player']}")
+                    await self.send_clients_log_message(f"It's {self.game_state['first_player']}'s turn")
                     self.game_state["whose_turn_is_it"] = self.game_state["first_player"]
                     self.game_action_container_stack[-1].whose_action = self.game_state["whose_turn_is_it"]
                     self.round_just_ended = False
@@ -103,7 +103,7 @@ class GameEngine:
                     if self.game_state["player_has_passed"][other_player_color] == False:
                         self.game_state["whose_turn_is_it"] = other_player_color
                         self.game_action_container_stack[-1].whose_action = self.game_state["whose_turn_is_it"]
-                        await self.send_clients_log_message(f"Turn passes to {self.game_state['whose_turn_is_it']} player")
+                        await self.send_clients_log_message(f"It's {self.game_state['whose_turn_is_it']}'s turn")
                     else:
                         await self.send_clients_log_message(f"{other_player_color} has passed, turn remains with {self.game_state['whose_turn_is_it']}")
                         self.game_action_container_stack[-1].whose_action = self.game_state["whose_turn_is_it"]
@@ -556,9 +556,9 @@ class GameEngine:
             )
 
     async def start_round(self):
-        await self.send_clients_log_message("Starting new round")
         round = self.game_state["round"]
-        
+        await self.send_clients_log_message(f"**Starting Round {round+1}**")
+
         if round > 0:
             self.game_state["scorer_bonuses"][round-1].cleanup(self.game_state)
             self.game_state["income_bonuses"][round-1].cleanup(self.game_state)

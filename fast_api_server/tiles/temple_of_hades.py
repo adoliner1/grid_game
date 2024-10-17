@@ -15,7 +15,7 @@ class TempleOfHades(Tile):
             influence_tiers=[
                 {
                     "influence_to_reach_tier": 3,
-                    "must_be_ruler": True,                    
+                    "must_be_ruler": False,                    
                     "description": "**Action:** ^^Burn^^ 3 of your followers here (one at a time) to [[receive]] a sage here",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
@@ -29,9 +29,8 @@ class TempleOfHades(Tile):
         useable_tiers = []
         whose_turn_is_it = game_state["whose_turn_is_it"]
         number_of_followers_current_player_has_here = sum(1 for slot in self.slots_for_disciples if slot and slot["disciple"] == "follower" and slot["color"] == whose_turn_is_it)
-        ruler = self.determine_ruler(game_state)
 
-        if number_of_followers_current_player_has_here >= 3 and ruler == whose_turn_is_it and self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier']:
+        if number_of_followers_current_player_has_here >= 3 and self.influence_per_player[whose_turn_is_it] >= self.influence_tiers[0]['influence_to_reach_tier']:
             useable_tiers.append(0)
 
         return useable_tiers
