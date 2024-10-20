@@ -1,12 +1,146 @@
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
   margin: 0;
   padding: 0;
 }
 
-.lobby-div {
-  padding: 20px;
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.lobby-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.top-section {
+  display: flex;
+  flex: 1;
+  margin-bottom: 10px;
+  min-height: 0; /* Allow child flex items to shrink */
+}
+
+.left-column {
+  padding: 3px;
+  margin-right: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lobby-tables {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  margin-top: 10px;
+  background-color: #2a2a2a;
+  border: 1px solid #4a4a4a;
+  overflow: hidden; /* Hide overflow on the container */
+  padding: 0px;
+}
+
+.lobby-tables tbody {
+  display: block;
+  overflow-y: auto;
+  max-height: calc(60vh - 60px);
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+}
+
+.lobby-tables tbody::-webkit-scrollbar {
+  width: 0px;
+  background: transparent; /* For Chrome, Safari, and Opera */
+}
+
+.lobby-tables:hover tbody {
+  scrollbar-width: thin; /* For Firefox */
+  -ms-overflow-style: auto;  /* For Internet Explorer and Edge */
+}
+
+.lobby-tables:hover tbody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lobby-tables:hover tbody::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 3px;
+}
+
+.lobby-tables:hover tbody::-webkit-scrollbar-track {
+  background-color: #2a2a2a;
+}
+
+.lobby-tables table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lobby-tables thead {
+  position: sticky;
+  top: 0;
+  background-color: #3a3a3a;
+  z-index: 1;
+}
+
+.lobby-tables tbody {
+  display: block;
+  overflow-y: auto;
+  max-height: calc(60vh - 60px); /* Adjust this value as needed */
+}
+
+.lobby-tables thead, .lobby-tables tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.clickable-row:hover {
+  background-color: #ff8c00; /* Orange color for hover */
+}
+
+.create-lobby-button {
+  margin-top: 10px;
+  width: auto;
+  align-self: flex-start;
+}
+
+.buttons-column {
+  display: flex;
+  padding: 10px;
+  margin-right: 10px;
+}
+
+.leaderboard {
+  width: 40%;
+  padding: 10px;
+  background-color: #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 10px;
+}
+
+.leader-board-header {
+  text-align: center;
+  width: 100%;
+  margin: 0;
+  padding-top: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
 }
 
 table {
@@ -15,29 +149,84 @@ table {
 }
 
 th, td {
-  padding: 10px;
-  border: 1px solid #ddd;
+  padding: 6px 12px; /* Reduced vertical padding */
+  border-top: 1px solid #4a4a4a;
+  border-bottom: 1px solid #4a4a4a;
   text-align: left;
+  line-height: 1.2; /* Tightens the line height */
+}
+
+tr {
+  min-height: 5%;
 }
 
 th {
-  background-color: #f2f2f2;
+  background-color: #3a3a3a;
+  font-weight: bold;
+  padding: 8px 12px; /* Slightly more padding for the header */
 }
 
-input[type="text"] {
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
-.lobby-div button {
-  padding: 10px 20px;
-  margin: 10px 0;
-  background-color: #007bff;
+button {
+  padding: 8px 16px;
+  background-color: #4a4a4a;
   color: white;
   border: none;
   cursor: pointer;
+  transition: background-color 0.3s;
+  border-radius: 10px;
 }
 
-.lobby-div button:hover {
-  background-color: #0056b3;
+button:hover {
+  background-color: #5a5a5a;
+}
+
+.chat-room {
+  height: 40%;
+  display: flex;
+  border: 1px solid #4a4a4a;
+  background-color: #2a2a2a;
+  border-radius: 10px;
+}
+
+.players-list {
+  width: 200px;
+  border-right: 1px solid #4a4a4a;
+  padding: 2px;
+  overflow-y: auto;
+}
+
+.players-list ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.chat-area form {
+  display: flex;
+  padding: 10px;
+}
+
+.chat-area input {
+  flex: 1;
+  margin-right: 10px;
+  background-color: #3a3a3a;
+  border: 1px solid #4a4a4a;
+  color: white;
+  padding: 5px;
+}
+
+.chat-area input::placeholder {
+  color: #888;
 }

@@ -70,6 +70,7 @@ async def websocket_endpoint(websocket: WebSocket):
     connection = {"websocket": websocket, "lobby_table_id": None, "player_token": player_token}
     connections_in_the_lobby.append(connection)
     await websocket.send_json({"player_token": player_token})
+    await notify_clients_of_lobby_players()  # Notify all clients of the new player
     try:
         while True:
             data = await websocket.receive_json()
@@ -80,8 +81,37 @@ async def websocket_endpoint(websocket: WebSocket):
                 await join_lobby_table(websocket, data, connection)
             elif action == "fetch_lobby_tables":
                 await fetch_lobby_tables(websocket)
+            elif action == "send_message":
+                await handle_chat_message(websocket, data, connection)
+            elif action == "fetch_lobby_players":
+                await fetch_lobby_players(websocket)
     except WebSocketDisconnect:
         await disconnect_handler(connection)
+
+async def handle_chat_message(websocket: WebSocket, data: Dict, connection: Dict):
+    message = data.get("message")
+    if message:
+        chat_message = {
+            "action": "new_message",
+            "message": {
+                "sender": connection["player_token"],
+                "content": message
+            }
+        }
+        await broadcast_to_lobby(chat_message)
+
+async def broadcast_to_lobby(message: Dict):
+    for client in connections_in_the_lobby:
+        await client["websocket"].send_json(message)
+
+async def notify_clients_of_lobby_players():
+    players = [conn["player_token"] for conn in connections_in_the_lobby]
+    message = {"action": "update_lobby_players", "players": players}
+    await broadcast_to_lobby(message)
+
+async def fetch_lobby_players(websocket: WebSocket):
+    players = [conn["player_token"] for conn in connections_in_the_lobby]
+    await websocket.send_json({"action": "lobby_players", "players": players})
 
 async def create_lobby_table(websocket: WebSocket, data: Dict, connection: Dict):
     db: Session = next(get_db())
@@ -173,7 +203,8 @@ async def disconnect_handler(connection: Dict):
             if lobby_table:
                 db.delete(lobby_table)
                 db.commit()
-            await notify_clients_of_lobby_table_changes()
+        await notify_clients_of_lobby_table_changes()
+        await notify_clients_of_lobby_players()  # Notify all clients that a player has left
     finally:
         db.close()
 
