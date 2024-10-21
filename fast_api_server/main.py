@@ -204,7 +204,7 @@ async def disconnect_handler(connection: Dict):
                 db.delete(lobby_table)
                 db.commit()
         await notify_clients_of_lobby_table_changes()
-        await notify_clients_of_lobby_players()  # Notify all clients that a player has left
+        await notify_clients_of_lobby_players()
     finally:
         db.close()
 
