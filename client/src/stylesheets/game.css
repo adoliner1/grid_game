@@ -13,6 +13,7 @@ html, body {
   padding: 1vh 1vw;
   box-sizing: border-box;
   height: 100%;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .info_section {
@@ -20,6 +21,7 @@ html, body {
   display: flex;
   flex-direction: column;
   font-size: clamp(2px, 1vw, 12px);
+  font-family: 'Open Sans', sans-serif;
 }
 
 .tiles {
@@ -234,7 +236,6 @@ svg.selectable:active {
 .game-log p > * {
   display: inline-flex;
   align-items: center;
-  vertical-align: middle;
 }
 
 .color-text {
