@@ -424,7 +424,7 @@ class GameEngine:
         sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
         tile_classes = []
         folder_path = os.path.join(os.path.dirname(__file__), folder_name)
-        module_names = [f[:-3] for f in os.listdir(folder_path) if f.endswith('.py') and f != '__init__.py']
+        module_names = [f[:-3] for f in os.listdir(folder_path) if f.endswith('.py') and f != '__init__.py' and f != 'print_tiles_names_and_types.py']
         
         for module_name in module_names:
             module = importlib.import_module(f'{folder_name}.{module_name}')
