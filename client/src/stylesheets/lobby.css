@@ -5,9 +5,9 @@ html, body {
 }
 
 .lobby-container {
-  font-family: 'Open Sans', sans-serif;
   background-color: #1a1a1a;
-  color: #ffffff;
+  color: #d1d1d1;
+  font-size: .75em;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -169,18 +169,34 @@ html, body {
   border-radius: 10px;
 }
 
+.lobby-container .player-list-header {
+  border-bottom: 1px solid #4a4a4a;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px; /* Adjust this value as needed */
+  margin: 0;
+  padding: 0;
+}
+
 .lobby-container .players-list {
   width: 200px;
   border-right: 1px solid #4a4a4a;
-  padding: 2px;
+  padding: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .lobby-container .players-list ul {
   list-style-type: none;
-  padding: 0;
+  padding: 10px;
   margin: 0;
+  flex-grow: 1;
+  overflow-y: auto;
 }
+
 
 .lobby-container .chat-area {
   flex: 1;

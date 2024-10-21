@@ -21,7 +21,7 @@ function ChatRoom({ players, messages, onSendMessage }) {
   return (
     <div className="chat-room">
       <div className="players-list">
-        <p>Players in Lobby</p>
+        <p className='player-list-header'>Players in Lobby</p>
         <ul>
           {players.map((player, index) => (
             <li key={index}>{player}</li>
