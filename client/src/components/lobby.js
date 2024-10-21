@@ -4,21 +4,11 @@ import ChatRoom from './chat_room';
 import '../stylesheets/lobby.css';
 
 function Lobby() {
-  const [lobbyTables, setLobbyTables] = useState([
-    { id: 1, name: "Table 1" },
-    { id: 2, name: "Table 2" },
-    { id: 3, name: "Table 3" },
-    { id: 4, name: "Table 4" },
-    { id: 5, name: "Table 5" },
-  ]);
+  const [lobbyTables, setLobbyTables] = useState([]);
   const [newLobbyTableName, setNewLobbyTableName] = useState('');
   const [error, setError] = useState('');
   const [lobbyPlayers, setLobbyPlayers] = useState(["Player 1", "Player 2", "Player 3", "Player 4", "Player 5"]);
-  const [messages, setMessages] = useState([
-    { sender: "Player 1", content: "Hello everyone!" },
-    { sender: "Player 2", content: "Hi there!" },
-    { sender: "Player 3", content: "Let's play a game!" },
-  ]);
+  const [messages, setMessages] = useState([]);
   const socket = useRef(null);
   const navigate = useNavigate();
 
