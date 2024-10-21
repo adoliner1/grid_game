@@ -5,7 +5,6 @@ import '../stylesheets/lobby.css';
 
 function Lobby() {
   const [lobbyTables, setLobbyTables] = useState([]);
-  const [newLobbyTableName, setNewLobbyTableName] = useState('');
   const [error, setError] = useState('');
   const [lobbyPlayers, setLobbyPlayers] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -29,7 +28,7 @@ function Lobby() {
       const data = JSON.parse(event.data);
       if (data.player_token) {
         localStorage.setItem('player_token', data.player_token);
-        playerToken = data.player_token
+        playerToken.current = data.player_token
       } else if (data.lobby_tables) {
         setLobbyTables(data.lobby_tables);
       } else if (data.action === 'lobby_players') {
@@ -53,8 +52,7 @@ function Lobby() {
   }, [navigate]);
 
   const handleCreateLobbyTable = () => {
-    socket.current.send(JSON.stringify({ action: 'create_lobby_table', name: playerToken }));
-    setNewLobbyTableName('');
+    socket.current.send(JSON.stringify({ action: 'create_lobby_table', name: playerToken.current }));
   };
 
   const handleJoinLobbyTable = (lobbyTableId) => {
