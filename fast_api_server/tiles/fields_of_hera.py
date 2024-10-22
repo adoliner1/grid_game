@@ -45,4 +45,3 @@ class FieldsOfHera(Tile):
                 get_and_send_available_actions, send_clients_game_state,
                 actor, self, 'follower'
             )
-

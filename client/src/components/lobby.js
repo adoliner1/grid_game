@@ -23,7 +23,7 @@ function Lobby() {
       })
       .catch(error => console.error('Error:', error));
 
-    connectWebSocket();
+    connectWebSocket()
   }, []);
 
   const connectWebSocket = () => {

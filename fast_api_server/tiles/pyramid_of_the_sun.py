@@ -15,7 +15,7 @@ class PyramidOfTheSun(Tile):
                 {
                     "influence_to_reach_tier": 1,
                     "must_be_ruler": True,
-                    "description": "**Action:** ^^Burn^^ an acolyte here to swap 2 tiles",
+                    "description": "**Action:** ^^Burn^^ an acolyte here to swap 2 tiles anywhere",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,
                     "leader_must_be_present": False,
