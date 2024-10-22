@@ -1,4 +1,5 @@
 import logging
+import secrets
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from sqlalchemy.orm import Session
 from typing import List, Dict
@@ -60,18 +61,22 @@ else:
 if ENV == "production":
     @app.get('/login')
     async def login(request: Request):
+        # Generate and store a nonce in the session
+        nonce = secrets.token_urlsafe(16)
+        request.session['nonce'] = nonce
         redirect_uri = request.url_for('auth')
-        return await oauth.google.authorize_redirect(request, redirect_uri)
+        return await oauth.google.authorize_redirect(request, redirect_uri, nonce=nonce)
 
     @app.get('/auth')
     async def auth(request: Request):
         try:
             token = await oauth.google.authorize_access_token(request)
-            userinfo = await oauth.google.parse_id_token(token)
+            nonce = request.session.get('nonce')
+            userinfo = await oauth.google.parse_id_token(token, nonce=nonce)
             request.session['user'] = dict(userinfo)
             return RedirectResponse(url='/')
         except Exception as e:
-            print(f"Auth error: {str(e)}")  # Add some debugging
+            print(f"Auth error: {str(e)}")
             raise HTTPException(status_code=400, detail="Could not validate credentials")
 
     @app.get('/logout')
