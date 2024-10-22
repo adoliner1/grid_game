@@ -28,10 +28,8 @@ if ENV == "production":
     static_directory = os.path.join(os.path.dirname(__file__), "static")
     app.mount("/static", StaticFiles(directory=static_directory), name="static")
 
-    # OAuth and session setup only in production
     app.add_middleware(SessionMiddleware, secret_key="!secret")
     
-    # OAuth settings
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
 
@@ -69,12 +67,12 @@ if ENV == "production":
     async def auth(request: Request):
         try:
             token = await oauth.google.authorize_access_token(request)
+            userinfo = await oauth.google.parse_id_token(token)
+            request.session['user'] = dict(userinfo)
+            return RedirectResponse(url='/')
         except Exception as e:
+            print(f"Auth error: {str(e)}")  # Add some debugging
             raise HTTPException(status_code=400, detail="Could not validate credentials")
-        
-        user = await oauth.google.parse_id_token(request, token)
-        request.session['user'] = dict(user)
-        return RedirectResponse(url='/')
 
     @app.get('/logout')
     async def logout(request: Request):
@@ -113,7 +111,7 @@ async def websocket_endpoint(websocket: WebSocket):
     connection = {"websocket": websocket, "lobby_table_id": None, "player_token": player_token}
     connections_in_the_lobby.append(connection)
     await websocket.send_json({"player_token": player_token})
-    await notify_clients_of_lobby_players()  # Notify all clients of the new player
+    await notify_clients_of_lobby_players()
     try:
         while True:
             data = await websocket.receive_json()
