@@ -8,11 +8,25 @@ function Lobby() {
   const [error, setError] = useState('');
   const [lobbyPlayers, setLobbyPlayers] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [user, setUser] = useState(null);
   const playerToken = useRef(localStorage.getItem('player_token') || null);
   const socket = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    fetch('/api/user')
+      .then(response => response.json())
+      .then(data => {
+        if (data.user) {
+          setUser(data.user);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+
+    connectWebSocket();
+  }, []);
+
+  const connectWebSocket = () => {
     if (process.env.NODE_ENV === 'development') {
       socket.current = new WebSocket('ws://localhost:8000/ws/lobby/')
     } else {
@@ -24,6 +38,7 @@ function Lobby() {
       socket.current.send(JSON.stringify({ action: 'fetch_lobby_tables' }))
       socket.current.send(JSON.stringify({ action: 'fetch_lobby_players' }))
     }
+
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.player_token) {
@@ -44,15 +59,19 @@ function Lobby() {
         setError(data.error);
       }
     };
+  };
+
+  useEffect(() => {
     return () => {
       if (socket.current) {
         socket.current.close();
       }
     };
-  }, [navigate]);
+  }, []);
 
   const handleCreateLobbyTable = () => {
-    socket.current.send(JSON.stringify({ action: 'create_lobby_table', name: playerToken.current }));
+    const name = user ? user.name : playerToken.current;
+    socket.current.send(JSON.stringify({ action: 'create_lobby_table', name }));
   };
 
   const handleJoinLobbyTable = (lobbyTableId) => {
@@ -63,6 +82,18 @@ function Lobby() {
     socket.current.send(JSON.stringify({ action: 'send_message', message }));
   };
 
+  const handleLogin = () => {
+    window.location.href = '/login';
+  };
+
+  const handleLogout = () => {
+    fetch('/logout')
+      .then(() => {
+        setUser(null);
+      })
+      .catch(error => console.error('Error:', error));
+  };
+
   return (
     <div className='lobby-container'>
       <div className='top-section'>
@@ -70,6 +101,14 @@ function Lobby() {
           <p>
             <a href="https://docs.google.com/document/d/1hKATNg-UF-BnJWOyNphiv7hFPWJ81dy6zJYiH3Jl96I/edit?tab=t.0" target="_blank" rel="noopener noreferrer">Rules</a>
           </p>
+          {user ? (
+            <>
+              <p>Welcome, {user.name}!</p>
+              <button onClick={handleLogout}>Logout</button>
+            </>
+          ) : (
+            <button onClick={handleLogin}>Login with Google</button>
+          )}
         </div>
         <div className='lobby-tables'>
           <table>
@@ -80,8 +119,8 @@ function Lobby() {
             </thead>
             <tbody>
               {lobbyTables.map((lobbyTable) => (
-                <tr 
-                  key={lobbyTable.id} 
+                <tr
+                  key={lobbyTable.id}
                   onClick={() => handleJoinLobbyTable(lobbyTable.id)}
                   className="clickable-row"
                 >
