@@ -13,34 +13,13 @@ import asyncio
 import os
 import stat
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from pathlib import Path
-import os
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.config import Config
 from authlib.integrations.starlette_client import OAuth
-from fastapi.responses import RedirectResponse
 
 app = FastAPI()
-
-app.add_middleware(SessionMiddleware, secret_key="!secret")
-
-# Load configurations from .env file
-config = Config('.env')
-
-# OAuth settings
-GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default=None)
-GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET', default=None)
-
-# OAuth client setup
-oauth = OAuth(config)
-oauth.register(
-    name='google',
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={'scope': 'openid email profile'},
-)
-
 ENV = os.environ.get("ENV", "development")
 
 if ENV == "production":
@@ -48,6 +27,28 @@ if ENV == "production":
     logger = logging.getLogger(__name__)
     static_directory = os.path.join(os.path.dirname(__file__), "static")
     app.mount("/static", StaticFiles(directory=static_directory), name="static")
+
+    # OAuth and session setup only in production
+    app.add_middleware(SessionMiddleware, secret_key="!secret")
+    
+    # OAuth settings
+    GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise ValueError(
+            "Missing Google OAuth credentials. "
+            "Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables"
+        )
+
+    oauth = OAuth()
+    oauth.register(
+        name='google',
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        client_kwargs={'scope': 'openid email profile'},
+    )
 
     connections_in_the_lobby: List[Dict] = []
     connections_to_games: List[Dict] = []
@@ -58,42 +59,35 @@ else:
     current_players = []
     game_engine = None
 
-@app.get("/")
-async def read_index(request: Request):
-    index_path = os.path.join(static_directory, "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    else:
-        raise HTTPException(status_code=404, detail="index.html not found")
+if ENV == "production":
+    @app.get('/login')
+    async def login(request: Request):
+        redirect_uri = request.url_for('auth')
+        return await oauth.google.authorize_redirect(request, redirect_uri)
 
-@app.get('/login')
-async def login(request: Request):
-    redirect_uri = request.url_for('auth')
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    @app.get('/auth')
+    async def auth(request: Request):
+        try:
+            token = await oauth.google.authorize_access_token(request)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Could not validate credentials")
+        
+        user = await oauth.google.parse_id_token(request, token)
+        request.session['user'] = dict(user)
+        return RedirectResponse(url='/')
 
-@app.get('/auth')
-async def auth(request: Request):
-    try:
-        token = await oauth.google.authorize_access_token(request)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="Could not validate credentials")
-    
-    user = await oauth.google.parse_id_token(request, token)
-    request.session['user'] = dict(user)
-    return RedirectResponse(url='/')
+    @app.get('/logout')
+    async def logout(request: Request):
+        request.session.pop('user', None)
+        return RedirectResponse(url='/')
 
-@app.get('/logout')
-async def logout(request: Request):
-    request.session.pop('user', None)
-    return RedirectResponse(url='/')
-
-@app.get("/api/user")
-async def get_user(request: Request):
-    user = request.session.get('user')
-    if user:
-        return {"user": user}
-    else:
-        return {"user": None}
+    @app.get("/api/user")
+    async def get_user(request: Request):
+        user = request.session.get('user')
+        if user:
+            return {"user": user}
+        else:
+            return {"user": None}
 
 @app.get("/{full_path:path}")
 async def serve_app(full_path: str, request: Request):
