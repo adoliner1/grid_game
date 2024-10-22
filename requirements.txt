@@ -7,3 +7,4 @@ alembic
 authlib
 httpx
 python-dotenv
+itsdangerous
