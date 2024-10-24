@@ -226,10 +226,10 @@ const Game = () => {
     
     useEffect(() => {
         const game_id = localStorage.getItem('game_id');
-        const player_token = localStorage.getItem('player_token');
+        const playerInfo = JSON.parse(localStorage.getItem('player_info')); 
     
-        if (!game_id || !player_token) {
-            console.error('Game ID or player token not found');
+        if (!game_id || !playerInfo) {
+            console.error('Game ID or player info not found');
             return;
         }
 
@@ -248,7 +248,7 @@ const Game = () => {
                 console.log("WebSocket connection established");
                 socket.current.send(JSON.stringify({
                     action: "authenticate",
-                    player_token: player_token,
+                    player_id: playerInfo.player_id,
                     game_id: game_id
                 }))
             }

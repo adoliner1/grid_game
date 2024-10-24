@@ -13,7 +13,6 @@ class ReflectingPools(Tile):
             description="When you [[receive]] a discple within 2 tiles of Reflecting Pools (but not at it), [[receive]] a copy of it here",
             number_of_slots=6,
             influence_tiers=[],
-            TILE_PRIORITY=1
         )
 
     def determine_ruler(self, game_state):

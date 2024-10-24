@@ -30,4 +30,4 @@ venv/
 .idea/
 
 server.code-workspace
-client.code-workspace
+client.code-workspace.env

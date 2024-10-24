@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-function ChatRoom({ players, messages, onSendMessage }) {
+function ChatRoom({ players, messages, onSendMessage, currentPlayer }) {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -23,8 +23,10 @@ function ChatRoom({ players, messages, onSendMessage }) {
       <div className="players-list">
         <p className='player-list-header'>Players in Lobby</p>
         <ul>
-          {players.map((player, index) => (
-            <li key={index}>{player}</li>
+          {players.map((player) => (
+            <li key={player.id}>
+              {player.name}
+            </li>
           ))}
         </ul>
       </div>

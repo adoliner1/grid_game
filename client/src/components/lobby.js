@@ -9,7 +9,7 @@ function Lobby() {
   const [lobbyPlayers, setLobbyPlayers] = useState([]);
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState(null);
-  const playerToken = useRef(localStorage.getItem('player_token') || null);
+  const [playerInfo, setPlayerInfo] = useState(null);
   const socket = useRef(null);
   const navigate = useNavigate();
 
@@ -32,18 +32,24 @@ function Lobby() {
     } else {
       socket.current = new WebSocket(`wss://grid-game.onrender.com/ws/lobby/`)
     }
-   
+    
     socket.current.onopen = () => {
       console.log('WebSocket connection established')
+      // Fetch public data immediately
       socket.current.send(JSON.stringify({ action: 'fetch_lobby_tables' }))
       socket.current.send(JSON.stringify({ action: 'fetch_lobby_players' }))
+      
+      // Send identity info
+      socket.current.send(JSON.stringify({ 
+        action: 'authenticate',
+        auth_type: user ? 'google' : 'guest'
+      }))
     }
 
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.player_token) {
-        localStorage.setItem('player_token', data.player_token);
-        playerToken.current = data.player_token
+      if (data.player_info) {  // Handle player info instead of token
+        setPlayerInfo(data.player_info);
       } else if (data.lobby_tables) {
         setLobbyTables(data.lobby_tables);
       } else if (data.action === 'lobby_players') {
@@ -52,6 +58,8 @@ function Lobby() {
         setLobbyPlayers(data.players);
       } else if (data.action === 'start_game') {
         localStorage.setItem('game_id', data.game_id);
+        // Store player info for the game
+        localStorage.setItem('player_info', JSON.stringify(playerInfo));
         navigate(`/game`);
       } else if (data.action === 'new_message') {
         setMessages(prevMessages => [...prevMessages, data.message]);
@@ -70,8 +78,10 @@ function Lobby() {
   }, []);
 
   const handleCreateLobbyTable = () => {
-    const name = user ? user.name : playerToken.current;
-    socket.current.send(JSON.stringify({ action: 'create_lobby_table', name }));
+    socket.current.send(JSON.stringify({ 
+      action: 'create_lobby_table', 
+      name: playerInfo?.player_name || "New Table"
+    }));
   };
 
   const handleJoinLobbyTable = (lobbyTableId) => {
@@ -104,6 +114,7 @@ function Lobby() {
           {user ? (
             <>
               <p>Welcome, {user.name}!</p>
+              {playerInfo && <p>Logged in as: {playerInfo.player_name}</p>}
               <button onClick={handleLogout}>Logout</button>
             </>
           ) : (
@@ -114,7 +125,8 @@ function Lobby() {
           <table>
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Table</th>
+                <th>Players</th>
               </tr>
             </thead>
             <tbody>
@@ -125,6 +137,13 @@ function Lobby() {
                   className="clickable-row"
                 >
                   <td>{lobbyTable.name}</td>
+                  <td>
+                    {lobbyTable.players.map(player => 
+                      <span key={player.id} className={player.is_guest ? 'text-gray-500' : 'text-black'}>
+                        {player.name}
+                      </span>
+                    ).reduce((prev, curr) => [prev, ', ', curr])}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -141,6 +160,7 @@ function Lobby() {
         players={lobbyPlayers}
         messages={messages}
         onSendMessage={handleSendMessage}
+        currentPlayer={playerInfo}
       />
     </div>
   );
