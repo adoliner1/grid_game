@@ -60,6 +60,7 @@ function Lobby() {
         localStorage.setItem('game_id', data.game_id);
         // Store player info for the game
         localStorage.setItem('player_info', JSON.stringify(playerInfo));
+        console.log("Hello")
         navigate(`/game`);
       } else if (data.action === 'new_message') {
         setMessages(prevMessages => [...prevMessages, data.message]);
