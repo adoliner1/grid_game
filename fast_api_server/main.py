@@ -299,9 +299,10 @@ async def join_lobby_table(websocket: WebSocket, data: Dict, connection: Dict):
             await websocket.send_json({"error": "Lobby table not found"})
             return
             
-        # Check if table is full
-        if (lobby_table.player1_token and lobby_table.player2_token) or \
-           (lobby_table.player1_id and lobby_table.player2_id):
+        if (
+            (lobby_table.player1_token or lobby_table.player1_id) and 
+            (lobby_table.player2_token or lobby_table.player2_id)
+        ):
             await websocket.send_json({"error": "Lobby table is full"})
             return
             
@@ -432,6 +433,7 @@ async def start_game(lobby_table: models.LobbyTable):
         
         for client in connections_in_the_lobby:
             if client["lobby_table_id"] == lobby_table.id:
+                print(f"sending start_game to {client['player_id']}, {client['player_name']}, {client['is_guest']}")
                 await client["websocket"].send_json({
                     "action": "start_game",
                     "game_id": game_id,
