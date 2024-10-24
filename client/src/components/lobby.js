@@ -113,8 +113,7 @@ function Lobby() {
           </p>
           {user ? (
             <>
-              <p>Welcome, {user.name}!</p>
-              {playerInfo && <p>Logged in as: {playerInfo.player_name}</p>}
+              {playerInfo && <p>{playerInfo.player_name}</p>}
               <button onClick={handleLogout}>Logout</button>
             </>
           ) : (

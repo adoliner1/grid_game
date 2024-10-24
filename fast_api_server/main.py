@@ -435,6 +435,11 @@ async def start_game(lobby_table: models.LobbyTable):
                 await client["websocket"].send_json({
                     "action": "start_game",
                     "game_id": game_id,
+                    "player_info": {
+                        "player_id": client["player_id"],
+                        "player_name": client["player_name"],
+                        "is_guest": client["is_guest"]
+                    }
                 })
     finally:
         db.close()
