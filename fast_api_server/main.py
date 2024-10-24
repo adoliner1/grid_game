@@ -182,7 +182,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     
     # Check if user is authenticated from their session
-    session_data = await websocket.get_session()
+    session_data = websocket.session
     user_info = session_data.get('user')
     
     if user_info:
@@ -454,7 +454,7 @@ async def websocket_game_endpoint(websocket: WebSocket):
             player_id = auth_data.get("player_id")  # Either user ID or guest token
             game_id = int(auth_data.get("game_id"))
             
-            session_data = await websocket.get_session()
+            session_data = websocket.session
             user_info = session_data.get('user')
             
             db: Session = next(get_db())
