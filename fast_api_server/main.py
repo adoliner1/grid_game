@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 import logging
 import secrets
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, Depends
@@ -87,7 +87,7 @@ if ENV == "production":
                 # Update existing user
                 user.email = userinfo['email']
                 user.picture = userinfo.get('picture')
-                user.last_login = datetime.utcnow()
+                user.last_login = datetime.now(timezone.utc)
             else:
                 # Create new user
                 user = models.User(

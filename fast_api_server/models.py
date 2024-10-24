@@ -1,7 +1,7 @@
 from sqlalchemy import JSON, Column, Enum, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -13,8 +13,8 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     username = Column(String, unique=True, nullable=True)  # Nullable because it's set after OAuth
     picture = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    last_login = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    last_login = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     # Single relationship that includes all games the user is in
     games = relationship("Game", 
@@ -41,8 +41,8 @@ class Game(Base):
     player2_token = Column(String, nullable=True)
     
     game_state = Column(JSON)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     # Simple relationships to users
     player1 = relationship("User", foreign_keys=[player1_id])
@@ -63,8 +63,8 @@ class LobbyTable(Base):
     player1_token = Column(String, nullable=True)
     player2_token = Column(String, nullable=True)
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     # Simple relationships to users
     player1 = relationship("User", foreign_keys=[player1_id])
