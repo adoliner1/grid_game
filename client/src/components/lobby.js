@@ -50,25 +50,25 @@ function Lobby() {
       const data = JSON.parse(event.data);
       if (data.player_info) {  // Handle player info instead of token
         setPlayerInfo(data.player_info);
-      } else if (data.lobby_tables) {
-        setLobbyTables(data.lobby_tables);
-      } else if (data.action === 'lobby_players') {
+      } 
+
+      if (data.action === 'lobby_players') {
         setLobbyPlayers(data.players);
       } else if (data.action === 'update_lobby_players') {
         setLobbyPlayers(data.players);
       } else if (data.action === 'start_game') {
+        console.log("Hello")
         localStorage.setItem('game_id', data.game_id);
         // Store player info for the game
         localStorage.setItem('player_info', JSON.stringify(playerInfo));
-        console.log("Hello")
         navigate(`/game`);
       } else if (data.action === 'new_message') {
         setMessages(prevMessages => [...prevMessages, data.message]);
       } else if (data.error) {
-        setError(data.error);
+        setError(data.error)
       }
-    };
-  };
+    }
+  }
 
   useEffect(() => {
     return () => {
