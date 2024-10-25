@@ -48,6 +48,7 @@ function Lobby() {
 
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log(data)
       if (data.player_info) {  // Handle player info instead of token
         setPlayerInfo(data.player_info);
       } 
