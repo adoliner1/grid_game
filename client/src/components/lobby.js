@@ -35,9 +35,6 @@ function Lobby() {
     
     socket.current.onopen = () => {
       console.log('WebSocket connection established')
-      // Fetch public data immediately
-      socket.current.send(JSON.stringify({ action: 'fetch_lobby_tables' }))
-      socket.current.send(JSON.stringify({ action: 'fetch_lobby_players' }))
       
       // Send identity info
       socket.current.send(JSON.stringify({ 
@@ -49,26 +46,32 @@ function Lobby() {
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log(data)
-      if (data.player_info) {  // Handle player info instead of token
-        setPlayerInfo(data.player_info);
-      } 
-
-      if (data.action === 'lobby_players') {
-        setLobbyPlayers(data.players);
-      } else if (data.action === 'update_lobby_players') {
-        setLobbyPlayers(data.players);
-      } else if (data.action === 'start_game') {
-        console.log("Hello")
-        localStorage.setItem('game_id', data.game_id);
-        // Store player info for the game
-        localStorage.setItem('player_info', JSON.stringify(playerInfo));
-        navigate(`/game`);
-      } else if (data.action === 'new_message') {
-        setMessages(prevMessages => [...prevMessages, data.message]);
-      } else if (data.error) {
-        setError(data.error)
+     
+      if (data.error) {
+        setError(data.error);
+        return;
       }
-    }
+     
+      switch (data.action) {
+        case 'update_lobby_players':
+          setLobbyPlayers(data.players);
+          break;
+        case 'update_lobby_tables': 
+          setLobbyTables(data.lobby_tables);
+          break;
+        case 'update_player_info':
+          setPlayerInfo(data.player_info);
+          localStorage.setItem('player_info', JSON.stringify(data.player_info));
+          break;
+        case 'start_game':
+          localStorage.setItem('game_id', data.game_id);
+          navigate(`/game`);
+          break;
+        case 'update_messages':
+          setMessages(prevMessages => [...prevMessages, data.message]);
+          break;
+      }
+     };
   }
 
   useEffect(() => {
