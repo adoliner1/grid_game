@@ -258,7 +258,7 @@ const Game = () => {
             const data = JSON.parse(event.data);
             switch (data.action) {
                 case "error":
-                    addLog(`Error: ${data.message}`);
+                    console.log(`Error: ${data.message}`)
                     break;
                 case "message":
                     addLog(`${data.message}`);
