@@ -426,6 +426,7 @@ async def websocket_game_endpoint(websocket: WebSocket):
             player_name = None
             
             if user_info:
+                # This is a logged-in User
                 user_id = int(player_id)
                 if game.player1_id == user_id:
                     player_color = "red"
@@ -436,13 +437,29 @@ async def websocket_game_endpoint(websocket: WebSocket):
                     user = db.query(models.User).filter(models.User.id == user_id).first()
                     player_name = user.username or f"User_{user_id}"
             else:
-                if game.player1_token == player_id:
+                # This is a Guest - check which color is still available
+                if game.player1_id is None and game.player1_token == player_id:
+                    # Slot 1 is free and this guest has token for slot 1
                     player_color = "red"
                     player_name = f"Guest_{player_id[:6]}"
-                elif game.player2_token == player_id:
+                elif game.player2_id is None and game.player2_token == player_id:
+                    # Slot 2 is free and this guest has token for slot 2
                     player_color = "blue"
                     player_name = f"Guest_{player_id[:6]}"
-            
+                else:
+                    # If we get here, check if the guest should be in the opposite slot of where the User is
+                    if game.player1_id is not None and game.player2_token == player_id:
+                        # User is in slot 1, guest should be blue
+                        player_color = "blue"
+                        player_name = f"Guest_{player_id[:6]}"
+                    elif game.player2_id is not None and game.player1_token == player_id:
+                        # User is in slot 2, guest should be red
+                        player_color = "red"
+                        player_name = f"Guest_{player_id[:6]}"
+
+            print(f"Debug - Game state: p1_id={game.player1_id}, p2_id={game.player2_id}, p1_token={game.player1_token}, p2_token={game.player2_token}")
+            print(f"Debug - Assigned: player_id={player_id}, color={player_color}, is_user={bool(user_info)}")
+
             if not player_color:
                 await websocket.send_json({"error": "Unauthorized access"})
                 print("no player color")
