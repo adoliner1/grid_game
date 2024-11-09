@@ -82,7 +82,7 @@ const Game = () => {
 
         sendHeartbeat();
 
-        const intervalId = setInterval(sendHeartbeat, 10 * 60 * 1000);
+        const intervalId = setInterval(sendHeartbeat, 60 * 1000);
 
         return () => clearInterval(intervalId);
     }

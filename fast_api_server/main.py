@@ -409,7 +409,7 @@ async def websocket_game_endpoint(websocket: WebSocket):
     if ENV == "production":
         try:
             auth_data = await websocket.receive_json()
-            player_id = auth_data.get("player_id")  # This will be either google_id or guest UUID
+            player_id = auth_data.get("player_id")
             game_id = int(auth_data.get("game_id"))
             
             session_data = websocket.session
@@ -420,7 +420,6 @@ async def websocket_game_endpoint(websocket: WebSocket):
             
             if not game or game_id not in game_engines:
                 await websocket.send_json({"error": "Game not found"})
-                print("game not found")
                 await websocket.close()
                 return
             
