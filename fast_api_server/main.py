@@ -174,7 +174,7 @@ async def get_leaderboard(db: Session = Depends(get_db)):
     ]
     
     leaderboard.sort(key=lambda x: (-x["elo_rating"], -x["total_games"]))
-    
+    print(leaderboard)
     return {"leaderboard": leaderboard}
 
 @app.get("/api/players/{google_id}/stats")
