@@ -545,7 +545,7 @@ async def send_message(game_id: int, message: str):
            if connection["game_id"] == game_id:
                try:
                    await connection["websocket"].send_json({
-                       "action": "update_messages",
+                       "action": "message",
                        "message": message,
                        "sender": connection["player_name"]
                    })
@@ -555,7 +555,7 @@ async def send_message(game_id: int, message: str):
        for player in current_players:
            try:
                await player["websocket"].send_json({
-                   "action": "update_messages",
+                   "action": "message",
                    "message": message,
                    "sender": player["player_name"]
                })
