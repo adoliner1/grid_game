@@ -260,7 +260,7 @@ const Game = () => {
                 case "error":
                     console.log(`Error: ${data.message}`)
                     break;
-                case "message":
+                case "update_messages":
                     addLog(`${data.message}`);
                     break;
                 case "initialize":
