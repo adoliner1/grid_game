@@ -130,7 +130,6 @@ if ENV == "production":
        username = username_data.username.strip()
        if len(username) < 3 or len(username) > 20:
            raise HTTPException(status_code=400, detail="Username must be between 3 and 20 characters")
-       
        if not username.replace('_', '').isalnum():
            raise HTTPException(status_code=400, detail="Username can only contain letters, numbers, and underscores")
        
