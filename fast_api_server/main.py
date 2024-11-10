@@ -3,7 +3,7 @@ import logging
 import secrets
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, Depends
 from sqlalchemy.orm import Session
-from typing import List, Dict, Optional
+from typing import List, Dict, Tuple, Optional
 import models
 from database import get_db
 from game_engine import GameEngine
@@ -154,6 +154,85 @@ async def log_requests(request, call_next):
    response = await call_next(request)
    logger.info(f"Returning response: {response.status_code}")
    return response
+
+@app.get("/api/leaderboard")
+async def get_leaderboard(db: Session = Depends(get_db)):
+    users = db.query(models.User)\
+        .filter(models.User.username.isnot(None))\
+        .all()
+    
+    leaderboard = [
+        {
+            "username": user.username,
+            "elo_rating": user.elo_rating,
+            "wins": user.wins,
+            "losses": user.losses,
+            "win_rate": round((user.wins / (user.wins + user.losses) * 100), 1) if (user.wins + user.losses) > 0 else 0,
+            "total_games": user.wins + user.losses
+        }
+        for user in users
+        if user.wins + user.losses > 0
+    ]
+    
+    leaderboard.sort(key=lambda x: (-x["elo_rating"], -x["total_games"]))
+    
+    return {"leaderboard": leaderboard}
+
+@app.get("/api/players/{google_id}/stats")
+async def get_player_stats(google_id: str, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.google_id == google_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    total_games = user.wins + user.losses
+    win_rate = round((user.wins / total_games * 100), 1) if total_games > 0 else 0
+    
+    # Get recent games
+    recent_games = db.query(models.Game)\
+        .filter(
+            ((models.Game.player1_id == google_id) | (models.Game.player2_id == google_id)) &
+            (models.Game.is_ranked == True) &
+            (models.Game.status == "Completed")
+        )\
+        .order_by(models.Game.updated_at.desc())\
+        .limit(10)\
+        .all()
+    
+    recent_results = []
+    for game in recent_games:
+        won = game.winner_id == google_id
+        opponent_id = game.player2_id if game.player1_id == google_id else game.player1_id
+        opponent = db.query(models.User).filter(models.User.google_id == opponent_id).first()
+        
+        recent_results.append({
+            "game_id": game.id,
+            "result": "won" if won else "lost",
+            "opponent_name": opponent.username if opponent else "Unknown",
+            "date": game.updated_at.isoformat()
+        })
+    
+    return {
+        "username": user.username,
+        "elo_rating": user.elo_rating,
+        "wins": user.wins,
+        "losses": user.losses,
+        "total_games": total_games,
+        "win_rate": win_rate,
+        "rank": get_player_rank(user.elo_rating),
+        "recent_games": recent_results
+    }
+
+def get_player_rank(elo: int) -> str:
+    if elo >= 2000:
+        return "Grandmaster"
+    elif elo >= 1800:
+        return "Master"
+    elif elo >= 1600:
+        return "Expert"
+    elif elo >= 1400:
+        return "Intermediate"
+    else:
+        return "Beginner"
 
 @app.websocket("/ws/lobby/")
 async def websocket_endpoint(websocket: WebSocket):
@@ -364,39 +443,46 @@ async def disconnect_handler(connection: Dict):
        db.close()
 
 async def start_game(lobby_table: models.LobbyTable):
-   db: Session = next(get_db())
-   try:
-       game = models.Game(
-           status="Waiting to Start",
-           player1_id=lobby_table.player1_id,  # Simply transfer the IDs
-           player2_id=lobby_table.player2_id   # Which are either google_ids or guest UUIDs
-       )
-           
-       db.add(game)
-       db.commit()
-       db.refresh(game)
-       
-       game_id = game.id
-       game_engines[game_id] = GameEngine()
-       game_engines[game_id].set_websocket_callbacks(
-           lambda msg: send_message(game_id, msg),
-           lambda state: send_game_state(game_id, state),
-           lambda actions, data, color: send_available_actions(game_id, actions, data, color)
-       )
-       
-       for client in connections_in_the_lobby:
-           if client["lobby_table_id"] == lobby_table.id:
-               await client["websocket"].send_json({
-                   "action": "start_game",
-                   "game_id": game_id,
-                   "player_info": {
-                       "player_id": client["player_id"],
-                       "player_name": client["player_name"],
-                       "is_guest": client["is_guest"]
-                   }
-               })
-   finally:
-       db.close()
+    db: Session = next(get_db())
+    try:
+        # Check if both players are registered users
+        is_ranked = (is_registered_user(lobby_table.player1_id, db) and 
+                    is_registered_user(lobby_table.player2_id, db))
+        
+        game = models.Game(
+            status="Waiting to Start",
+            player1_id=lobby_table.player1_id,
+            player2_id=lobby_table.player2_id,
+            is_ranked=is_ranked
+        )
+            
+        db.add(game)
+        db.commit()
+        db.refresh(game)
+        
+        game_id = game.id
+        game_engines[game_id] = GameEngine()
+        game_engines[game_id].set_websocket_callbacks(
+            lambda msg: send_message(game_id, msg),
+            lambda state: send_game_state(game_id, state),
+            lambda actions, data, color: send_available_actions(game_id, actions, data, color),
+            lambda winner_color: handle_game_completion(game_id, winner_color)
+        )
+        
+        for client in connections_in_the_lobby:
+            if client["lobby_table_id"] == lobby_table.id:
+                await client["websocket"].send_json({
+                    "action": "start_game",
+                    "game_id": game_id,
+                    "is_ranked": is_ranked,
+                    "player_info": {
+                        "player_id": client["player_id"],
+                        "player_name": client["player_name"],
+                        "is_guest": client["is_guest"]
+                    }
+                })
+    finally:
+        db.close()
 
 def generate_player_token():
     return str(uuid.uuid4())
@@ -623,6 +709,63 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> O
        return None
    
    return db.query(models.User).filter(models.User.google_id == user_info['sub']).first()
+
+async def handle_game_completion(game_id: int, winner_color: str):
+    db: Session = next(get_db())
+    try:
+        game = db.query(models.Game).filter(models.Game.id == game_id).first()
+        if not game or not game.is_ranked:
+            return
+        
+        # Get winner and loser based on color
+        winner_id = game.player1_id if winner_color == "red" else game.player2_id
+        loser_id = game.player2_id if winner_color == "red" else game.player1_id
+        
+        winner = db.query(models.User).filter(models.User.google_id == winner_id).first()
+        loser = db.query(models.User).filter(models.User.google_id == loser_id).first()
+        
+        if winner and loser:
+            # Calculate ELO changes
+            winner_change, loser_change = calculate_elo_change(winner.elo_rating, loser.elo_rating)
+            
+            # Update stats
+            winner.wins += 1
+            winner.elo_rating += winner_change
+            loser.losses += 1
+            loser.elo_rating += loser_change
+            
+            # Update game record
+            game.status = "Completed"
+            game.winner_id = winner_id
+            
+            db.commit()
+            
+            # Notify players
+            for connection in connections_to_games:
+                if connection["game_id"] == game_id:
+                    await connection["websocket"].send_json({
+                        "action": "game_complete",
+                        "winner_color": winner_color,
+                        "was_ranked": True,
+                        "elo_changes": {
+                            winner_color: winner_change,
+                            "blue" if winner_color == "red" else "red": loser_change
+                        }
+                    })
+    except Exception as e:
+        print(f"Error handling game completion: {str(e)}")
+    finally:
+        db.close()
+
+def calculate_elo_change(winner_rating: int, loser_rating: int, k_factor: int = 32) -> Tuple[int, int]:
+    expected_winner = 1 / (1 + 10 ** ((loser_rating - winner_rating) / 400))
+    winner_change = round(k_factor * (1 - expected_winner))
+    loser_change = -winner_change
+    return winner_change, loser_change
+
+def is_registered_user(player_id: str, db: Session) -> bool:
+    user = db.query(models.User).filter(models.User.google_id == player_id).first()
+    return user is not None
 
 def count_connections_to_game_id(game_id, connections_to_games):
    return sum(1 for connection in connections_to_games if connection["game_id"] == game_id)
