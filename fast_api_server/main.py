@@ -161,6 +161,10 @@ async def get_leaderboard(db: Session = Depends(get_db)):
         .filter(models.User.username.isnot(None))\
         .all()
     
+    print("Users found:", len(users))
+    for user in users:
+        print(f"User: {user.username}, ELO: {user.elo_rating}, Wins: {user.wins}, Losses: {user.losses}")
+   
     leaderboard = [
         {
             "username": user.username,
@@ -172,9 +176,9 @@ async def get_leaderboard(db: Session = Depends(get_db)):
         }
         for user in users
     ]
-    
+   
     leaderboard.sort(key=lambda x: (-x["elo_rating"], -x["total_games"]))
-    print(leaderboard)
+    print("Final leaderboard:", leaderboard)
     return {"leaderboard": leaderboard}
 
 @app.get("/api/players/{google_id}/stats")
