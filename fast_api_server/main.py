@@ -150,20 +150,33 @@ async def serve_app(full_path: str, request: Request):
 
 @app.middleware("http")
 async def log_requests(request, call_next):
-   logger.info(f"Received request: {request.method} {request.url}")
-   response = await call_next(request)
-   logger.info(f"Returning response: {response.status_code}")
-   return response
+    logger.info(f"Received request: {request.method} {request.url}")
+    response = await call_next(request)
+    if request.url.path == "/api/leaderboard":
+        response_body = b""
+        async for chunk in response.body_iterator:
+            response_body += chunk
+        logger.info(f"Leaderboard response content: {response_body.decode()}")
+        # Recreate the response since we consumed it
+        return Response(
+            content=response_body,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            media_type=response.media_type
+        )
+    logger.info(f"Returning response: {response.status_code}")
+    return response
 
 @app.get("/api/leaderboard")
 async def get_leaderboard(db: Session = Depends(get_db)):
+    logger.info("Starting leaderboard request")  # Use the logger we set up
     users = db.query(models.User)\
         .filter(models.User.username.isnot(None))\
         .all()
     
-    print("Users found:", len(users))
+    logger.info(f"Found {len(users)} users")
     for user in users:
-        print(f"User: {user.username}, ELO: {user.elo_rating}, Wins: {user.wins}, Losses: {user.losses}")
+        logger.info(f"User data: {user.username}, {user.elo_rating}, {user.wins}, {user.losses}")
    
     leaderboard = [
         {
@@ -178,7 +191,7 @@ async def get_leaderboard(db: Session = Depends(get_db)):
     ]
    
     leaderboard.sort(key=lambda x: (-x["elo_rating"], -x["total_games"]))
-    print("Final leaderboard:", leaderboard)
+    logger.info(f"Returning leaderboard: {leaderboard}")
     return {"leaderboard": leaderboard}
 
 @app.get("/api/players/{google_id}/stats")
