@@ -171,7 +171,6 @@ async def get_leaderboard(db: Session = Depends(get_db)):
             "total_games": user.wins + user.losses
         }
         for user in users
-        if user.wins + user.losses > 0
     ]
     
     leaderboard.sort(key=lambda x: (-x["elo_rating"], -x["total_games"]))
