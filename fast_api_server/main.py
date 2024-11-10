@@ -167,11 +167,11 @@ async def websocket_endpoint(websocket: WebSocket):
     if user_info:
         db: Session = next(get_db())
         user = db.query(models.User).filter(models.User.google_id == user_info['sub']).first()
-        player_id = user_info['sub']  # Use google_id directly as player_id
+        player_id = user_info['sub']
         player_name = user.username or f"User_{user.id}"
         is_guest = False
     else:
-        player_id = generate_player_token()  # UUID for guests
+        player_id = generate_player_token()
         player_name = f"Guest_{player_id[:6]}"
         is_guest = True
     
@@ -239,7 +239,6 @@ async def update_lobby_players():
 async def create_lobby_table(websocket: WebSocket, data: Dict, connection: Dict):
     db: Session = next(get_db())
     try:
-        # Check if player already has a created table
         existing_table = db.query(models.LobbyTable).filter(
             models.LobbyTable.player1_id == connection["player_id"],
         ).first()
@@ -280,7 +279,6 @@ async def join_lobby_table(websocket: WebSocket, data: Dict, connection: Dict):
            await websocket.send_json({"error": "Lobby table is full"})
            return
            
-       # Simply assign to first empty slot
        if not lobby_table.player1_id:
            lobby_table.player1_id = connection["player_id"]
        else:
@@ -307,38 +305,30 @@ async def update_lobby_tables():
        for lobby_table in lobby_tables:
            players = []
            
-           # Handle player 1
            if lobby_table.player1_id:
-               # Try to find user by google_id for authenticated users
                user = db.query(models.User).filter(models.User.google_id == lobby_table.player1_id).first()
                if user:
-                   # This is an authenticated user
                    players.append({
                        "id": lobby_table.player1_id,
                        "name": user.username,
                        "is_guest": False
                    })
                else:
-                   # This is a guest user
                    players.append({
                        "id": lobby_table.player1_id,
                        "name": f"Guest_{lobby_table.player1_id[:6]}",
                        "is_guest": True
                    })
            
-           # Handle player 2
            if lobby_table.player2_id:
-               # Try to find user by google_id for authenticated users
                user = db.query(models.User).filter(models.User.google_id == lobby_table.player2_id).first()
                if user:
-                   # This is an authenticated user
                    players.append({
                        "id": lobby_table.player2_id,
                        "name": user.username,
                        "is_guest": False
                    })
                else:
-                   # This is a guest user
                    players.append({
                        "id": lobby_table.player2_id,
                        "name": f"Guest_{lobby_table.player2_id[:6]}",
@@ -445,7 +435,6 @@ async def websocket_game_endpoint(websocket: WebSocket):
             elif game.player2_id == player_id:
                 player_color = "blue"
 
-            # Get player name based on whether they're authenticated or guest
             if user_info:
                 user = db.query(models.User).filter(models.User.google_id == player_id).first()
                 player_name = user.username or f"User_{user.id}"
@@ -497,7 +486,6 @@ async def websocket_game_endpoint(websocket: WebSocket):
             connections_to_games[:] = [conn for conn in connections_to_games if conn["websocket"] != websocket]
 
     else:
-        # DEV environment code stays the same since it already uses UUIDs
         try:
             if len(current_players) >= 2:
                 await websocket.send_json({
