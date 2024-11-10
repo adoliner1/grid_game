@@ -237,22 +237,34 @@ async def update_lobby_players():
    })
 
 async def create_lobby_table(websocket: WebSocket, data: Dict, connection: Dict):
-   db: Session = next(get_db())
-   try:
-       table_name = data.get("name", "New Lobby Table")
-       new_lobby_table = models.LobbyTable(
-           name=table_name,
-           status="Waiting",
-           player1_id=connection["player_id"]  # Always just use player_id
-       )
-           
-       db.add(new_lobby_table)
-       db.commit()
-       db.refresh(new_lobby_table)
-       connection["lobby_table_id"] = new_lobby_table.id
-       await update_lobby_tables()
-   finally:
-       db.close()
+    db: Session = next(get_db())
+    try:
+        # Check if player already has a created table
+        existing_table = db.query(models.LobbyTable).filter(
+            models.LobbyTable.player1_id == connection["player_id"],
+        ).first()
+        
+        if existing_table:
+            await websocket.send_json({
+                "type": "error",
+                "message": "You already have an active table. Please finish or delete your existing table first."
+            })
+            return
+        
+        table_name = data.get("name", "New Lobby Table")
+        new_lobby_table = models.LobbyTable(
+            name=table_name,
+            status="Waiting",
+            player1_id=connection["player_id"]
+        )
+            
+        db.add(new_lobby_table)
+        db.commit()
+        db.refresh(new_lobby_table)
+        connection["lobby_table_id"] = new_lobby_table.id
+        await update_lobby_tables()
+    finally:
+        db.close()
 
 async def join_lobby_table(websocket: WebSocket, data: Dict, connection: Dict):
    db: Session = next(get_db())
