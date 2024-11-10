@@ -64,7 +64,7 @@ else:
    current_players = []
    game_engine = None
 
-if ENV == "production":
+if ENV == "production":  
    @app.get('/login')
    async def login(request: Request):
        nonce = secrets.token_urlsafe(16)

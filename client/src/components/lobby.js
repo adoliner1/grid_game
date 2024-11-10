@@ -45,7 +45,6 @@ function Lobby() {
 
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log(data)
      
       if (data.error) {
         setError(data.error);
