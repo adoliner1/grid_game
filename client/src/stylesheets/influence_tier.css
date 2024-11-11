@@ -1,6 +1,6 @@
 /* Base tier structure */
 .game-container .influence-tier {
-    border-top: 1px solid #a39e9e;
+    border-top: 1px solid #4a4a4a;
     display: flex;
     flex-direction: row;
     transition: background-color 0.3s;
@@ -71,15 +71,15 @@
   /* Selectable and cooldown states */
   .game-container .influence-tier.selectable-influence-tier {
     cursor: pointer;
-    background-color: #ddb61a;
+    background-color: #4a4a4a;
   }
   
   .game-container .influence-tier.selectable-influence-tier:hover {
-    background-color: #ffd700;
+    background-color: #5a5a5a;
   }
   
   .game-container .influence-tier.influence-tier-on-cooldown {
-    background-color: #d3d3d3;
+    background-color: #000000;
   }
   
   /* Description and tooltip */

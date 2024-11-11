@@ -13,6 +13,8 @@ html, body {
   padding: 1vh 1vw;
   box-sizing: border-box;
   height: 100%;
+  background-color: #1a1a1a;
+  color: #dddddd;
 }
 
 .game-container .info_section {

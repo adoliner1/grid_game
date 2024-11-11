@@ -3,8 +3,9 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.8125rem;
-  background-color: #faf089;
   margin-bottom: 5px;
+  background-color: #2a2a2a;
+  border-color: #4a4a4a;
 }
 
 /* Header styles */
@@ -28,21 +29,23 @@
   vertical-align: middle;
 }
 
-/* Row styles */
-.game-container .round-bonuses-table thead tr {
-  background-color: #f7fafc;
+.game-container .round-bonuses-table th,
+.game-container .round-bonuses-table td {
+  border-color: #4a4a4a;
+  color: #d1d1d1;
 }
 
-.game-container .round-bonuses-table tbody {
-  background-color: #edf2f7;
+/* Row styles */
+.game-container .round-bonuses-table thead tr {
+  background-color: #3a3a3a;
 }
 
 .game-container .round-bonuses-table tbody tr:nth-child(even) {
-  background-color: #f9fafb;
+  background-color: #333;
 }
 
 .game-container .round-bonuses-table .current-round {
-  background-color: #fefcbf;
+  background-color: #4a4a4a;
 }
 
 /* Bonus content styles */

@@ -1,8 +1,9 @@
 /* Base tile structure */
 .game-container .tile {
-  border: 2px solid #000000;
+  border: 2px solid #ffffff;
+  background-color: #2a2a2a;
   border-radius: 10px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -22,7 +23,7 @@
   flex-grow: 0;
   display: flex;
   flex-direction: column;
-  border-top: 1px solid #a39e9e;
+  border-top: 1px solid #4a4a4a;
 }
 
 /* Header section */
@@ -42,12 +43,12 @@
 .game-container .tile-type {
   font-size: 0.9em;
   font-weight: bold;
-  color: #666;
+  color: #888;
 }
 
 /* Description and influence sections */
 .game-container .tile-description {
-  border-top: 1px solid #a39e9e;
+  border-top: 1px solid #4a4a4a;
   padding: 5px;
   flex-grow: 1;
 }
@@ -96,10 +97,6 @@
   color: rgb(52, 52, 255);
 }
 
-.game-container .ruler-crown-in-header:not(.ruler-crown-red):not(.ruler-crown-blue) .crown-icon {
-  color: black;
-}
-
 /* Ruler tile borders */
 .game-container .ruler-tile-red {
   border-color: red;
@@ -111,23 +108,24 @@
 
 /* Selectable tile styles */
 .game-container .selectable-tile {
-  background-color: #FFF8DC;
+  background-color: #3a3a3a;
   transition: background-color 0.3s ease;
 }
 
 .game-container .selectable-tile:hover {
   cursor: pointer;
+  background-color: #4a4a4a;
   animation: hover-flash 2s infinite;
 }
 
 .game-container .selectable-tile:active {
-  background-color: #ffeb79;
+  background-color: #ffd900c7;
   animation: none;
 }
 
 /* Animation keyframes */
 @keyframes hover-flash {
-  0% { background-color: #FFF8DC; }
-  50% { background-color: #ffeb79; }
-  100% { background-color: #FFF8DC; }
+  0% { background-color: #3a3a3a; }
+  50% { background-color: #4a4a4a; }
+  100% { background-color: #3a3a3a; }
 }

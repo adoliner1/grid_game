@@ -122,10 +122,9 @@ const InfluenceTier = ({
     className: `crown-icon ${getCrownClassToDetermineColor()}`
   })
 
-  const influence_tier_meeple = (color) => createIcon({
+  const influence_tier_meeple = createIcon({
     type: 'leader',
     tooltipText: 'Leader Must be Present',
-    color: color,
     width: 12,
     height: 12
   })
@@ -148,7 +147,7 @@ const InfluenceTier = ({
             <div className="influence-requirement-at-tier">{tier.influence_to_reach_tier}</div>
           </Tooltip>
           <div className="has_a_cooldown">{tier.has_a_cooldown ? cooldown_clock : null}</div>
-          <div className="leader_must_be_present">{tier.leader_must_be_present ? influence_tier_meeple('black') : null} </div>
+          <div className="leader_must_be_present">{tier.leader_must_be_present ? influence_tier_meeple : null} </div>
           <div className="player-indicators-for-influence-tiers">
             {redAtThisLevel && <Indicator color="red" />}
             {blueAtThisLevel && <Indicator color="blue" />}
