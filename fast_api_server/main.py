@@ -145,18 +145,6 @@ if ENV == "production":
 async def log_requests(request, call_next):
     logger.info(f"Received request: {request.method} {request.url}")
     response = await call_next(request)
-    if request.url.path == "/api/leaderboard":
-        response_body = b""
-        async for chunk in response.body_iterator:
-            response_body += chunk
-        logger.info(f"Leaderboard response content: {response_body.decode()}")
-        return Response(
-            content=response_body,
-            status_code=response.status_code,
-            headers=dict(response.headers),
-            media_type=response.media_type
-        )
-    logger.info(f"Returning response: {response.status_code}")
     return response
 
 @app.get("/api/leaderboard")
@@ -745,6 +733,8 @@ async def handle_game_completion(game_id: int, winner_color: str):
         winner = db.query(models.User).filter(models.User.google_id == winner_id).first()
         loser = db.query(models.User).filter(models.User.google_id == loser_id).first()
         
+        print(winner)
+        print(loser)
         if winner and loser:
             # Calculate ELO changes
             winner_change, loser_change = calculate_elo_change(winner.elo_rating, loser.elo_rating)
