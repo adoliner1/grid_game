@@ -196,9 +196,6 @@ function Lobby() {
                     <td>
                       <div className="player-info">
                         <span className="player-name">{player.username}</span>
-                        <span className={`player-rank ${getRankClass(player.elo_rating)}`}>
-                          {getRankName(player.elo_rating)}
-                        </span>
                       </div>
                     </td>
                     <td>{player.elo_rating}</td>
