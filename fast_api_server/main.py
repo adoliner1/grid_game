@@ -157,7 +157,6 @@ async def log_requests(request, call_next):
         async for chunk in response.body_iterator:
             response_body += chunk
         logger.info(f"Leaderboard response content: {response_body.decode()}")
-        # Recreate the response since we consumed it
         return Response(
             content=response_body,
             status_code=response.status_code,
@@ -169,6 +168,9 @@ async def log_requests(request, call_next):
 
 @app.get("/api/leaderboard")
 async def get_leaderboard(db: Session = Depends(get_db)):
+    print("THIS IS A TEST PRINT")
+    print("==================")
+    return {"message": "test"}
     try:
         logger.info("Starting leaderboard request")
         users = db.query(models.User)\
