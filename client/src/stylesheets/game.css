@@ -5,6 +5,7 @@ html, body {
   height: 100%;
 }
 
+/* Game-specific styles - all scoped under .game-container */
 .game-container {
   display: flex;
   flex-direction: row;
@@ -14,14 +15,14 @@ html, body {
   height: 100%;
 }
 
-.info_section {
+.game-container .info_section {
   flex: 0 0 20%;
   display: flex;
   flex-direction: column;
   font-size: clamp(2px, 1vw, 12px);
 }
 
-.tiles {
+.game-container .tiles {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -31,7 +32,7 @@ html, body {
   font-size: clamp(2px, 1vw, 12px)
 }
 
-.directive {
+.game-container .directive {
   min-height: 1.5em;
   padding: 0.5em;
   border: 1px solid #ccc;
@@ -42,53 +43,52 @@ html, body {
   text-align: center;
   font-weight: bold;
 }
-.directive-red {
+
+.game-container .directive-red {
   border: 1px solid red;
 }
-.directive-blue {
+
+.game-container .directive-blue {
   border: 1px solid blue;
 }
 
-/* General styles */
-div {
-  padding: 3px;
-}
-
-p {
+.game-container p {
   white-space: normal;
   word-wrap: break-word;
   word-break: break-word;
 }
 
 /* SVG styles */
-svg.owner-red {
+.game-container svg.owner-red {
   stroke: red;
   fill: red;
 }
 
-svg.owner-blue {
+.game-container svg.owner-blue {
   stroke: blue;
   fill: blue;
 }
 
-svg.selectable {
+.game-container svg.selectable {
   transition: fill 0.3s, stroke 0.3s;
   stroke: #ffd700;
   stroke-width: 2;
   cursor: pointer;
 }
 
-svg.selectable:hover {
+.game-container svg.selectable:hover {
   stroke: #ffd700;
   fill: #ffd700;
 }
 
-svg.selectable:active {
+.game-container svg.selectable:active {
   stroke: black;
   fill: black;
 }
 
-.btn-enabled, .btn-disabled {
+/* Button styles */
+.game-container .btn-enabled,
+.game-container .btn-disabled {
   padding: 6px 12px;
   margin: 3px;
   border: none;
@@ -99,48 +99,49 @@ svg.selectable:active {
   transition: background-color 0.3s, color 0.3s;
 }
 
-.btn-enabled {
+.game-container .btn-enabled {
   background-color: #4289d4;
   color: white;
   cursor: pointer;
 }
 
-.btn-disabled {
+.game-container .btn-disabled {
   background-color: #cccccc;
   color: #666666;
 }
 
-.btn-enabled:hover {
+.game-container .btn-enabled:hover {
   background-color: #0056b3;
 }
 
-.action-buttons {
+.game-container .action-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 /* Current round highlight */
-.current-round {
+.game-container .current-round {
   outline: 2px solid rgb(0, 0, 0);
   padding: 5px;
 }
 
-.red-text {
+.game-container .red-text {
   color: red;
 }
 
-.blue-text {
+.game-container .blue-text {
   color: blue;
 }
 
-.tooltip-container {
+/* Tooltip styles */
+.game-container .tooltip-container {
   position: relative;
   display: inline-block;
   z-index: 998;
 }
 
-.tooltip-text {
+.game-container .tooltip-text {
   position: absolute;
   bottom: 100%;
   left: 50%;
@@ -160,7 +161,7 @@ svg.selectable:active {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.tooltip-text::after {
+.game-container .tooltip-text::after {
   content: "";
   position: absolute;
   top: 100%;
@@ -171,7 +172,8 @@ svg.selectable:active {
   border-color: #333 transparent transparent transparent;
 }
 
-.disciple-influence-section {
+/* Disciple influence section */
+.game-container .disciple-influence-section {
   display: flex;
   justify-content: space-around;
   padding: 2px;
@@ -181,17 +183,18 @@ svg.selectable:active {
   margin-bottom: 5px;
 }
 
-.disciple-influence {
+.game-container .disciple-influence {
   display: flex;
   align-items: center;
   margin: 0 5px;
 }
 
-.disciple-influence > *:first-child {
+.game-container .disciple-influence > *:first-child {
   margin-right: 5px;
 }
 
-.modal-overlay {
+/* Modal styles */
+.game-container .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -203,7 +206,7 @@ svg.selectable:active {
   z-index: 1000;
 }
 
-.modal-content {
+.game-container .modal-content {
   display: flex;
   flex-direction: column;
   padding: 1vh 1vw;
@@ -213,10 +216,15 @@ svg.selectable:active {
   position: relative;
   background-color: #f4f4f4;
   box-sizing: border-box;
-  border: rgba(128, 128, 128, 0.521) 1px solid
+  border: rgba(128, 128, 128, 0.521) 1px solid;
 }
 
-.game-log {
+.game-container div {
+  padding: 3px;
+}
+
+/* Game log styles */
+.game-container .game-log {
   flex: 1;
   overflow-y: auto;
   font-size: 0.8em;
@@ -224,25 +232,25 @@ svg.selectable:active {
   padding: 3px;
 }
 
-.game-log p {
+.game-container .game-log p {
   margin: 0;
   padding: 5px 0;
   border-bottom: 1px solid #7a7979;
 }
 
-.game-log p > * {
+.game-container .game-log p > * {
   display: inline-flex;
   align-items: center;
 }
 
-.color-text {
+.game-container .color-text {
   font-weight: bold;
 }
 
-.color-text.red {
+.game-container .color-text.red {
   color: #ff0000;
 }
 
-.color-text.blue {
+.game-container .color-text.blue {
   color: #0000ff;
 }
