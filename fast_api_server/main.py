@@ -733,6 +733,7 @@ async def handle_game_completion(game_id: int, winner_color: str):
         winner = db.query(models.User).filter(models.User.google_id == winner_id).first()
         loser = db.query(models.User).filter(models.User.google_id == loser_id).first()
         
+        print ("HANDLE GAME COMPLETION")
         print(winner)
         print(loser)
         if winner and loser:
