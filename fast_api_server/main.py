@@ -169,30 +169,35 @@ async def log_requests(request, call_next):
 
 @app.get("/api/leaderboard")
 async def get_leaderboard(db: Session = Depends(get_db)):
-    logger.info("Starting leaderboard request")  # Use the logger we set up
-    users = db.query(models.User)\
-        .filter(models.User.username.isnot(None))\
-        .all()
-    
-    logger.info(f"Found {len(users)} users")
-    for user in users:
-        logger.info(f"User data: {user.username}, {user.elo_rating}, {user.wins}, {user.losses}")
-   
-    leaderboard = [
-        {
-            "username": user.username,
-            "elo_rating": user.elo_rating,
-            "wins": user.wins,
-            "losses": user.losses,
-            "win_rate": round((user.wins / (user.wins + user.losses) * 100), 1) if (user.wins + user.losses) > 0 else 0,
-            "total_games": user.wins + user.losses
-        }
-        for user in users
-    ]
-   
-    leaderboard.sort(key=lambda x: (-x["elo_rating"], -x["total_games"]))
-    logger.info(f"Returning leaderboard: {leaderboard}")
-    return {"leaderboard": leaderboard}
+    try:
+        logger.info("Starting leaderboard request")
+        users = db.query(models.User)\
+            .filter(models.User.username.isnot(None))\
+            .all()
+        
+        logger.info(f"Found {len(users)} users")
+        
+        leaderboard = [
+            {
+                "username": user.username,
+                "elo_rating": user.elo_rating,
+                "wins": user.wins,
+                "losses": user.losses,
+                "win_rate": round((user.wins / (user.wins + user.losses) * 100), 1) if (user.wins + user.losses) > 0 else 0,
+                "total_games": user.wins + user.losses
+            }
+            for user in users
+        ]
+        
+        leaderboard.sort(key=lambda x: (-x["elo_rating"], -x["total_games"]))
+        logger.info(f"Returning leaderboard: {leaderboard}")
+        return {"leaderboard": leaderboard}
+    except Exception as e:
+        logger.error(f"Error in leaderboard: {str(e)}")
+        logger.error(f"Error type: {type(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise
 
 @app.get("/api/players/{google_id}/stats")
 async def get_player_stats(google_id: str, db: Session = Depends(get_db)):
