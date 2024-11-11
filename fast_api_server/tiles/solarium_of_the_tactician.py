@@ -15,7 +15,7 @@ class SolariumOfTheTactician(Tile):
                 {
                     "influence_to_reach_tier": 3,
                     "must_be_ruler": True,                    
-                    "description": "**Reaction:** After you [[receive]] a disciple, at or adjacent to Solarium of the Tactician, swap it with an adjacent tile",
+                    "description": "**Reaction:** After you [[receive]] a disciple at or adjacent to Solarium of the Tactician, swap it with an adjacent tile",
                     "is_on_cooldown": False,
                     "has_a_cooldown": False,        
                     "leader_must_be_present": False,            

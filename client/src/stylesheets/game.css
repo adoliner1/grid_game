@@ -216,7 +216,7 @@ html, body {
   width: 21%;
   height: 100%;
   position: relative;
-  background-color: #f4f4f4;
+  background-color: #1a1a1a;
   box-sizing: border-box;
   border: rgba(128, 128, 128, 0.521) 1px solid;
 }
@@ -232,6 +232,7 @@ html, body {
   font-size: 0.8em;
   scroll-behavior: auto;
   padding: 3px;
+  background-color: #1a1a1a;
 }
 
 .game-container .game-log p {

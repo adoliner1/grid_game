@@ -104,7 +104,7 @@ class TacticiansMirror(Tile):
         receiver = data.get('receiver')
         tiers_that_can_be_reacted_with = []
         
-        if not self.influence_tiers[0]['is_on_cooldown'] and self.influence_per_player[receiver] >= self.influence_tiers[0]['influence_to_reach_tier']:
+        if not self.influence_tiers[0]['is_on_cooldown'] and self.influence_per_player[receiver] >= self.influence_tiers[0]['influence_to_reach_tier'] and self.determine_ruler(game_state) == receiver:
             tiers_that_can_be_reacted_with.append(0)
         
         if tiers_that_can_be_reacted_with:

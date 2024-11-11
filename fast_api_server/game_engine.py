@@ -645,30 +645,30 @@ class GameEngine:
         
         return False
 
-async def end_game(self):
-    for tile in self.game_state["tiles"]:
-        await tile.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
+    async def end_game(self):
+        for tile in self.game_state["tiles"]:
+            await tile.end_of_game_effect(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)
 
-    for _, listener_function in self.game_state["listeners"]["end_game"].items():
-        await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
+        for _, listener_function in self.game_state["listeners"]["end_game"].items():
+            await listener_function(self.game_state, self.game_action_container_stack, self.send_clients_log_message, self.get_and_send_available_actions, self.send_clients_game_state)  
 
-    await self.send_clients_game_state(self.game_state)
-    await self.send_clients_log_message(f"Final Score: Red: {self.game_state['points']['red']} Blue: {self.game_state['points']['blue']}")
+        await self.send_clients_game_state(self.game_state)
+        await self.send_clients_log_message(f"Final Score: Red: {self.game_state['points']['red']} Blue: {self.game_state['points']['blue']}")
 
-    winner_color = None
-    if self.game_state["points"]["red"] > self.game_state["points"]["blue"]:
-        await self.send_clients_log_message("Red wins!")
-        winner_color = "red"
-    elif self.game_state["points"]["blue"] > self.game_state["points"]["red"]:
-        await self.send_clients_log_message("Blue wins!")
-        winner_color = "blue"
-    else:
-        await self.send_clients_log_message("It's a tie!")
-        # For ties, we can either pass None or handle them specially in the ELO calculation
         winner_color = None
+        if self.game_state["points"]["red"] > self.game_state["points"]["blue"]:
+            await self.send_clients_log_message("Red wins!")
+            winner_color = "red"
+        elif self.game_state["points"]["blue"] > self.game_state["points"]["red"]:
+            await self.send_clients_log_message("Blue wins!")
+            winner_color = "blue"
+        else:
+            await self.send_clients_log_message("It's a tie!")
+            # For ties, we can either pass None or handle them specially in the ELO calculation
+            winner_color = None
 
-    # Call the game completion callback
-    if self.game_complete_callback:
-        await self.game_complete_callback(winner_color)
+        # Call the game completion callback
+        if self.game_complete_callback:
+            await self.game_complete_callback(winner_color)
 
-    self.game_has_ended = True
+        self.game_has_ended = True
