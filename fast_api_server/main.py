@@ -141,13 +141,6 @@ if ENV == "production":
            db.rollback()
            raise HTTPException(status_code=400, detail="Username already taken")
 
-@app.get("/{full_path:path}")
-async def serve_app(full_path: str, request: Request):
-   if full_path.startswith("api"):
-       pass
-   else:
-       return FileResponse(os.path.join(static_directory, "index.html"))
-
 @app.middleware("http")
 async def log_requests(request, call_next):
     logger.info(f"Received request: {request.method} {request.url}")
@@ -168,9 +161,6 @@ async def log_requests(request, call_next):
 
 @app.get("/api/leaderboard")
 async def get_leaderboard(db: Session = Depends(get_db)):
-    print("THIS IS A TEST PRINT")
-    print("==================")
-    return {"message": "test"}
     try:
         logger.info("Starting leaderboard request")
         users = db.query(models.User)\
@@ -309,6 +299,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 await update_messages(websocket, data, connection)
     except WebSocketDisconnect:
         await disconnect_handler(connection)
+
+@app.get("/{full_path:path}")
+async def serve_app(full_path: str, request: Request):
+   if full_path.startswith("api"):
+       pass
+   else:
+       return FileResponse(os.path.join(static_directory, "index.html"))
 
 async def update_messages(websocket: WebSocket, data: Dict, connection: Dict):
    message = data.get("message")
