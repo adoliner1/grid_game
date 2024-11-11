@@ -241,3 +241,73 @@ html, body {
 .lobby-container .chat-area input::placeholder {
   color: #888;
 }
+
+.lobby-container .leaderboard {
+  min-width: fit-content;
+  max-width: 400px;
+  padding: 10px;
+  background-color: #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  margin-left: 10px;
+}
+
+.lobby-container .leaderboard table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lobby-container .leaderboard thead tr {
+  border-bottom: 1px solid #4a4a4a;
+}
+
+.lobby-container .leaderboard th,
+.lobby-container .leaderboard td {
+  padding: 8px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.lobby-container .leaderboard th {
+  font-weight: bold;
+  color: #888;
+  font-size: 0.9em;
+}
+
+.lobby-container .leader-board-header {
+  text-align: center;
+  padding: 10px 0;
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: bold;
+  border-bottom: 1px solid #4a4a4a;
+}
+
+.lobby-container .leaderboard .player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lobby-container .leaderboard .player-name {
+  font-weight: 500;
+}
+
+.lobby-container .leaderboard .player-rank {
+  font-size: 0.8em;
+}
+
+.lobby-container .leaderboard .wins {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.lobby-container .leaderboard .losses {
+  color: #f87171;
+  font-weight: 500;
+}
+
+.lobby-container .leaderboard tbody tr:hover {
+  background-color: #333;
+}
