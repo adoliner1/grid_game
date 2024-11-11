@@ -1,75 +1,77 @@
-.round-bonuses-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8125rem; /* Slightly smaller base font size */
-  }
-  
-  .round-bonuses-table th,
-  .round-bonuses-table td {
-    border: 1px solid #e2e8f0;
-    padding: 0.25rem 0.375rem; /* Reduced padding */
-    text-align: center;
-    vertical-align: middle;
-  }
-  
-  .round-bonuses-table thead tr {
-    background-color: #f7fafc;
-  }
+/* Base table styles */
+.game-container .round-bonuses-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  background-color: #faf089;
+  margin-bottom: 5px;
+}
 
-  .round-bonuses-table tbody tr:nth-child(even) {
-    background-color: #f9fafb;
-  }
-  
-  .round-bonuses-table tbody{
-    background-color: #edf2f7;
-  }
-  
-  .round-bonuses-table .current-round {
-    background-color: #fefcbf;
-  }
-  
-  .round-bonuses-table {
-    background-color: #faf089;
-    margin-bottom: 5px;
-  }
-  
-  .round-bonuses-table th {
-    font-weight: bold;
-    font-size: 0.75rem;
-    color: #4a5568;
-  }
-  
-  .round-bonuses-table td {
-    font-size: 0.6rem;
-    color: #2d3748;
-  }
-  
-  .round-bonuses-table .bonus-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 1rem; /* Reduced minimum height */
-    line-height: 1; /* Tighter line height */
-  }
-  
-  .round-bonuses-table .bonus-icon {
-    margin: 0 0.5rem; /* Reduced margin between icons */
-    display: inline-flex;
-    align-items: center;
-  }
-  
-  .round-bonuses-table .cursor-help {
-    cursor: help;
-  }
-  
-  /* Ensure SVGs scale with text */
-  .round-bonuses-table svg {
-    width: 2em;
-    height: 2em;
-    vertical-align: middle;
-  }
-  
-  /* Adjust font weight for numbers */
-  .round-bonuses-table .font-bold {
-    font-weight: 600; /* Slightly less bold for better readability at small sizes */
-  }
+/* Header styles */
+.game-container .round-bonuses-table th {
+  font-weight: bold;
+  font-size: 0.75rem;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  padding: 0.25rem 0.375rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Cell styles */
+.game-container .round-bonuses-table td {
+  font-size: 0.6rem;
+  color: #2d3748;
+  border: 1px solid #e2e8f0;
+  padding: 0.25rem 0.375rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Row styles */
+.game-container .round-bonuses-table thead tr {
+  background-color: #f7fafc;
+}
+
+.game-container .round-bonuses-table tbody {
+  background-color: #edf2f7;
+}
+
+.game-container .round-bonuses-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.game-container .round-bonuses-table .current-round {
+  background-color: #fefcbf;
+}
+
+/* Bonus content styles */
+.game-container .round-bonuses-table .bonus-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1rem;
+  line-height: 1;
+}
+
+.game-container .round-bonuses-table .bonus-icon {
+  margin: 0 0.5rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Helper styles */
+.game-container .round-bonuses-table .cursor-help {
+  cursor: help;
+}
+
+.game-container .round-bonuses-table .font-bold {
+  font-weight: 600;
+}
+
+/* SVG styles */
+.game-container .round-bonuses-table svg {
+  width: 2em;
+  height: 2em;
+  vertical-align: middle;
+}

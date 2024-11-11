@@ -228,7 +228,7 @@ const Game = () => {
         const game_id = localStorage.getItem('game_id');
         const playerInfo = JSON.parse(localStorage.getItem('player_info')); 
     
-        if (!game_id || !playerInfo) {
+        if (!game_id || !playerInfo && !process.env.NODE_ENV === 'development') {
             console.error('Game ID or player info not found');
             return;
         }

@@ -624,7 +624,8 @@ async def websocket_game_endpoint(websocket: WebSocket):
                 game_engine.set_websocket_callbacks(
                     lambda msg: send_message(None, msg),
                     lambda state: send_game_state(None, state),
-                    lambda actions, data, color: send_available_actions(None, actions, data, color)
+                    lambda actions, data, color: send_available_actions(None, actions, data, color),
+                    lambda winner_color: handle_game_completion(1, winner_color)
                 )
                 asyncio.create_task(game_engine.start_game())
 

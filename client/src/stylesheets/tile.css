@@ -1,129 +1,133 @@
-/* Individual tile styles */
-.tile {
-    border: 2px solid #000000;
-    border-radius: 10px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: border-color 0.3s;
-  }
-  
-  .tile-content {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    min-height: 0;
-  }
-  
-  .tile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px;
-  }
-  
-  .tile-name {
-    margin: 0;
-    font-size: 1.2em;
-    font-weight: bold;
-  }
-  
-  .tile-type {
-    font-size: 0.9em;
-    font-weight: bold;
-    color: #666;
-  }
-  
-  .tile-description {
-    border-top: 1px solid #a39e9e;
-    padding: 5px;
-    flex-grow: 1;
-  }
-  
-  .influence-tiers {
-    padding: 5px;
-    flex-grow: 1;
-  }
+/* Base tile structure */
+.game-container .tile {
+  border: 2px solid #000000;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color 0.3s;
+}
 
-  .tile-bottom {
-    flex-shrink: 0;
-    flex-grow: 0;
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid #a39e9e;
-  }
-  
-  .influence-per-player {
-    display: flex;
-    justify-content: space-evenly;
-    padding: 1px; /* Reduced from 5px */
-    flex-shrink: 0;
-    font-size: 0.9em; /* Slightly smaller font */
-  }
-  
-  .red-influence, .blue-influence {
-    display: flex;
-    align-items: center;
-  }
-  
-  /* Adjust icon sizes */
-  .influence-icon {
-    width: 16px; /* Reduced from 16px */
-    height: 16px; /* Reduced from 16px */
-  }
-  
-  /* Selectable tile styles */
-  .selectable-tile {
-    background-color: #FFF8DC; /* Pale gold color */
-    transition: background-color 0.3s ease;
-  }
-  
-  .selectable-tile:hover {
-    cursor: pointer;
-    animation: hover-flash 2s infinite;
-  }
-  
-  @keyframes hover-flash {
-    0% { background-color: #FFF8DC; } /* Pale gold */
-    50% { background-color: #ffeb79; } /* Deeper gold */
-    100% { background-color: #FFF8DC; } /* Back to pale gold */
-  }
-  
-  .selectable-tile:active {
-    background-color: #ffeb79; /* Deeper gold when active */
-    animation: none; /* Stop the animation when the tile is clicked */
-  }
-  
-  .ruler-crown-in-header {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-  }
-  
-  .crown-icon {
-    margin-right: 5px;
-    width: 24px;
-    height: 24px;
-  }
-  
-  .ruler-crown-red .crown-icon {
-    color: rgb(255, 41, 41);
-  }
-  
-  .ruler-crown-blue .crown-icon {
-    color: rgb(52, 52, 255);
-  }
-  
-  .ruler-crown-in-header:not(.ruler-crown-red):not(.ruler-crown-blue) .crown-icon {
-    color: black;
-  }
-  
+/* Tile content sections */
+.game-container .tile-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
+}
 
-  .ruler-tile-red {
-    border-color: red
-  }
+.game-container .tile-bottom {
+  flex-shrink: 0;
+  flex-grow: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #a39e9e;
+}
 
-  .ruler-tile-blue {
-    border-color: blue
-  }
+/* Header section */
+.game-container .tile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+}
+
+.game-container .tile-name {
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.game-container .tile-type {
+  font-size: 0.9em;
+  font-weight: bold;
+  color: #666;
+}
+
+/* Description and influence sections */
+.game-container .tile-description {
+  border-top: 1px solid #a39e9e;
+  padding: 5px;
+  flex-grow: 1;
+}
+
+.game-container .influence-tiers {
+  padding: 5px;
+  flex-grow: 1;
+}
+
+.game-container .influence-per-player {
+  display: flex;
+  justify-content: space-evenly;
+  padding: 1px;
+  flex-shrink: 0;
+  font-size: 0.9em;
+}
+
+.game-container .red-influence,
+.game-container .blue-influence {
+  display: flex;
+  align-items: center;
+}
+
+/* Icon styles */
+.game-container .influence-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.game-container .crown-icon {
+  margin-right: 5px;
+}
+
+/* Ruler crown styles */
+.game-container .ruler-crown-in-header {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+
+.game-container .ruler-crown-red .crown-icon {
+  color: rgb(255, 41, 41);
+}
+
+.game-container .ruler-crown-blue .crown-icon {
+  color: rgb(52, 52, 255);
+}
+
+.game-container .ruler-crown-in-header:not(.ruler-crown-red):not(.ruler-crown-blue) .crown-icon {
+  color: black;
+}
+
+/* Ruler tile borders */
+.game-container .ruler-tile-red {
+  border-color: red;
+}
+
+.game-container .ruler-tile-blue {
+  border-color: blue;
+}
+
+/* Selectable tile styles */
+.game-container .selectable-tile {
+  background-color: #FFF8DC;
+  transition: background-color 0.3s ease;
+}
+
+.game-container .selectable-tile:hover {
+  cursor: pointer;
+  animation: hover-flash 2s infinite;
+}
+
+.game-container .selectable-tile:active {
+  background-color: #ffeb79;
+  animation: none;
+}
+
+/* Animation keyframes */
+@keyframes hover-flash {
+  0% { background-color: #FFF8DC; }
+  50% { background-color: #ffeb79; }
+  100% { background-color: #FFF8DC; }
+}
