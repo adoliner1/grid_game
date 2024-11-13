@@ -72,7 +72,7 @@ const Game = () => {
 
         if (process.env.NODE_ENV !== 'development') {
         const sendHeartbeat = () => {
-            fetch('https://grid-game.onrender.com/', {
+            fetch('https://grid-game.onrender.com/api/heartbeat', {
                 method: 'GET',
             })
                 .then(response => response.json())
@@ -83,7 +83,6 @@ const Game = () => {
         sendHeartbeat();
 
         const intervalId = setInterval(sendHeartbeat, 60 * 1000);
-
         return () => clearInterval(intervalId);
     }
     }, []);

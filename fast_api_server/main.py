@@ -288,6 +288,10 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         await disconnect_handler(connection)
 
+@app.get("/api/heartbeat")
+async def heartbeat():
+    return {"status": "alive"}
+
 @app.get("/{full_path:path}")
 async def serve_app(full_path: str, request: Request):
    if full_path.startswith("api"):
@@ -726,33 +730,25 @@ async def handle_game_completion(game_id: int, winner_color: str):
         if not game or not game.is_ranked:
             return
         
-        # Get winner and loser based on color
         winner_id = game.player1_id if winner_color == "red" else game.player2_id
         loser_id = game.player2_id if winner_color == "red" else game.player1_id
         
         winner = db.query(models.User).filter(models.User.google_id == winner_id).first()
         loser = db.query(models.User).filter(models.User.google_id == loser_id).first()
         
-        print ("HANDLE GAME COMPLETION")
-        print(winner)
-        print(loser)
         if winner and loser:
-            # Calculate ELO changes
             winner_change, loser_change = calculate_elo_change(winner.elo_rating, loser.elo_rating)
             
-            # Update stats
             winner.wins += 1
             winner.elo_rating += winner_change
             loser.losses += 1
             loser.elo_rating += loser_change
             
-            # Update game record
             game.status = "Completed"
             game.winner_id = winner_id
             
             db.commit()
-            
-            # Notify players
+        
             for connection in connections_to_games:
                 if connection["game_id"] == game_id:
                     await connection["websocket"].send_json({
